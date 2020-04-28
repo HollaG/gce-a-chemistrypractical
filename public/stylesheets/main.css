@@ -75,6 +75,19 @@
     background-position: bottom;
     width: 100%;
     height: 100%;
+    z-index:0
+}
+
+#background-image-volume { 
+    background-image: url('/images/test-tube-background-cut.png');
+    position: relative;    
+    background-repeat: no-repeat;
+    background-size: 100% auto;
+    background-position: top;
+    width: 100%;
+    height: 76%;    
+    top: -93.29%;
+    z-index: 10;
 }
 
 /* colors of test tube */
@@ -84,6 +97,7 @@
     opacity: 0.8;
     /* -webkit-backdrop-filter: blur(10px);
     backdrop-filter: blur(10px); */
+    z-index: 15
 }
 
 #color-bottom { 
