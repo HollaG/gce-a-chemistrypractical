@@ -1,0 +1,28 @@
+{
+  "name": "chemwebsite",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "start": "node ./bin/www",
+    "devstart": "nodemon ./bin/www",
+    "serverstart": "DEBUG=chemwebsite:* npm run devstart",
+    "build-js": "browserify public/javascripts/main.js --s module > public/javascripts/mainB.js "
+  },
+  "dependencies": {
+    "alertifyjs": "^1.13.1",
+    "cookie-parser": "~1.4.4",
+    "debug": "~2.6.9",
+    "express": "~4.16.1",
+    "google-spreadsheet": "^3.0.11",
+    "http-errors": "~1.6.3",
+    "jquery": "^3.5.0",
+    "js-stringify": "^1.0.2",
+    "morgan": "~1.9.1",
+    "mysql2": "^2.1.0",
+    "pug": "2.0.0-beta11",
+    "slim-select": "^1.25.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.3"
+  }
+}
