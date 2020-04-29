@@ -127,7 +127,7 @@ router.get('/load', async (req, res, next) => {
                 row['formula_text'] || "",
                 row['name'] || "",
                 row['class'] || "",
-                row['hex'] || "", 
+                row['hex'] || "",
                 row['color'] || "",
                 row['odor'] || "",
                 row['cation'] || "",
@@ -239,7 +239,7 @@ router.get('/inspect', async (req, res, next) => {
         var query = decodeURI(req.query.arr).split(",")
         console.log(query)
         var result = []
-        for (var i = 0; i < query.length; i++) { 
+        for (var i = 0; i < query.length; i++) {
             var r = await connection.query(`SELECT * FROM ions RIGHT JOIN reference ON ions.formula_id = reference.formula_id WHERE reference.formula_id = ?`, query[i]);
             console.log(r[0], i)
             console.log('-----------------------')
@@ -247,16 +247,16 @@ router.get('/inspect', async (req, res, next) => {
 
 
 
-            if (r[0].length) { 
-                r[0].forEach(element => { 
+            if (r[0].length) {
+                r[0].forEach(element => {
                     result.push(element)
-                })               
+                })
             }
 
 
 
         }
-            
+
 
         // console.log('done!')
         res.send(JSON.stringify(result))
@@ -270,14 +270,14 @@ router.get('/inspect', async (req, res, next) => {
 
 })
 
-router.get('/inspect/getProduct', async (req, res, next) => { 
-    try { 
+router.get('/inspect/getProduct', async (req, res, next) => {
+    try {
         console.log('starting')
         var connection = await mysql.createConnection(config.db_config)
         console.log('after-conenct')
         var reagentL = decodeURI(req.query.left)
         var reagentR = decodeURI(req.query.right)
-        
+
         console.log(reagentL, reagentR)
         var result;
         console.log((reagentR.split(",").join("")).length, 'ndfjkabdjkfbahjsbfadjksbfj')
@@ -286,30 +286,30 @@ router.get('/inspect/getProduct', async (req, res, next) => {
             // This case, we need to check which of the 2 ions can react.
             var reagentR = reagentR.split(",")
             console.log("here")
-            for (var i = 0; i < reagentR.length; i++) { 
+            for (var i = 0; i < reagentR.length; i++) {
                 var temp = await connection.query(`SELECT ions.produces_1, reference.* FROM ions INNER JOIN reference ON ions.produces_1 = reference.formula_id WHERE ions.formula_id = ? AND ions.reacts_with_indiv_1 = ?`, [reagentL, reagentR[i]])
                 console.log(temp[0], "------------------------------")
-                if (temp[0].length) { 
+                if (temp[0].length) {
                     res.send(JSON.stringify(temp[0][0]))
-                    
+
                     return
                 }
             }
             res.send(JSON.stringify("error"))
 
-        } else { 
+        } else {
             result = await connection.query(`SELECT ions.produces_1, reference.* FROM ions INNER JOIN reference ON ions.produces_1 = reference.formula_id WHERE ions.formula_id = ? AND ions.reacts_with_indiv_1 = ?`, [reagentL, reagentR])
             console.log("result", result[0][0])
-            if (result[0].length) { 
+            if (result[0].length) {
                 res.send(JSON.stringify(result[0][0]))
-            } else { 
+            } else {
                 res.send(JSON.stringify("error"))
             }
         }
 
-        
-        
-    } catch (e) { 
+
+
+    } catch (e) {
 
     } finally {
         connection.end()
@@ -319,29 +319,48 @@ router.get('/inspect/getProduct', async (req, res, next) => {
 
 
 })
-router.get('/inspect/getPossibleCompounds', async (req, res, next) => { 
-    try { 
+router.get('/inspect/getPossibleCompounds', async (req, res, next) => {
+    try {
         var connection = await mysql.createConnection(config.db_config)
         var ion = decodeURL(req.query.ion)
         var reagent = decodeURI(req.query.reagent)
         var type = decodeURI(req.query.type);
         var product = decodeURI(req.query.product)
         var result;
-        if (type == 'cation') { 
-            var result = await connection.query(`SELECT reference.formula_id FROM reference INNER JOIN ions ON reference.cation = ions.formula_id WHERE reference.cation = ? AND ions.reacts_with_indiv_1 = ? AND ions.produces_1 = ?`,[reagent, ion, product])
-        } else { 
-            var result = await connection.query(`SELECT reference.formula_id FROM reference INNER JOIN ions ON reference.anion = ions.formula_id WHERE reference.cation = ? AND ions.reacts_with_indiv_1 = ? AND ions.produces_1 = ?`,[reagent, ion, product])
+        if (type == 'cation') {
+            var result = await connection.query(`SELECT reference.formula_id FROM reference INNER JOIN ions ON reference.cation = ions.formula_id WHERE reference.cation = ? AND ions.reacts_with_indiv_1 = ? AND ions.produces_1 = ?`, [reagent, ion, product])
+        } else {
+            var result = await connection.query(`SELECT reference.formula_id FROM reference INNER JOIN ions ON reference.anion = ions.formula_id WHERE reference.cation = ? AND ions.reacts_with_indiv_1 = ? AND ions.produces_1 = ?`, [reagent, ion, product])
         }
         res.send(JSON.stringify(result[0][0])) // only first result is returned ah remember
-    } catch (e) { 
+    } catch (e) {
 
-    } finally { 
+    } finally {
 
     }
 
 
 
 })
+function timeout(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+var arr = ["Ca", "Mg"]
+arr.forEach(async e => {
+    for (var i = 0; i < 10; i++) {
+
+        await timeout(1000)
+        console.log(i, e)
+
+
+
+
+    }
+})
+
+console.log("not blocked")
+
+
 module.exports = router
 
 

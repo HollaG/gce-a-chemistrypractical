@@ -746,679 +746,864 @@ $(document).ready(function () {
         $('.ajs-input').hide()
         // expand the area   
         $('.ajs-content').append('<div id="inspect"></div>').append('<div id="info"></div>')
-        $('#inspect').append('<div id="background-image"></div>')
+        $('#inspect').append('<div id="tube-image-div"></div>')
+        $('#tube-image-div').append('<div id="background-image"></div>')
         // Add the color divs
-        $('#background-image').append('<div id="color-bottom" class="color"></div>').append('<div id="color-middle-bottom" class="color"></div>').append('<div id="color-middle-top" class="color"></div>').append('<div id="color-top" class="color"></div>').append('<div id="color-max" class="color"></div>').append('<div id="color-volume-blocker" class="color"></div>').append('<div id="background-image-volume"></div>')
-
+        $('#background-image').append('<div id="color-max" class="color"></div>').append('<div id="background-image-volume"></div>')
         // Add the ppt div
-
+        $("#tube-image-div").append(`<div id='ppt-1' class="ppt"></div>`).append(`<div id='ppt-2' class="ppt"></div>`).append(`<div id='ppt-3' class="ppt"></div>`)
         // Add the effevescene div
 
-        // Color
-        var colorArray = []
-        var colorPptArray = [] // no color-weight for this one, if there are > 1 ppt we will draw that
-        var colorGasArray = []
-        var colorWeight = []
-        // var colorPptWeight = []
-        // var colorGasWeight = []
+
+
 
 
         // START LOGIC TO CALCULATE REACTIONS
+
+
+
         var tube = objectsInUse[id]
-        // console.log('---------------------------------------------')
-        // console.log(tube)
 
+        /* -------------- PART 1: WHAT'S INSIDE THE TUBE AND WHAT DOES IT REACT WITH --------------*/
+        react()
+        async function react() {
 
+            // Color
+            var colorArray = []
+            var colorPptArray = [] // no color-weight for this one, if there are > 1 ppt we will draw that
+            var colorGasArray = []
+            var colorWeight = []
+            var pptSDrawn = {
 
-        /* Calculate the query for database */
-        var reagentsToQuery = []
-        var reagents = []
-        console.log("ONE: TUBE", tube)
-        tube.contains.forEach(reagent => {
-            reagentsToQuery.push(reagent.formula_id_f.split(" ").join("_")) // prepare database query                
-
-        })
-        console.log("TWO: REAGENTS TO QUERY", reagentsToQuery)
-        var data = JSON.parse(await Promise.resolve(($.get('/inspect', { arr: reagentsToQuery }))))
-
-
-        /* Because some are compounds, we need to change it into cation and anion. */
-        /* Intended outcome: [Al3+, [Na+, OH-, NaOH]...] */
-        var tempArr = []
-        data.forEach(row => {
-            if (row.cation || row.anion) {
-
-                tempArr.push([row.cation, row.anion, row.formula_id])
-            } else {
-                tempArr.push(row.formula_id)
             }
-        })
 
 
+            console.log('executed -------------------------------')
+            /* Calculate the query for database */
+            var reagentsToQuery = []
+            var reagents = []
+            console.log("ONE: TUBE", tube)
+            tube.contains.forEach(reagent => {
+                reagentsToQuery.push(reagent.formula_id_f.split(" ").join("_")) // prepare database query                
+
+            })
+            console.log("TWO: REAGENTS TO QUERY", reagentsToQuery)
+            var data = JSON.parse(await Promise.resolve(($.get('/inspect', { arr: reagentsToQuery }))))
 
 
-        // var tempArr = []
-        // data.forEach(row => {
-        //     if (row.cation || row.anion) {
-        //         if (row.cation) {
-        //             tempArr.push(row.cation)
-        //         }
-        //         if (row.anion) {
-        //             tempArr.push(row.anion)
-        //         }
-        //     } else {
-        //         tempArr.push(row.formula_id)
-        //     }
+            /* Because some are compounds, we need to change it into cation and anion. */
+            /* Intended outcome: [Al3+, [Na+, OH-, NaOH]...] */
+            var tempArr = []
+            data.forEach(row => {
+                if (row.cation || row.anion) {
 
-        // })
-        tempArr = [...new Set(tempArr)]
-        reagentsToQuery = tempArr
-        console.log("reagents To query I should see K+ and MnO4-", reagentsToQuery)
-
-
-        var allReactingReagents = {}
-        var volCol = {}
-        if (tube.contains.length > 1) {
-            // test tube contains AT LEAST 2 items
-
-
-
-
-
-
-
-            // console.log('recieved data back')
-
-            var allReactingReagentsSimple = []
-            var volCol = {} // object relating the colors and stuff
-
-            var volumeObj = {} // Holds the info about volume
-            tube.contains.forEach(reagentInTube => {
-                var b = reagentInTube.formula_id_f.split(" ").join("_")
-                volumeObj[b] = Number(reagentInTube.volume)
+                    tempArr.push([row.cation, row.anion, row.formula_id])
+                } else {
+                    tempArr.push(row.formula_id)
+                }
             })
 
-            data.forEach(row => {
-                var t = new Reactant(row)
-                var reacting = t.checkIfReactable(reagentsToQuery) // check if any reacting reagent can react with others
-                console.log('reacting with', t.formula_id, reacting)
-                if (reacting.length) { // if the thing is reacting 
-                    if (allReactingReagents[t.formula_id]) {
-                        var temp = allReactingReagents[t.formula_id]
-                        temp.push(reacting[0][t.formula_id])
-                        allReactingReagents[t.formula_id] = temp
-                    } else {
-                        allReactingReagents[t.formula_id] = [reacting[0][t.formula_id]]
-                    }
-                }
+            tempArr = [...new Set(tempArr)]
+            reagentsToQuery = tempArr
 
-                volCol[t['formula_id']] = {
+
+            var allReactingReagents = {}
+            var volCol = {}
+            if (tube.contains.length > 1) {
+                // test tube contains AT LEAST 2 items
+
+
+
+
+
+
+
+                // console.log('recieved data back')
+
+                var allReactingReagentsSimple = []
+                var volCol = {} // object relating the colors and stuff
+
+                var volumeObj = {} // Holds the info about volume
+                tube.contains.forEach(reagentInTube => {
+                    var b = reagentInTube.formula_id_f.split(" ").join("_")
+                    volumeObj[b] = Number(reagentInTube.volume)
+                })
+
+                data.forEach(row => {
+                    var t = new Reactant(row)
+                    var reacting = t.checkIfReactable(reagentsToQuery) // check if any reacting reagent can react with others
+                    console.log('reacting with', t.formula_id, reacting)
+                    if (reacting.length) { // if the thing is reacting 
+                        if (allReactingReagents[t.formula_id]) {
+                            var temp = allReactingReagents[t.formula_id]
+                            temp.push(reacting[0][t.formula_id])
+                            allReactingReagents[t.formula_id] = temp
+                        } else {
+                            allReactingReagents[t.formula_id] = [reacting[0][t.formula_id]]
+                        }
+                    }
+
+                    volCol[t['formula_id']] = {
+                        color: t['color'],
+                        odor: t['odor'],
+                        volume: volumeObj[t['formula_id']],
+                        state: t['state'],
+                        hex: t['hex'],
+                        cation: t['cation'],
+                        anion: t['anion'],
+                        formula_text: t['formula_text']
+                    }
+                })
+
+                var HTMLarr = []
+                for (reagent of Object.keys(volCol)) {
+                    HTMLarr.push(`<p> ${volCol[reagent].volume} cm³ ${formatChemForm(reagent)}, ${volCol[reagent].color} ${volCol[reagent].state}, ${volCol[reagent].odor} </p>`)
+                    if (volCol[reagent].color !== "colorless") {
+
+                        // If it's solid, add it to the ppt array instead
+                        // if it's gas, add it to the gas array.
+                        switch (volCol[reagent].state) {
+                            case "solution":
+                                if (volCol[reagent].hex) {
+                                    colorArray.push(volCol[reagent].hex)
+
+                                } else {
+                                    colorArray.push(volCol[reagent].color)
+                                }
+                                colorWeight.push(volCol[reagent].volume)
+                                break;
+                            case "precipitate":
+                                if (volCol[reagent].hex) {
+                                    colorPptArray.push([volCol[reagent].hex, reagent])
+
+                                } else {
+                                    colorPptArray.push([volCol[reagent].color, reagent])
+                                }
+
+                                break;
+
+
+                        }
+
+
+
+
+                        // colorWeight.push("1")
+
+                    }
+                    
+                }
+                $('#info').html(HTMLarr.join(" "))
+
+
+
+                /*
+                // get rid of duplications
+                allReactingReagentsSimple = [...new Set(allReactingReagentsSimple)]
+                console.log(allReactingReagents, "--------------------", JSON.stringify(allReactingReagents), volCol)
+    
+                // allReactingReagents {"Ca²⁺_(conc)":["NaOH_(aq)"],"Al³⁺_(aq)":["NaOH_(aq)","NH₃_(aq)"]}
+                // volCol {}
+    
+                // Generate a string to input as the info. Should include color and volume data and state data
+                
+                for (key of Object.keys(volCol)) {
+                    HTMLarr.push(`<p> ${volCol[key].volume} cm³ ${formatChemForm(key)}, ${volCol[key].color} ${volCol[key].state}, ${volCol[key].odor} </p>`)
+                    if (volCol[key].color !== "colorless") {
+                        if (volCol[key].hex) {
+                            colorArray.push(volCol[key].hex)
+                        } else {
+                            colorArray.push(volCol[key].color)
+                        }
+                        colorWeight.push("1")
+    
+                    }
+    
+                }
+    
+                $('#info').html(HTMLarr.join(" "))
+    
+                */
+
+
+
+
+
+
+
+
+
+
+
+
+
+            } else if (tube.contains.length == 1) {
+
+
+                var t = new Reactant(data[0])
+
+                volCol[t.formula_id] = {
                     color: t['color'],
                     odor: t['odor'],
-                    volume: volumeObj[t['formula_id']],
+                    volume: Number(tube.contains[0].volume),
                     state: t['state'],
                     hex: t['hex'],
                     cation: t['cation'],
                     anion: t['anion'],
                     formula_text: t['formula_text']
                 }
-
-                /*
-                reacting.forEach(reaction => {
-                    console.log('------------', reaction, '---------------')
-                    // If the object AllReactingReagents already has a key which is the same as the "formula_id" value; we need to add the reagent to its property
-                    var reagentL = reaction[Object.keys(reaction)[0]] // L for limited, E for excess
-                    var reagentE = Object.keys(reaction)[0]
-                    // reagent L should be the key; reagent E should be the value
-
-                    if (allReactingReagents[reagentL]) {
-                        var a = allReactingReagents[reagentL] // an array
-                        a.push(reagentE)
-                        allReactingReagents[reagentL] = a
-
-
-                    } else {
-                        allReactingReagents[reagentL] = [reagentE]
-                    }
-
-
-                    // allReactingReagents.push(reaction)
-                    allReactingReagentsSimple.push(reagentL, reagentE) // push just the reagents, no fancy objects;
-
-
-                })
-
-
-                
-                */
-            })
-
-            var HTMLarr = []
-            for (reagent of Object.keys(volCol)) {
-                HTMLarr.push(`<p> ${volCol[reagent].volume} cm³ ${formatChemForm(reagent)}, ${volCol[reagent].color} ${volCol[reagent].state}, ${volCol[reagent].odor} </p>`)
-                if (volCol[reagent].color !== "colorless") {
-
-                    // If it's solid, add it to the ppt array instead
-                    // if it's gas, add it to the gas array.
-                    switch (volCol[reagent].state) {
+                console.log(volCol, "volcol")
+                if (volCol[t.formula_id].color !== "colorless") {
+                    switch (volCol[t.formula_id].state) {
                         case "solution":
-                            if (volCol[reagent].hex) {
-                                colorArray.push(volCol[reagent].hex)
+                            if (volCol[t.formula_id].hex) {
+                                colorArray.push(volCol[t.formula_id].hex)
 
                             } else {
-                                colorArray.push(volCol[reagent].color)
+                                colorArray.push(volCol[t.formula_id].color)
                             }
-                            colorWeight.push(volCol[reagent].volume)
+                            colorWeight.push(volCol[t.formula_id].volume)
                             break;
                         case "precipitate":
-                            if (volCol[reagent].hex) {
-                                colorPptArray.push(volCol[reagent].hex)
+                            if (volCol[t.formula_id].hex) {
+                                colorPptArray.push([volCol[t.formula_id].hex, t.formula_id])
 
                             } else {
-                                colorPptArray.push(volCol[reagent].color)
+                                colorPptArray.push([volCol[t.formula_id].color, t.formula_id])
                             }
-                            colorPptWeight.push(volCol[reagent].volume)
-                            break;
-                        case "gas":
-                            if (volCol[reagent].hex) {
-                                colorGasArray.push(volCol[reagent].hex)
 
-                            } else {
-                                colorGasArray.push(volCol[reagent].color)
-                            }
-                            colorGasWeight.push(volCol[reagent].volume)
                             break;
+                        // case "gas":
+                        //     if (volCol[t.formula_id].hex) {
+                        //         colorGasArray.push([volCol[t.formula_id].hex, t.formula_id])
+
+                        //     } else {
+                        //         colorGasArray.push([volCol[t.formula_id].color, t.formula_id])
+                        //     }
+
+                        //     break;
 
                     }
 
 
 
 
-                    // colorWeight.push("1")
+
 
                 }
-            }
-            $('#info').html(HTMLarr.join(" "))
-
-
-
-            /*
-            // get rid of duplications
-            allReactingReagentsSimple = [...new Set(allReactingReagentsSimple)]
-            console.log(allReactingReagents, "--------------------", JSON.stringify(allReactingReagents), volCol)
-
-            // allReactingReagents {"Ca²⁺_(conc)":["NaOH_(aq)"],"Al³⁺_(aq)":["NaOH_(aq)","NH₃_(aq)"]}
-            // volCol {}
-
-            // Generate a string to input as the info. Should include color and volume data and state data
-            
-            for (key of Object.keys(volCol)) {
-                HTMLarr.push(`<p> ${volCol[key].volume} cm³ ${formatChemForm(key)}, ${volCol[key].color} ${volCol[key].state}, ${volCol[key].odor} </p>`)
-                if (volCol[key].color !== "colorless") {
-                    if (volCol[key].hex) {
-                        colorArray.push(volCol[key].hex)
-                    } else {
-                        colorArray.push(volCol[key].color)
-                    }
-                    colorWeight.push("1")
-
-                }
+                $('#info').html(`<p> ${volCol[t.formula_id].volume} cm³ ${formatChemForm(t.formula_id)}, ${volCol[t.formula_id].color} ${volCol[t.formula_id].state}, ${volCol[t.formula_id].odor} </p>`)
 
             }
 
-            $('#info').html(HTMLarr.join(" "))
 
+            /* -------------- PART 2: DRAWING THE INITIAL CHEMICALS INSIDE THE TEST TUBE --------------*/
+
+
+
+
+            // Calculate ppt 
+            // $('#inspect').append
+
+
+            /* COLORING LOGGING */
+            console.log("colorArray: ", colorArray)
+            console.log("colorWeight: ", colorWeight);
+            console.log("Mixed color: ", color)
+
+
+
+            // Calculate which height to draw
+            var maxVolume = tube.capacity
+            var currentVolume = tube.spaceUsed
+            var percentageFull = Number(currentVolume) / Number(maxVolume)
+            var percentToSet = ((1 - percentageFull) * 87 + 42)
+            console.log(percentageFull, "percentageFull", currentVolume, maxVolume)
+
+            // Calculate color
+            // Calculate color
+            // We need to IGNORE the color if it's a PPT or GAS. 
+
+            var color = ""
+            if (colorArray.length) {
+                color = chroma.average(colorArray, 'rgb', colorWeight).hex()
+            } else {
+                // color = 'rgba(255,255,255, 0.3)' // we set the initial color of the soln to colorless
+            }
+
+            if (percentageFull) {
+                $('#color-max').css({
+                    // "-webkit-backdrop-filter": "blur(10px)",
+                    // "backdrop-filter": "blur(10px)",
+                    "background-color": `${color}`,
+                    // We should probably only set the transition property after the first drawing, before the next transition
+
+                })
+                $('#background-image-volume').css({
+                    height: `${percentToSet}%`
+                })
+
+            }
+
+
+
+
+
+            if (colorPptArray.length) {
+                // [hex, formula_id]
+                // there is at least one ppt
+                var ppts = [
+                    `url('/images/ppt1.png')`,
+                    `url('/images/ppt2.png')`,
+                    `url('/images/ppt3.png')`
+                ]
+
+
+                for (var i = 1; i < colorPptArray.length + 1; i++) {
+                    var rgbcol = chroma(colorPptArray[i - 1][0]).rgb()
+                    var color = new Color(rgbcol[0], rgbcol[1], rgbcol[2])
+                    var solver = new Solver(color)
+                    var result = solver.solve()
+                    var filteredCss = result.filter // returns the filtered string                
+                    console.log(filteredCss)
+                    $(`#ppt-${i}`).css({
+                        "filter": `${filteredCss}`,
+                        "opacity": "1"
+                    })
+                    pptSDrawn[colorPptArray[i - 1][1]] = i
+                    // { 
+                    //     Ca(OH)2_(s): 1
+                    // }
+                }
+            }
+
+
+
+            /* -------------- PART 3: START REACTION CALCULATION --------------*/
+
+            // volCol & allReactingReagents
+            var allReactingReagentsTemp = { ...allReactingReagents };
+
+
+            var volColTemp = { ...volCol }
+
+            /* 
+                Note to self, this creates a SHALLOW COPY, meaing that nested arrays and stuff are NOT unlinked from the original array.
+                I chose to leave it as is because I want the properties that I'm updating (volume) to change, but NOT the new properties that i'm adding in.
+                See: https://stackoverflow.com/questions/122102/what-is-the-most-efficient-way-to-deep-clone-an-object-in-javascript
             */
 
-
-
-
-
-
-
-
-
-
-
-
-
-        } else if (tube.contains.length == 1) {
-
-
-            var t = new Reactant(data[0])
-
-            volCol[t.formula_id] = {
-                color: t['color'],
-                odor: t['odor'],
-                volume: Number(tube.contains[0].volume),
-                state: t['state'],
-                hex: t['hex'],
-                cation: t['cation'],
-                anion: t['anion'],
-                formula_text: t['formula_text']
-            }
-            console.log(volCol, "volcol")
-            if (volCol[t.formula_id].color !== "colorless") {
-                switch (volCol[t.formula_id].state) {
-                    case "solution":
-                        if (volCol[t.formula_id].hex) {
-                            colorArray.push(volCol[t.formula_id].hex)
-
-                        } else {
-                            colorArray.push(volCol[t.formula_id].color)
-                        }
-                        colorWeight.push(volCol[t.formula_id].volume)
-                        break;
-                    case "precipitate":
-                        if (volCol[t.formula_id].hex) {
-                            colorPptArray.push(volCol[t.formula_id].hex)
-
-                        } else {
-                            colorPptArray.push(volCol[t.formula_id].color)
-                        }
-                        colorPptWeight.push(volCol[t.formula_id].volume)
-                        break;
-                    case "gas":
-                        if (volCol[t.formula_id].hex) {
-                            colorGasArray.push(volCol[t.formula_id].hex)
-
-                        } else {
-                            colorGasArray.push(volCol[t.formula_id].color)
-                        }
-                        colorGasWeight.push(volCol[t.formula_id].volume)
-                        break;
+            // only bother executing the logic if there are more than 2 things inside
+            if (Object.keys(allReactingReagents).length) {
+                // In the case whereby both Ca2+ and Al3+ react with NaOH, and Ca2+ reacts away with ALL the NaOH, we must
+                // divide NaOH into 2 parts.
+                var tempReagentRObj = {
 
                 }
 
+                for (reagentL of Object.keys(allReactingReagents)) {
+
+                    allReactingReagents[reagentL].forEach(reactant => {
+                        if (Array.isArray(reactant)) {
+                            // something like [Na+, OH-, NaOH]
+                            // Just set reactant to be the third item in this array
+                            reactant = reactant[2]
+                        }
+
+                        // Check if that reactant is already in the tempReagentRObj
+                        if (tempReagentRObj[reactant]) {
+                            // It's already inside, we just add 1 to that property
+                            tempReagentRObj[reactant] = [tempReagentRObj[reactant][0] + 1, tempReagentRObj[reactant][1]] // WILL THIS CHANGE DUE TO REFERENCE STRUCTURE?
+                        } else {
+                            // It's not inside, we need to create the property and set it to 1 times
+                            tempReagentRObj[reactant] = [1, volCol[reactant].volume]
+                            // Ca2+: [numberOfTimesUsed, totalVolume]
+                        }
+
+                    })
+                }
+
+                console.log(tempReagentRObj)
 
 
+                for (reagentL of Object.keys(allReactingReagents)) {
+                    // First, we need to find out how much reagentL will react for each reagent on the right.
+                    // For example, if 10cm3 of Ca2+ reacts with 2 different things, then 5cm3 of Ca2+ will react with each thing.
+                    var numberOfReactions = allReactingReagents[reagentL].length
+                    var reagentLVolume = volCol[reagentL].volume
+                    var reagentLVolumePerReaction = reagentLVolume / numberOfReactions
+
+                    // Now, we need to loop through each item on the right and compare it with reagentL. For example, if Ca2+: [Nh3, NaOH], then we need to
+                    // compare the volumes of Ca2+ and NH3 for each reaction. Now, we need to loop through the array.
+                    // Use a FOR loop because async doesn't work in a forEach().
+
+                    // Declare a variable for the volume of reagentL after the reaction
+                    var reagentLVolumeAfterReaction = reagentLVolume
+                    for (var i = 0; i < numberOfReactions; i++) {
+                        // Comparing Ca2+ and NH3 for example.
+                        // We will use a ratio of 5 parts Ca2+ to 1 part NH3;
+                        // so, 6cm3 Ca2+ and 1cm3 NH3 --> Ca2+ excess, 
+                        // 4cm3 Ca2+ and 1cm3 NH3 --> NH3 excess
+                        // In this case, NH3 is allReactingReagents[reagentL][i]
+
+                        // There should also be an equivalent amount of water produced  (?)
+                        var reagentR = allReactingReagents[reagentL][i]
+                        // Calculating the product of each reaction
+                        var reactionData = JSON.parse(await Promise.resolve(($.get('/inspect/getProduct', { left: encodeURI(reagentL), right: encodeURI(reagentR) }))))
+
+                        console.log(reactionData)
+
+                        // Sometimes, if the reagentR is NaOH (etc), it'll be in the form of an array. The third element of this array will always be the base element. Hence,
+                        if (Array.isArray(reagentR)) {
+                            // We will just set the reagentR to NaOH, makes it easier
+                            reagentR = reagentR[2]
+                        }
+                        var reagentRVolumeAfterReaction = volCol[reagentR].volume
+
+                        var reagentRVolume = Number(tempReagentRObj[reagentR][1]) / Number(tempReagentRObj[reagentR][0])
+                        // var reagentRVolume = Number(volCol[reagentR].volume)/Number(tempReagentRObj[reagentR]) // Divide the volume allocated for tihs reaction by the number of times this reactant is used
 
 
-                // if (volCol[t.formula_id].hex) {
-                //     colorArray.push(volCol[t.formula_id].hex)
-                // } else {
-                //     colorArray.push(volCol[t.formula_id].color)
-                // }
-                // colorWeight.push("1")
-            }
-            $('#info').html(`<p> ${volCol[t.formula_id].volume} cm³ ${formatChemForm(t.formula_id)}, ${volCol[t.formula_id].color} ${volCol[t.formula_id].state}, ${volCol[t.formula_id].odor} </p>`)
-
-        }
-
-        // Calculate color
-        // We need to IGNORE the color if it's a PPT. 
-
-        var color = ""
-        if (colorArray.length) {
-            color = chroma.average(colorArray, 'rgb', colorWeight).hex()
-        } else {
-            color = 'rgba(255,255,255, 0.3)'
-        }
+                        // Calculate how much reagentL was used in THIS reaction.
+                        var reagentLUsed = 0
+                        // Find which reagent, L or R, is in excess.
+                        if (reagentLVolumePerReaction / 5 < reagentRVolume) {
+                            // ReagentR is in excess
+                            // ReagentL will have 0 volume for this reaction
+                            reagentLVolumeAfterReaction = reagentLVolumeAfterReaction - reagentLVolumePerReaction
+                            reagentLUsed = reagentLVolumePerReaction // used Everything
+                            reagentRVolumeAfterReaction = reagentRVolumeAfterReaction - Number(reagentLVolumePerReaction / 5)
 
 
-        // Calculate ppt 
-        // $('#inspect').append
+                        } else if (reagentLVolumePerReaction / 5 >= reagentRVolume) {
+                            // ReagentL is in excess or they have the same ratio
+                            reagentLVolumeAfterReaction = reagentLVolumeAfterReaction - reagentRVolume * 5
+                            reagentLUsed = reagentRVolume * 5
+                            reagentRVolumeAfterReaction = reagentRVolumeAfterReaction - reagentRVolume //Total volume minus the total volume used for this reaction, which is all of it
+                        }
 
+                        // Now, we need to create a update the old volCol object. We will use volColTemp as we don't want to chance affecting the loop. 
+                        // First step is to update the volume of the reagentR. 
+                        // Volume of reagentL is updated outside of the for loop.
+                        // But, if volume of reagentR is 0, we delete the key instead.
+                        if (reagentRVolumeAfterReaction == 0) {
+                            delete volColTemp[reagentR]
+                        } else {
+                            volColTemp[reagentR].volume = reagentRVolumeAfterReaction
+                        }
 
-        /* COLORING LOGGING */
-        console.log("colorArray: ", colorArray)
-        console.log("colorWeight: ", colorWeight);
-        console.log("Mixed color: ", color)
+                        // We also need to add the new product to volCol.
+                        // We need to check if that object already exists as well.
+                        // The volume of the new reactant is equal to the volume of reagentL used to create this reactant.
+                        var reagentNVolume = reagentLUsed
+                        if (volColTemp[reactionData.formula_id]) {
+                            // already exists, just change the volume
+                            volColTemp[reactionData['formula_id']].volume = volColTemp[reactionData['formula_id']].volume + reagentNVolume
 
+                        } else {
+                            // doesn't exist, create new
+                            volColTemp[reactionData['formula_id']] = {
+                                color: reactionData['color'],
+                                odor: reactionData['odor'],
+                                volume: reagentNVolume,
+                                state: reactionData['state'],
+                                hex: reactionData['hex'],
+                                cation: reactionData['cation'],
+                                anion: reactionData['anion'],
+                                formula_text: reactionData['formula_text'],
+                                old_reagentL: reagentL,
+                                old_reagentR: reagentR
+                            }
+                        }
 
+                        // The volume of water is equal to the volume of reagentR used, which is equal to 1/5 the volume of reagentLUsed
+                        var waterVolume = Number(reagentLUsed / 5)
 
-        // Calculate which height to draw
-        var maxVolume = tube.capacity
-        var currentVolume = tube.spaceUsed
-        var percentageFull = Number(currentVolume) / Number(maxVolume)
-        console.log(percentageFull, "percentageFull", currentVolume, maxVolume)
-        if (percentageFull > 0) {
-            // 1/5 full, draw bottommost line
-            $('#color-bottom').css({
-                "-webkit-backdrop-filter": "blur(10px)",
-                "backdrop-filter": "blur(10px)",
-                "background-color": `${color}`
-            })
-        }
-        if (percentageFull > 0.2) {
-            $('#color-middle-bottom').css({
-                "-webkit-backdrop-filter": "blur(10px)",
-                "backdrop-filter": "blur(10px)",
-                "background-color": `${color}`
-            })
-        }
-        if (percentageFull > 0.4) {
-            $('#color-middle-top').css({
-                "-webkit-backdrop-filter": "blur(10px)",
-                "backdrop-filter": "blur(10px)",
-                "background-color": `${color}`
-            })
-        }
-        if (percentageFull > 0.6) {
-            $('#color-top').css({
-                "-webkit-backdrop-filter": "blur(10px)",
-                "backdrop-filter": "blur(10px)",
-                "background-color": `${color}`
-            })
-        }
-        if (percentageFull > 0.8) {
-            $('#color-max').css({
-                "-webkit-backdrop-filter": "blur(10px)",
-                "backdrop-filter": "blur(10px)",
-                "background-color": `${color}`
-            })
-        }
+                        if (volColTemp['H₂O_(l)']) {
+                            // already exists, just change the volume
+                            volColTemp['H₂O_(l)'].volume = volColTemp['H₂O_(l)'].volume + waterVolume
 
-        // volCol & allReactingReagents
-        var allReactingReagentsTemp = { ...allReactingReagents };
+                        } else {
+                            // doesn't exist, create new
+                            volColTemp['H₂O_(l)'] = {
+                                color: 'colorless',
+                                odor: 'odorless',
+                                volume: waterVolume,
+                                state: 'liquid',
+                                hex: '',
+                                cation: '',
+                                anion: '',
+                                formula_text: 'water',
+                            }
+                        }
 
-
-        var volColTemp = { ...volCol }
-
-        /* 
-            Note to self, this creates a SHALLOW COPY, meaing that nested arrays and stuff are NOT unlinked from the original array.
-            I chose to leave it as is because I want the properties that I'm updating (volume) to change, but NOT the new properties that i'm adding in.
-            See: https://stackoverflow.com/questions/122102/what-is-the-most-efficient-way-to-deep-clone-an-object-in-javascript
-        */
-
-        console.log('------------------------------')
-        console.log("allReactingReagents", allReactingReagents, JSON.stringify(allReactingReagents))
-        console.log("volCol", volCol, JSON.stringify(volCol))
-        console.log('----------------------------')
-
-
-
-
-
-
-
-
-
-
-        if (Object.keys(allReactingReagents).length) {
-            // In the case whereby both Ca2+ and Al3+ react with NaOH, and Ca2+ reacts away with ALL the NaOH, we must
-            // divide NaOH into 2 parts.
-            var tempReagentRObj = {
-
-            }
-
-            for (reagentL of Object.keys(allReactingReagents)) {
-
-                allReactingReagents[reagentL].forEach(reactant => {
-                    if (Array.isArray(reactant)) {
-                        // something like [Na+, OH-, NaOH]
-                        // Just set reactant to be the third item in this array
-                        reactant = reactant[2]
                     }
 
-                    // Check if that reactant is already in the tempReagentRObj
-                    if (tempReagentRObj[reactant]) {
-                        // It's already inside, we just add 1 to that property
-                        tempReagentRObj[reactant] = [tempReagentRObj[reactant][0] + 1, tempReagentRObj[reactant][1]] // WILL THIS CHANGE DUE TO REFERENCE STRUCTURE?
+                    // outside the for loop, we need to update volCol for reagentL. 
+                    // Similarly, we delete it if there isn't any more.
+                    if (reagentLVolumeAfterReaction == 0) {
+                        delete volColTemp[reagentL]
                     } else {
-                        // It's not inside, we need to create the property and set it to 1 times
-                        tempReagentRObj[reactant] = [1, volCol[reactant].volume]
-                        // Ca2+: [numberOfTimesUsed, totalVolume]
+                        volColTemp[reagentL].volume = reagentLVolumeAfterReaction
                     }
 
+                    // Update the test tube
+
+                }
+                console.log(volColTemp, "-----------------------")
+
+                // Reset the colors
+                colorArray = []
+                colorWeight = []
+                colorPptArray = []
+                colorGasArray = []
+
+                // Update the HTML text            
+                var updatedHtmlArr = []
+                // and the context menu
+                var popupHtmlArr = [`<p> ${tube.item_name} </p>`, `<a onclick="inspect('${tube.div_id}')"> Inspect </a>`]
+                // and the tube Apparatus class
+                var containsTemp = []
+                for (reagent of Object.keys(volColTemp)) {
+                    var hex = volColTemp[reagent].hex
+                    var color = volColTemp[reagent].color
+                    var volume = (volColTemp[reagent].volume).toFixed(2)
+                    var state = volColTemp[reagent].state
+                    var odor = volColTemp[reagent].odor
+                    updatedHtmlArr.push(`<p> ${volume} cm³ ${formatChemForm(reagent)}, ${color} ${state}, ${odor}`)
+                    popupHtmlArr.push(`<p> ${volume} cm³ </p> <p> ${formatChemForm(reagent)}`)
+                    containsTemp.push({
+                        formula_id_f: formatChemForm(reagent),
+                        formula_text: volColTemp[reagent].formula_text,
+                        volume: volume
+                    })
+
+                    // Update the 3 arrays needed for drawing colors, colorArray, colorWeight, colorPptArray, colorGasArray
+
+                    if (color != "colorless") {
+                        switch (state) {
+                            case "solution":
+                                if (hex) {
+                                    colorArray.push(hex)
+                                } else {
+                                    colorArray.push(color)
+                                }
+                                colorWeight.push(Number(volume));
+                                break
+                            case "precipitate":
+                                if (hex) {
+                                    colorPptArray.push([hex, reagent])
+                                } else {
+                                    colorPptArray.push([color, reagent])
+                                }
+                                break
+                        }
+
+
+
+                    }
+                    if (state == "gas") {
+                        if (hex) {
+                            colorGasArray.push([hex, reagent])
+                        } else {
+                            colorGasArray.push([color, reagent])
+                        }
+                    }
+
+                }
+
+                // We should probably only set the transition property before the second drawing
+                $('#color-max').css({
+                    "transition": "background-color 7.5s linear"
                 })
-            }
 
-            console.log(tempReagentRObj)
-
-
-            for (reagentL of Object.keys(allReactingReagents)) {
-                // First, we need to find out how much reagentL will react for each reagent on the right.
-                // For example, if 10cm3 of Ca2+ reacts with 2 different things, then 5cm3 of Ca2+ will react with each thing.
-                var numberOfReactions = allReactingReagents[reagentL].length
-                var reagentLVolume = volCol[reagentL].volume
-                var reagentLVolumePerReaction = reagentLVolume / numberOfReactions
-
-                // Now, we need to loop through each item on the right and compare it with reagentL. For example, if Ca2+: [Nh3, NaOH], then we need to
-                // compare the volumes of Ca2+ and NH3 for each reaction. Now, we need to loop through the array.
-                // Use a FOR loop because async doesn't work in a forEach().
-
-                // Declare a variable for the volume of reagentL after the reaction
-                var reagentLVolumeAfterReaction = reagentLVolume
-                for (var i = 0; i < numberOfReactions; i++) {
-                    // Comparing Ca2+ and NH3 for example.
-                    // We will use a ratio of 5 parts Ca2+ to 1 part NH3;
-                    // so, 6cm3 Ca2+ and 1cm3 NH3 --> Ca2+ excess, 
-                    // 4cm3 Ca2+ and 1cm3 NH3 --> NH3 excess
-                    // In this case, NH3 is allReactingReagents[reagentL][i]
-                    var reagentR = allReactingReagents[reagentL][i]
-                    // Calculating the product of each reaction
-                    var reactionData = JSON.parse(await Promise.resolve(($.get('/inspect/getProduct', { left: encodeURI(reagentL), right: encodeURI(reagentR) }))))
-
-                    console.log(reactionData)
-
-                    // Sometimes, if the reagentR is NaOH (etc), it'll be in the form of an array. The third element of this array will always be the base element. Hence,
-                    if (Array.isArray(reagentR)) {
-                        // We will just set the reagentR to NaOH, makes it easier
-                        reagentR = reagentR[2]
-                    }
-                    var reagentRVolumeAfterReaction = volCol[reagentR].volume
-
-                    var reagentRVolume = Number(tempReagentRObj[reagentR][1]) / Number(tempReagentRObj[reagentR][0])
-                    // var reagentRVolume = Number(volCol[reagentR].volume)/Number(tempReagentRObj[reagentR]) // Divide the volume allocated for tihs reaction by the number of times this reactant is used
-
-
-                    // Calculate how much reagentL was used in THIS reaction.
-                    var reagentLUsed = 0
-                    // Find which reagent, L or R, is in excess.
-                    if (reagentLVolumePerReaction / 5 < reagentRVolume) {
-                        // ReagentR is in excess
-                        // ReagentL will have 0 volume for this reaction
-                        reagentLVolumeAfterReaction = reagentLVolumeAfterReaction - reagentLVolumePerReaction
-                        reagentLUsed = reagentLVolumePerReaction // used Everything
-                        reagentRVolumeAfterReaction = reagentRVolumeAfterReaction - Number(reagentLVolumePerReaction / 5)
-
-
-                    } else if (reagentLVolumePerReaction / 5 >= reagentRVolume) {
-                        // ReagentL is in excess or they have the same ratio
-                        reagentLVolumeAfterReaction = reagentLVolumeAfterReaction - reagentRVolume * 5
-                        reagentLUsed = reagentRVolume * 5
-                        reagentRVolumeAfterReaction = reagentRVolumeAfterReaction - reagentRVolume //Total volume minus the total volume used for this reaction, which is all of it
-                    }
-
-                    // Now, we need to create a update the old volCol object. We will use volColTemp as we don't want to chance affecting the loop. 
-                    // First step is to update the volume of the reagentR. 
-                    // Volume of reagentL is updated outside of the for loop.
-                    // But, if volume of reagentR is 0, we delete the key instead.
-                    if (reagentRVolumeAfterReaction == 0) {
-                        delete volColTemp[reagentR]
-                    } else {
-                        volColTemp[reagentR].volume = reagentRVolumeAfterReaction
-                    }
-
-                    // We also need to add the new product to volCol.
-                    // We need to check if that object already exists as well.
-                    // The volume of the new reactant is equal to the volume of reagentL used to create this reactant.
-                    var reagentNVolume = reagentLUsed
-                    if (volColTemp[reactionData.formula_id]) {
-                        // already exists, just change the volume
-                        volColTemp[reactionData['formula_id']].volume = volColTemp[reactionData['formula_id']].volume + reagentNVolume
-
-                    } else {
-                        // doesn't exist, create new
-                        volColTemp[reactionData['formula_id']] = {
-                            color: reactionData['color'],
-                            odor: reactionData['odor'],
-                            volume: reagentNVolume,
-                            state: reactionData['state'],
-                            hex: reactionData['hex'],
-                            cation: reactionData['cation'],
-                            anion: reactionData['anion'],
-                            formula_text: reactionData['formula_text']
-                        }
-                    }
-
-                    // We also need to update the test tube, with 1) what it contains and b) what its total volume is now
-
-
-                }
-
-                // outside the for loop, we need to update volCol for reagentL. 
-                // Similarly, we delete it if there isn't any more.
-                if (reagentLVolumeAfterReaction == 0) {
-                    delete volColTemp[reagentL]
+                // Liquid color
+                var color = ""
+                if (colorArray.length) {
+                    color = chroma.average(colorArray, 'rgb', colorWeight).hex()
+                    // I move this here, as we want to IGNORE setting it to colorless
+                    // IRL, even if a test tube has ppt + NaOH the color is NOT colorless
+                    // Ignore the above comments, ran into some issues
                 } else {
-                    volColTemp[reagentL].volume = reagentLVolumeAfterReaction
+                    color = 'rgba(255,255,255, 0.3)' // We keep the old color ???
+                    // need to transition to colorless
                 }
 
-                // Update the test tube
+                $('#color-max').css({
+                    "background-color": `${color}`
 
-            }
-            console.log(volColTemp, "-----------------------")
-
-            // Reset the original volColTemp array:
-            volCol = {};
-            volCol = jQuery.extend({}, volColTemp)
-            console.log(volCol)
-
-            // Update the HTML text            
-            var updatedHtmlArr = []
-            // and the context menu
-            var popupHtmlArr = [`<p> ${tube.item_name} </p>`, `<a onclick="inspect('${tube.div_id}')"> Inspect </a>`]
-            // and the tube Apparatus class
-            var containsTemp = []
-            for (reagent of Object.keys(volColTemp)) {
-                var color = volColTemp[reagent].color
-                var volume = (volColTemp[reagent].volume).toFixed(2)
-                var state = volColTemp[reagent].state
-                var odor = volColTemp[reagent].odor
-                updatedHtmlArr.push(`<p> ${volume} cm³ ${formatChemForm(reagent)}, ${color} ${state}, ${odor}`)
-                popupHtmlArr.push(`<p> ${volume} cm³ </p> <p> ${formatChemForm(reagent)}`)
-                containsTemp.push({
-                    formula_id_f: formatChemForm(reagent),
-                    formula_text: volColTemp[reagent].formula_text,
-                    volume: volume
                 })
 
-            }
-            $('#info').html(updatedHtmlArr.join(" "))
-
-            // Update the context-menu info            
-            $("#test_tube-0 > .popup").html(popupHtmlArr.join(" "))
-
-            // Update the test-tube object with what it contains            
-            tube.contains = containsTemp
-
-        }
 
 
+                // PPT 
+                var availableColorDivs = {
+                    1: true,
+                    2: true,
+                    3: true
+                }
+                // First, we need to check if any of the existing ppts have dissolved / whatever, then we can animate that 
+                // i.e. is in the volCol object but not in the new volColTemp object
+                for (reagent of Object.keys(volCol)) {
+                    // PPT
+                    if (volCol[reagent].state == "precipitate") {
+                        // Find out if this reagent exists in the new object
+                        if (volColTemp[reagent]) {
+                            // yes, still exists
+                            // Don't do anything to it, set its div to FALSE
+                            availableColorDivs[pptSDrawn[reagent]] = false
+
+                        } else {
+                            // no, no longer exists
+                            // animate it's disapperance
+                            // CODE HERE
+                            console.log(pptSDrawn[reagent], "this is the PPT DIV ID")
+                            $(`#ppt-${pptSDrawn[reagent]}`).fadeTo(7500, 0, () => {
+                                $(this).css('filter', '')
+                            })
 
 
-
-
-
-
-
-
-
-        /*
-        if (Object.keys(allReactingReagents).length) {
-            // Reaction is going to occur
-            // allReactingReagents: "{"Al³⁺_(aq)":["NH₃_(aq), NaOH_(aq)"]}",
-            // volCol: 
-            // Al³⁺_(aq): {color: "colorless", odor: "odorless", volume: 7, state: "solution", hex: ""},
-            // Ca²⁺_(conc): {color: "colorless", odor: "", volume: 5, state: "solution", hex: ""},
-            // NH₃_(aq): {color: "colorless", odor: "", volume: 8, state: "solution", hex: ""}
-
-            // assume ratio is 5:1
-            for (reagentL of Object.keys(allReactingReagents)) {
-                // edit the volume
-                var numberOfReactionsForThisReagentL = allReactingReagents[reagentL].length
-                var reagentLVolume = volCol[reagentL].volume
-                // if (numberOfReactionsForThisReagentL) {
-                var reagentLVolumePerReaction = Number(reagentLVolume) / Number(numberOfReactionsForThisReagentL)
-                var newReagentLVolumeLeft = 0
-                for (var i = 0; i < numberOfReactionsForThisReagentL; i++) {
-                    // REACTION OCCURING (confirm one)
-                    var reagentR = allReactingReagents[reagentL][i]
-                    var reactionData = JSON.parse(await Promise.resolve(($.get('/inspect/getProduct', { left: reagentL, right: reagentR, requires: " " }))))
-                    // what is the product? 
-                    var product = new Chemical(reactionData)
-
-                    var reagentRVolume;
-                    if (!volCol[reagentR]) {
-                        // this is a cation
-                        // BIG BIG PROBLEM HERE: IF WE ARE ONLY GIVEN OH-, IT CAN BE NAOH, KOH, ANY OF THE GROUP 1 METALS
-                        // check if cation or anion
-                        var type = (reagentR.split("_")[0].split('')[reagentR.split("_")[0].split('').length - 1]) == "⁺" ? "cation" : "anion"
-                        var possibleCompounds = JSON.parse(await Promise.resolve(($.get('/inspect/getPossibleCompounds', { reagent: reagentL, ion: reagentR, type: type, product: product.formula_id }))))
-                        reagentRVolume = volCol[possibleCompounds.formula_id].volume
-                    } else {
-                        reagentRVolume = volCol[reagentR].volume
-                    }
-
-
-
-
-
-                    var newReagentRVolume;
-                    // Volume of the new product should be equal to the volume for the old product
-                    if (reagentLVolumePerReaction / 5 < reagentRVolume) {
-                        // reagentL is limiting, all reagentL should be gone
-                        newReagentLVolumeLeft = newReagentLVolumeLeft + 0;
-                        newReagentRVolume = reagentRVolume - (reagentLVolumePerReaction / 5)
-
-
-                    } else {
-                        // reagentL is in excess, all reagentRvolume should be gone
-                        newReagentLVolumeLeft = newReagentLVolumeLeft + (reagentLVolume - (reagentRVolume * 5))
-                        newReagentRVolume = 0;
-
-                    }
-                    // each reactant set back the volume
-                    volCol[reagentR].volume = newReagentRVolume
-
-                    console.log(product, "product!")
-                    // add the new product for each loop
-                    if (volColTemp[product.formula_id]) {
-                        // product is already in the test tube beforehand
-                        volColTemp[product.formula_id] = { // update the temp object so that we can push it back into the main object, while ensuring we don't check the reactants
-                            color: product.color,
-                            odor: product.odor,
-                            volume: Number(volColTemp[product.formula_id].volume) + Number(reagentLVolumePerReaction - newReagentLVolumeLeft),
-                            state: product.state,
-                            hex: product.hex
                         }
 
-                    } else {
-                        // product is not in the test tube
-                        volColTemp[product.formula_id] = { // update the temp object so that we can push it back into the main object, while ensuring we don't check the reactants
-                            color: product.color,
-                            odor: product.odor,
-                            volume: reagentLVolumePerReaction - newReagentLVolumeLeft,
-                            state: product.state,
-                            hex: product.hex
-                        }
+
                     }
 
-                    // change the volumes of the existing ones
-                    volColTemp[reagentR].volume = newReagentRVolume
+
+
 
                 }
-                volCol[reagentL].volume = newReagentLVolumeLeft; // update the main object so we know that its changing and won't double count                    
 
 
 
 
 
-                // } else {
-                //     // REACTION OCCURING
-                //     // only reacts with 1 other thing
-                //     var reagentR = numberOfReactionsForThisReagent[i]
+                for (var i = 1; i < colorPptArray.length + 1; i++) {
+                    var rgbcol = chroma(colorPptArray[i - 1][0]).rgb()
+                    var color = new Color(rgbcol[0], rgbcol[1], rgbcol[2])
+                    var solver = new Solver(color)
+                    var result = solver.solve()
+                    var filteredCss = result.filter // returns the filtered string
+                    // $("#tube-image-div").append(`<div id='ppt-${i}' class="ppt"></div>`)
+                    console.log(filteredCss)
+                    // Check if 
+                    var oldReagentL = volColTemp[colorPptArray[i - 1][1]].old_reagentL
+                    var oldReagentR = volColTemp[colorPptArray[i - 1][1]].old_reagentR
+                    if (volCol[oldReagentL].state == "precipitate" || volCol[oldReagentR].state == "precipitate") {
+                        // This means that the the old reagentL was a ppt,
+                        // hence we need to change that ppt's color INSTEAD of drawing a new ppt
+                        // first find the div id for that
+                        var div_id = `ppt-${pptsDrawn[oldReagentL]}`
+                        // Now, change the color of THIS div only.
+                        // blah blah change color code
+
+                        // Remove availableColorDivs for this one
+                        availableColorDivs[pptsDrawn[oldReagentL]] = false
+                    } else if (volCol[oldReagentR].state == "precipitate") {
+                        // This means that the the old reagentR was a ppt,
+                        // hence we need to change that ppt's color INSTEAD of drawing a new ppt
+                        // first find the div id for that
+                        var div_id = `ppt-${pptsDrawn[oldReagentR]}`
+                        // Now, change the color of THIS div only.
+                        // blah blah change color code
+
+                        // Remove availableColorDivs for this one
+                        availableColorDivs[pptsDrawn[oldReagentR]] = false
+                    } else {
+                        // PPT is NEW, just draw a new div
+                        for (divs of Object.keys(availableColorDivs)) {
+                            if (availableColorDivs[divs]) {
+                                // If available = true
+                                // blah blah draw the color
+                                console.log(divs)
+                                $(`#ppt-${divs}`).css('filter', `${filteredCss}`)
+                                $(`#ppt-${divs}`).fadeTo(7500, 1, () => {
+
+                                    console.log('done')
+                                })
 
 
-                // }
+                                // Remove availableColorDivs
+
+                                availableColorDivs[divs] = false
+                                break
+
+                            }
+                        }
+
+                    }
+
+
+                    // $(`#ppt-${i}`).css({
+                    //     "filter": `${filteredCss}`,
+
+                    // })
+                }
+
+                // GAS calculation
+                console.log(colorGasArray)
+                var baseHeight = -315 // subtract 4% from this everytime
+                colorGasArray.forEach(async reagent => {
+
+                    // This thing is a gas
+                    
+                    for (var i = 1; i < 30; i++) {
+                        var timeoutLength = 100 + i*10
+                        await timeout(timeoutLength)
+
+                        // Do this twice, once for the left side, once for the right side
+                        // left
+                        // randomize position
+                        var lposx = `${getRandomArbitrary(30, 47.5)}%`
+                        var lposy = `${baseHeight}%`
+                        // create a div
+                        $("#tube-image-div").append(`<div id='eff-${colorGasArray.indexOf(reagent)}-${i}-left' class="gas"></div>`)
+                        
+                        $(`#eff-${colorGasArray.indexOf(reagent)}-${i}-left`).css({
+                            "left": lposx,
+                            "top": lposy,
+                            "opacity": 1
+                        })
+                        // animate it going up
+                        var finalHeight = baseHeight - 150
+                        var lfposy = `${finalHeight}%`
+                        $(`#eff-${colorGasArray.indexOf(reagent)}-${i}-left`).animate({'top': lfposy}, 1500, () => {
+                            console.log('done')
+                            $(`#eff-${colorGasArray.indexOf(reagent)}-${i}-left`).remove()
+                        })                        
+
+                        // Lower baseheight
+                        baseHeight = baseHeight - 4.8
+                        // set color
+                        $(`#eff-${colorGasArray.indexOf(reagent)}-${i}`)                      
+                        
+
+                        // right
+                        // randomize position
+                        var rposx = `${getRandomArbitrary(47.5, 60)}%`
+                        var rposy = `${baseHeight}%`
+                        // create a div
+                        $("#tube-image-div").append(`<div id='eff-${colorGasArray.indexOf(reagent)}-${i}-right' class="gas"></div>`)
+                        
+                        $(`#eff-${colorGasArray.indexOf(reagent)}-${i}-right`).css({
+                            "left": rposx,
+                            "top": rposy,
+                            "opacity": 1
+                        })
+                        // animate it going up
+                        var finalHeight = baseHeight - 150
+                        var rfposy = `${finalHeight}%`
+                        $(`#eff-${colorGasArray.indexOf(reagent)}-${i}-right`).animate({'top': rfposy}, 1500, () => {
+                            console.log('done')
+                            $(`#eff-${colorGasArray.indexOf(reagent)}-${i}-right`).remove()
+                        })                        
+
+                        // Lower baseheight
+                        baseHeight = baseHeight - 4.8
+                        // set color
+                        $(`#eff-${colorGasArray.indexOf(reagent)}-${i}`)   
+
+
+
+
+             
+
+
+                    }
+
+
+
+                    // should perhaps delete this?
+
+
+
+
+
+
+                })
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                /*
+    
+                // PPT 
+                for (var i = 1; i < colorPptArray.length + 1; i++) {
+                    var rgbcol = chroma(colorPptArray[i - 1][0]).rgb()
+                    var color = new Color(rgbcol[0], rgbcol[1], rgbcol[2])
+                    var solver = new Solver(color)
+                    var result = solver.solve()
+                    var filteredCss = result.filter // returns the filtered string
+                    $("#tube-image-div").append(`<div id='ppt-${i}' class="ppt"></div>`)
+                    console.log(filteredCss)
+                    // Check if 
+    
+    
+    
+                    $(`#ppt-${i}`).css({
+                        "filter": `${filteredCss}`,
+    
+                    })
+                }
+                // Gas
+                */
+
+                $('#info').html(updatedHtmlArr.join(" "))
+
+                // Update the context-menu info            
+                $("#test_tube-0 > .popup").html(popupHtmlArr.join(" "))
+
+                // Update the test-tube object with what it contains            
+                tube.contains = containsTemp
+
+                // Reset the original volColTemp array:
+                volCol = {};
+                volCol = jQuery.extend({}, volColTemp)
+                console.log(volCol)
+
+                await timeout(8000)
+                react()
+
+            } else {
+                console.log('AM DONE BIJ')
             }
 
-            console.log("volCol", volCol)
-            console.log("volColTemp", volColTemp)
+
         }
-        */
+
+        /* -------------- PART 4: START TIMER TO DELAY UNTIL THE NEXT FUNCTION EXECUTION --------------*/
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1434,6 +1619,11 @@ $(document).ready(function () {
     function formatChemForm(str) {
         return str.split("_").join(" ")
     }
-
+    function timeout(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+    function getRandomArbitrary(min, max) {
+        return Math.random() * (max - min) + min;
+    }
 
 })

@@ -65,6 +65,7 @@
     margin: auto;
     /* background-color: white; */
     z-index: 200;
+    overflow: hidden;
     
 }
 
@@ -79,15 +80,17 @@
 }
 
 #background-image-volume { 
-    background-image: url('/images/test-tube-background-cut.png');
-    position: relative;    
+    background-image: url('/images/test-tube-background-final-clear.png');
+    position: relative;
     background-repeat: no-repeat;
     background-size: 100% auto;
     background-position: top;
     width: 100%;
-    height: 76%;    
-    top: -93.29%;
-    z-index: 10;
+    /* height: 111%; */
+    top: -125.6%;
+    z-index: 20;
+    border-bottom-left-radius: 15vw;
+    border-bottom-right-radius: 15vw;
 }
 
 /* colors of test tube */
@@ -152,15 +155,85 @@
     height: 20%;
     left: 23.8%;
     top: -81.4%; */
-    width: 53.2%;
+    /* width: 53.2%;
     height: 16%;
     left: 23.8%;
-    top: -74.4%;
+    top: -74.4%; */
+    width: 53.2%;
+    height: 92%;
+    left: 23.8%;
+    top: 2.9%;
+    border-bottom-left-radius: 15vw;
+    border-bottom-right-radius: 15vw;
+    /* transition: background-color 7.5s linear; */
+    background-color: rgba(255,255,255, 0.3);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+}
+
+#tube-image-div { 
+    width: 100%;
+    height: 100%;
 }
 
 
+/* PPT */
+.ppt {
+    /* transition: opacity 7.5s linear 0s; */
+    opacity: 0;
+}
+#ppt-1 {
+    background-image: url('/images/ppt1.png');    
+    width: 100%;
+    height: 100%;
+    position: relative;
+    top: -100%;
+    z-index: 32;
+    background-repeat: no-repeat;
+    background-position: bottom;
+    /* left: 0%; */
+    background-size: contain;
+}
 
+#ppt-2 { 
+    background-image: url('/images/ppt2.png');
+    width: 100%;
+    height: 100%;
+    position: relative;
+    top: -200%;
+    z-index: 31;
+    background-repeat: no-repeat;
+    background-position: bottom;
+    /* left: 0%; */
+    background-size: contain;
+}
 
+#ppt-3 { 
+    background-image: url('/images/ppt3.png');
+    width: 100%;
+    height: 100%;
+    position: relative;
+    top: -300%;
+    z-index: 30;
+    background-repeat: no-repeat;
+    background-position: bottom;
+    /* left: 0%; */
+    background-size: contain;
+}
+
+/* GAS */ 
+.gas { 
+    width: 6%;
+    height: 4%;
+    position: relative;
+    border-radius: 100%;
+    /* background-color: black; */
+    border: 0.1vw solid black;
+    z-index: 40;
+    /* top: -315%; */
+    transition:  opacity 400ms;
+    opacity: 0;
+}
 
 .on-working-area { 
     z-index: 10;
