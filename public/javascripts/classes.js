@@ -13,6 +13,17 @@ class Apparatus {
         this.contains = []
     }
 
+    get chemVols() { 
+        var a = 0
+        this.contains.forEach(e => { 
+            if (e.formula_id_f.split(" ")[1] == "(aq)") { 
+                a = a + e.volume
+            }
+        })
+        return a
+
+    }
+
     get remainingSpace() {
         return this.capacity - this.spaceUsed
     }
@@ -42,7 +53,7 @@ class BenchReagent extends Chemical {
     constructor(obj1, div_id) {
         super(obj1);
         this.div_id = div_id
-        
+
     }
 }
 
@@ -50,26 +61,26 @@ class FAReagent extends Chemical {
     constructor(obj, reactionData, div_id) {
         super(obj);
         this.div_id = div_id
-        
-        this.reactions = reactionData        
+
+        this.reactions = reactionData
 
     }
-    get reactsWith() { 
+    get reactsWith() {
         var arr = []
-        this.reactions.forEach(reaction => { 
-            if (reaction.reacts_with_class_1) { 
+        this.reactions.forEach(reaction => {
+            if (reaction.reacts_with_class_1) {
                 arr.push(reaction.reacts_with_class_1)
-            } else if (reaction.reacts_with_indiv_1){ 
+            } else if (reaction.reacts_with_indiv_1) {
                 arr.push(reaction.reacts_with_indiv_1)
             }
         })
         return arr
 
     }
-    get doesNotReactWith() { 
+    get doesNotReactWith() {
         var arr = []
-        this.reactions.forEach(reaction => { 
-            if (reaction.does_not_react_indiv_1) { 
+        this.reactions.forEach(reaction => {
+            if (reaction.does_not_react_indiv_1) {
                 arr.push(reaction.does_not_react_indiv_1)
             }
         })
@@ -77,9 +88,9 @@ class FAReagent extends Chemical {
 
 }
 
-class Reactant extends Chemical { 
+class Reactant extends Chemical {
     constructor(obj) {
-        super(obj);       
+        super(obj);
         this.reacts_with_class_1 = obj.reacts_with_class_1;
         this.reacts_with_indiv_1 = obj.reacts_with_indiv_1;
         this.does_not_react_indiv_1 = obj.does_not_react_indiv_1;
@@ -89,65 +100,95 @@ class Reactant extends Chemical {
         this.reacts_with_indiv_2 = obj.reacts_with_indiv_2;
         this.does_not_react_indiv_2 = obj.does_not_react_indiv_2;
         this.condition_2 = obj.condition_2;
-        this.produces_2 = obj.produces_2;   
-                 
+        this.produces_2 = obj.produces_2;
+
 
     }
 
-    checkIfReactable(otherReagents) { // take in a bunch of reagents and checks if this reagent reacts. Will return either a) empty array --> no reaction, b) array of other reagents that it reacts with
+    async checkIfReactable(otherReagents) { // take in a bunch of reagents and checks if this reagent reacts. Will return either a) empty array --> no reaction, b) array of other reagents that it reacts with
         var otherReagents = otherReagents
         // if (!Array.isArray(otherReagents)) { 
         //     otherReagents = otherReagents.split()
         // }
-        
-
-
-
-        
         var reactsWith = []
-        otherReagents.forEach(reagent => { // for every reagent
-            if (Array.isArray(reagent)) { 
-                // compound, first element is cation. second is anion. third is compound'
-                var isReactable = false
-                reagent.forEach(ion => { 
-                    if (ion == this.reacts_with_indiv_1) { 
-                        isReactable = true
+        if (this.cation || this.anion) {
+            // means that this is a compound. We gotta check if it can react too
+            var cationData = JSON.parse(await Promise.resolve(($.get('/inspect', { arr: [this.cation] }))))
+            var possibleCationReactions = cationData.map(row => row.reacts_with_indiv_1)
+            var anionData = JSON.parse(await Promise.resolve(($.get('/inspect', { arr: [this.anion] }))))
+            var possibleAnionReactions = anionData.map(row => row.reacts_with_indiv_1)
+            console.log(cationData, possibleCationReactions, anionData, possibleAnionReactions, "------------------")
+            // if the cation reacts with one of the reagents, we need to add it to reactsWith in the form
+            // [{this.formula_id: reagent}]
+            otherReagents.forEach(reagent => {
+                if (Array.isArray(reagent)) {
+                    // compound, first element is cation. second is anion. third is compound'
+                    var isReactable = false
+                    reagent.forEach(ion => {
+                        if (possibleCationReactions.includes(ion) || possibleAnionReactions.includes(ion)) {
+                            isReactable = true
+                        }
+                    })
+                    if (isReactable) {
+                        var temp = {}
+                        temp[this.formula_id] = reagent
+                        reactsWith.push(temp)
                     }
-                })
-                if (isReactable) { 
+                }
+
+            })
+
+
+        } else {
+            
+            otherReagents.forEach(reagent => { // for every reagent
+                if (Array.isArray(reagent)) {
+                    // compound, first element is cation. second is anion. third is compound'
+                    var isReactable = false
+                    reagent.forEach(ion => {
+                        if (ion == this.reacts_with_indiv_1) {
+                            isReactable = true
+                        }
+                    })
+                    if (isReactable) {
+                        var temp = {}
+                        temp[this.formula_id] = reagent
+                        reactsWith.push(temp)
+                    }
+
+                } else if (reagent == this.reacts_with_indiv_1) {
                     var temp = {}
                     temp[this.formula_id] = reagent
                     reactsWith.push(temp)
                 }
-                
-            } else if (reagent == this.reacts_with_indiv_1) { 
-                var temp = {}
-                temp[this.formula_id] = reagent
-                reactsWith.push(temp)
-            } 
 
-            
-        })
+
+            })
+        }
+
+
+
+
         return reactsWith
 
     }
 
-    get reactsWith() { 
+    get reactsWith() {
         var arr = []
-        this.reactions.forEach(reaction => { 
-            if (reaction.reacts_with_class_1) { 
+        this.reactions.forEach(reaction => {
+            if (reaction.reacts_with_class_1) {
                 arr.push(reaction.reacts_with_class_1)
-            } else if (reaction.reacts_with_indiv_1){ 
+            } else if (reaction.reacts_with_indiv_1) {
                 arr.push(reaction.reacts_with_indiv_1)
             }
         })
         return arr
 
     }
-    get doesNotReactWith() { 
+    get doesNotReactWith() {
         var arr = []
-        this.reactions.forEach(reaction => { 
-            if (reaction.does_not_react_indiv_1) { 
+        this.reactions.forEach(reaction => {
+            if (reaction.does_not_react_indiv_1) {
                 arr.push(reaction.does_not_react_indiv_1)
             }
         })

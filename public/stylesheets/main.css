@@ -159,6 +159,7 @@
     height: 16%;
     left: 23.8%;
     top: -74.4%; */
+    /* opacity: 0; */
     width: 53.2%;
     height: 92%;
     left: 23.8%;
@@ -227,12 +228,13 @@
     height: 4%;
     position: relative;
     border-radius: 100%;
-    /* background-color: black; */
+    background-color: white;
     border: 0.1vw solid black;
     z-index: 40;
     /* top: -315%; */
-    transition:  opacity 400ms;
-    opacity: 0;
+    transition:  opacity 100ms, background-color 1500ms ease-out
+    
+   
 }
 
 .on-working-area { 
@@ -289,3 +291,17 @@
     height: 6vw !important;
 }
 
+.funnel, .filter_funnel { 
+    width: 4vw !important;
+    height: 4vw !important;
+}
+
+.filter, .folded_filter { 
+    width: 3vw !important;
+    height: 3vw !important;
+}
+
+.test_tube_funnel, .test_tube_funnel_filter { 
+    width: 5vw !important;
+    height: 6vw !important;
+}
