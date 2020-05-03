@@ -693,22 +693,50 @@ $(document).ready(function () {
 
             var thingsToAddToNewTube = {}
             var newPopupHtmlForOldTube = [`<p> ${objectsInUse[start].item_name} </p> <a onclick="inspect('${start}')"> Inspect </a>`]
-            var volumeToAdd; 
-            for (var i = 0; i < tubeContents.length; i++) {
-                var reagent = tubeContents[i]
-                if (ppt == "yes") {
-                    // Transfer ppt as well
-                } else {
-                    newPopupHtmlForOldTube.push(`<p> ${reagent.volume} cm³ ${(reagent.formula_id_f)} </p>`)
+            var pptVolume = 0
+            var volToTransfer = 0
+            var oldTubeContents = []
+
+            var filterFunnel = objectsInUse[filterFunnelId]
+            var filterItems = $.extend([], filterFunnel.contains)
+            
+            var filterObj = {}
+            filterItems.forEach(e => {
+                
+                filterObj[e.formula_id_f] = {
+                    formula_text: e.formula_text,
+                    volume: e.volume,
+                    old_reagentL: e.old_reagentL,
+                    old_reagentR: e.old_reagentR
                 }
-                if (reagent.formula_id_f != "H₂O (l)") {
-                    // not a ppt and not water, i.e. aqueous
+            })
+            
+            for (var i = 0; i < tubeContents.length; i++) {
+                var reagent = tubeContents[i]                
+                if (reagent.formula_id_f != "H₂O (l)") {                   
 
                     if (reagent.formula_id_f.split(" ")[1] == "(s)") {
+                        pptVolume = pptVolume + Number(reagent.volume)
                         if (ppt == "yes") {
                             // if ppt is no don't do anything
+                            // Check if this item exists already; if it does, add the volume to it
+                            if (filterObj[reagent.formula_id_f]) { 
+                                // is already inside
+                                filterObj[reagent.formula_id_f].volume = Number(filterObj[reagent.formula_id_f].volume) + Number(reagent.volume)
+                            } else { 
+                                filterObj[reagent.formula_id_f] = { 
+                                    formula_text: reagent.formula_text,
+                                    volume: reagent.volume,
+                                    old_reagentL: reagent.old_reagentL,
+                                    old_reagentR: reagent.old_reagentR
+                                }
+                            }
+
+
                         } else {
-                            changingTubeContents.push(reagent)
+                            // changingTubeContents.push(reagent)
+                            newPopupHtmlForOldTube.push(`<p> ${reagent.volume} cm³ ${(reagent.formula_id_f)} </p>`)
+                            oldTubeContents.push(reagent)
                         }
 
                         // ADD TO THE FILTER NOT TO THE TEST TUBE
@@ -719,33 +747,28 @@ $(document).ready(function () {
                         //     old_reagentR: reagent.old_regeantR
                         // }
                     } else {
+                        // not a ppt and not water, i.e. aqueous
+                        // add new tube
                         thingsToAddToNewTube[reagent.formula_id_f] = {
                             formula_text: reagent.formula_text,
                             volume: reagent.volume,
                             old_reagentL: reagent.old_reagentL,
                             old_reagentR: reagent.old_regeantR
                         }
-                        delete changingTubeContents
+                        volToTransfer = Number(volToTransfer) + Number(reagent.volume)
 
                     }
 
                 } else {
-                    // changingTubeContents.push(water) 
-                    // Add HTML
-                    newPopupHtmlForOldTube.push(`<p> ${reagent.volume} cm³ ${(reagent.formula_id_f)} </p>`)
+                    // It's water, don't transfer it
+                    newPopupHtmlForOldTube.push(`<p> ${reagent.formula_id_f} </p>`) // ID1
+                    oldTubeContents.push(reagent)
 
                 }
             }
 
-
-            // delete the old contains
-            objectsInUse[start].contains = [
-                {
-                    formula_text: "water",
-                    formula_id_f: "H₂O (l)",
-                    volume: 10
-                }
-            ]
+            
+            
 
             var newPopupHtmlForNewTube = [`<p> ${objectsInUse[end].item_name} </p> <a onclick="inspect('${end}')"> Inspect </a>`]
             for (var i = 0; i < newTubeContents.length; i++) {
@@ -753,7 +776,12 @@ $(document).ready(function () {
                 if (Object.keys(thingsToAddToNewTube).includes(newReagent.formula_id_f)) {
                     // It's in the new one, just change the volume
                     objectsInUse[end].contains[i].volume = (Number(objectsInUse[end].contains[i].volume) + Number(newReagent.volume)).toFixed(2)
-                    newPopupHtmlForNewTube.push(`<p> ${objectsInUse[end].contains[i].volume} cm³ ${newReagent.formula_id_f} </p>`)
+                    if (newReagent.formula_id_f == "H₂O (l)") { 
+                        newPopupHtmlForNewTube.push(`<p> ${newReagent.formula_id_f} </p>`) // ID1
+                    } else { 
+                        newPopupHtmlForNewTube.push(`<p> ${objectsInUse[end].contains[i].volume} cm³ ${newReagent.formula_id_f} </p>`)
+                    }
+                    
                     delete thingsToAddToNewTube[newReagent.formula_id_f]
                 }
             }
@@ -767,26 +795,61 @@ $(document).ready(function () {
                     old_reagentL: thingsToAddToNewTube[key].old_reagentL,
                     old_reagentR: thingsToAddToNewTube[key].old_reagentR
                 })
-                newPopupHtmlForNewTube.push(`<p> ${thingsToAddToNewTube[key].volume} cm³ ${key} </p>`)
+                
+                if (key == "H₂O (l)") { 
+                    newPopupHtmlForNewTube.push(`<p> ${key} </p>`) // ID1
+                } else { 
+                    newPopupHtmlForNewTube.push(`<p> ${thingsToAddToNewTube[key].volume} cm³ ${key} </p>`)
+                }
+
             }
+
+            // delete the old contains
+            objectsInUse[start].contains = oldTubeContents
+            objectsInUse[start].contains.push()
+
+        
 
             // Update the new test tube html
             if (!$(`#${end} > .popup`).length) {
                 $(`#${end}`).append("<div class='popup'></div>")
             }
-            $(`#${end} > .popup`).html(newPopupHtmlForNewTube.join(" "))
+            $(`#${end} > .popup`).html(newPopupHtmlForNewTube.join(" ")).hide()
 
-            // Update the old test tube html 
+            // Update the old test tube html
+            $(`#${start} > .popup`).html(newPopupHtmlForOldTube.join(" ")).hide()
             // What's left: water, possible ppt
+            if (ppt == "yes") { 
+                // Old test tube contains nothing lol
+                objectsInUse[start].spaceUsed = 0
 
+            } else { 
+                objectsInUse[start].spaceUsed = pptVolume
+                
+                
+            }
 
             // update the new test tube space
-
+            objectsInUse[end].spaceUsed = objectsInUse[end].spaceUsed + volToTransfer
 
 
             // Update HTML
 
+            // Update the filter
+            var filterArr = []
+            for (key of Object.keys(filterObj)) { 
+                filterArr.push({
+                    formula_id_f: key,
+                    formula_text: filterObj[key].formula_text,
+                    volume: filterObj[key].volume,
+                    old_reagentL: filterObj[key].old_reagentL,
+                    old_reagentR: filterObj[key].old_reagentR
+                })
 
+
+            }
+            objectsInUse[filterFunnelId].contains = filterArr
+            objectsInUse[filterFunnelId].spaceUsed = objectsInUse[filterFunnelId].spaceUsed + pptVolume
         }
 
 
