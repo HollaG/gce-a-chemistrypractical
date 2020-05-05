@@ -2,21 +2,6 @@
 
 $(document).ready(function () {
 
-    // Static objects
-    var apparatusImageLink = {
-        'dropper': "url(/images/apparatus/dropper.png)",
-        "ten-mc": "url(/images/apparatus/graduated-cylinder.png)",
-        "fifty-mc": "url(/images/apparatus/graduated-cylinder.png)"
-    }
-
-
-    console.log("hey")
-    // var $ = require('jquery')
-    // var alertify = require('alertifyjs')
-    // var SlimSelect = require('slim-select')
-    // alertify.alert('hey')
-
-
     var isMoving = false // used to check if you click on another div when youre holding a div
     var preventMove = false // used to check when youre clicking on a link in the popup
     var heldItem = ""
@@ -174,7 +159,7 @@ $(document).ready(function () {
                 basketSelect.destroy()
                 $('#basket-prompt').remove()
 
-            })
+            }).setHeader("Chemical Basket")
 
 
         // select the prompt and hide the default input box
@@ -274,9 +259,17 @@ $(document).ready(function () {
                         // no children aka first time
                         var elementIdToReference = e.target.id
 
-                        var popupHTML = `<div class="popup"> <p> ${objectsInUse[elementIdToReference].item_name} </p></div>`
+                        var popupHTML = [`<div class="popup"> <p> ${objectsInUse[elementIdToReference].item_name} </p>`]
 
-                        $(e.target).append(popupHTML)
+                        if (objectsInUse[elementIdToReference].attribute == "inspectable") {
+                            popupHTML.push(`<a onclick="inspect('${elementIdToReference}')"> Inspect </a>`)
+                        }
+                        popupHTML.push(`</div>`)
+
+
+
+
+                        $(e.target).append(popupHTML.join(" "))
                     }
                     // $(e.target).empty()
 
@@ -306,7 +299,7 @@ $(document).ready(function () {
                 rackSelect.destroy()
                 $('#rack-prompt').remove()
 
-            })
+            }).setHeader("Test Tube Rack")
 
         // select the prompt and hide the input
         $('.ajs-input').hide()
@@ -362,7 +355,7 @@ $(document).ready(function () {
                             left: ((e.pageX - $(`#${currentlyMovingElem}`).width() / 2) / document.body.clientWidth) * 100 + "vw",
                             top: ((e.pageY - $(`#${currentlyMovingElem}`).height() / 2) / document.body.clientWidth) * 100 + "vw",
                             "pointer-events": "none",
-                            'background-image': 'url(/images/apparatus/bottle.png)'
+                            'background-image': 'url(/images/mini/reagent-bottle.png)'
                         });
 
                     }
@@ -424,7 +417,7 @@ $(document).ready(function () {
                 benchSelect.destroy()
                 $('#bench-prompt').remove()
 
-            })
+            }).setHeader("Bench Reagents")
         // select the prompt and hide the input
         $('.ajs-input').hide()
 
@@ -479,7 +472,7 @@ $(document).ready(function () {
                             left: ((e.pageX - $(`#${currentlyMovingElem}`).width() / 2) / document.body.clientWidth) * 100 + "vw",
                             top: ((e.pageY - $(`#${currentlyMovingElem}`).height() / 2) / document.body.clientWidth) * 100 + "vw",
                             "pointer-events": "none",
-                            'background-image': 'url(/images/apparatus/bottle.png)'
+                            'background-image': 'url(/images/mini/fa-bottle.png)'
                         });
 
                     }
@@ -544,7 +537,7 @@ $(document).ready(function () {
                 reagentSelect.destroy()
                 $('#reagent-prompt').remove()
 
-            })
+            }).setHeader("Reagents")
         // select the prompt and hide the input
         $('.ajs-input').hide()
 
@@ -619,44 +612,17 @@ $(document).ready(function () {
         // Find how much volume is inside the start test tube
         var startTubeVolume = objectsInUse[start].spaceUsed
         var endTubeInitialVolume = objectsInUse[end].spaceUsed
-        
+
         var startTubeChemVol = objectsInUse[start].chemVols
         var endTubeChemVol = objectsInUse[end].chemVols
 
-        if ((Number(startTubeChemVol) + Number(endTubeChemVol)) > Number(objectsInUse[end].capacity)) { 
+        if ((Number(startTubeChemVol) + Number(endTubeChemVol)) > Number(objectsInUse[end].capacity)) {
             // too much, cannot transfer
             alertify.error("Destination test tube does not have enough capacity!")
 
             return
 
         }
-        
-        // // 1) Popup asking how much volume for them to transfer
-        // alertify.prompt(`Enter volume of solution to transfer. ${startTubeVolume} cm³ available`, " ", (evt, value) => {
-        //     // yes ppts
-        //     $(".ajs-ok").html("Ok")
-        //     $(".ajs-cancel").html("Cancel")
-        //     common(value, true)
-
-
-
-        // },
-        //     () => {
-        //         // no ppt
-        //         // common(value, false)
-
-
-        //         $(".ajs-ok").html("Ok")
-        //         $(".ajs-cancel").html("Cancel")
-
-        //     })
-
-        // First we need to check if the total volume of everything (not including water and ppt) is less than the available volume
-        
-
-
-
-
 
 
         alertify.prompt(`Filter out precipitate as well?`, "yes", (evt, value) => {
@@ -668,17 +634,17 @@ $(document).ready(function () {
             pptSelect.destroy()
             $("#ppt-prompt").remove()
 
-        })
+        }).setHeader("Solution Transfer")
 
         // Hide input
         $(".ajs-input").hide()
 
-        var pptHtml = `<select id="ppt-prompt"> <option value="yes"> Yes </option> <option value="no> No </option> </select>`
+        var pptHtml = `<select id="ppt-prompt"> <option value="yes"> Yes </option> <option value="no"> No </option> </select>`
         $('.ajs-input').after(pptHtml)
         var pptSelect = new SlimSelect({
             select: "#ppt-prompt",
             onChange: (args) => {
-                $('.ajs.input').val(args.value)
+                $('.ajs-input').val(args.value)
             }
         })
 
@@ -699,10 +665,10 @@ $(document).ready(function () {
 
             var filterFunnel = objectsInUse[filterFunnelId]
             var filterItems = $.extend([], filterFunnel.contains)
-            
+
             var filterObj = {}
             filterItems.forEach(e => {
-                
+
                 filterObj[e.formula_id_f] = {
                     formula_text: e.formula_text,
                     volume: e.volume,
@@ -710,28 +676,30 @@ $(document).ready(function () {
                     old_reagentR: e.old_reagentR
                 }
             })
-            
+
+            var funnelHtmlArr = [`<p> ${filterFunnel.item_name} </p> <a onclick='inspectFilter("${filterFunnelId}")'> Inspect </a> <a onclick='detach("${filterFunnelId}")'> Detach </a>`]
             for (var i = 0; i < tubeContents.length; i++) {
-                var reagent = tubeContents[i]                
-                if (reagent.formula_id_f != "H₂O (l)") {                   
+                var reagent = tubeContents[i]
+                if (reagent.formula_id_f != "H₂O (l)") {
 
                     if (reagent.formula_id_f.split(" ")[1] == "(s)") {
                         pptVolume = pptVolume + Number(reagent.volume)
                         if (ppt == "yes") {
                             // if ppt is no don't do anything
                             // Check if this item exists already; if it does, add the volume to it
-                            if (filterObj[reagent.formula_id_f]) { 
+                            if (filterObj[reagent.formula_id_f]) {
                                 // is already inside
                                 filterObj[reagent.formula_id_f].volume = Number(filterObj[reagent.formula_id_f].volume) + Number(reagent.volume)
-                            } else { 
-                                filterObj[reagent.formula_id_f] = { 
+                            } else {
+                                filterObj[reagent.formula_id_f] = {
                                     formula_text: reagent.formula_text,
                                     volume: reagent.volume,
                                     old_reagentL: reagent.old_reagentL,
                                     old_reagentR: reagent.old_reagentR
                                 }
                             }
-
+                            // Regenerate the HTML associated with the filter
+                            funnelHtmlArr.push(`<p> ${filterObj[reagent.formula_id_f].volume} cm³ ${reagent.formula_id_f} </p>`)
 
                         } else {
                             // changingTubeContents.push(reagent)
@@ -767,21 +735,21 @@ $(document).ready(function () {
                 }
             }
 
-            
-            
+
+
 
             var newPopupHtmlForNewTube = [`<p> ${objectsInUse[end].item_name} </p> <a onclick="inspect('${end}')"> Inspect </a>`]
             for (var i = 0; i < newTubeContents.length; i++) {
                 var newReagent = newTubeContents[i]
                 if (Object.keys(thingsToAddToNewTube).includes(newReagent.formula_id_f)) {
                     // It's in the new one, just change the volume
-                    objectsInUse[end].contains[i].volume = (Number(objectsInUse[end].contains[i].volume) + Number(newReagent.volume)).toFixed(2)
-                    if (newReagent.formula_id_f == "H₂O (l)") { 
+                    objectsInUse[end].contains[i].volume = (Number(objectsInUse[end].contains[i].volume) + Number(thingsToAddToNewTube[newReagent.formula_id_f].volume)).toFixed(2)
+                    if (newReagent.formula_id_f == "H₂O (l)") {
                         newPopupHtmlForNewTube.push(`<p> ${newReagent.formula_id_f} </p>`) // ID1
-                    } else { 
+                    } else {
                         newPopupHtmlForNewTube.push(`<p> ${objectsInUse[end].contains[i].volume} cm³ ${newReagent.formula_id_f} </p>`)
                     }
-                    
+
                     delete thingsToAddToNewTube[newReagent.formula_id_f]
                 }
             }
@@ -795,10 +763,10 @@ $(document).ready(function () {
                     old_reagentL: thingsToAddToNewTube[key].old_reagentL,
                     old_reagentR: thingsToAddToNewTube[key].old_reagentR
                 })
-                
-                if (key == "H₂O (l)") { 
+
+                if (key == "H₂O (l)") {
                     newPopupHtmlForNewTube.push(`<p> ${key} </p>`) // ID1
-                } else { 
+                } else {
                     newPopupHtmlForNewTube.push(`<p> ${thingsToAddToNewTube[key].volume} cm³ ${key} </p>`)
                 }
 
@@ -808,36 +776,9 @@ $(document).ready(function () {
             objectsInUse[start].contains = oldTubeContents
             objectsInUse[start].contains.push()
 
-        
-
-            // Update the new test tube html
-            if (!$(`#${end} > .popup`).length) {
-                $(`#${end}`).append("<div class='popup'></div>")
-            }
-            $(`#${end} > .popup`).html(newPopupHtmlForNewTube.join(" ")).hide()
-
-            // Update the old test tube html
-            $(`#${start} > .popup`).html(newPopupHtmlForOldTube.join(" ")).hide()
-            // What's left: water, possible ppt
-            if (ppt == "yes") { 
-                // Old test tube contains nothing lol
-                objectsInUse[start].spaceUsed = 0
-
-            } else { 
-                objectsInUse[start].spaceUsed = pptVolume
-                
-                
-            }
-
-            // update the new test tube space
-            objectsInUse[end].spaceUsed = objectsInUse[end].spaceUsed + volToTransfer
-
-
-            // Update HTML
-
             // Update the filter
             var filterArr = []
-            for (key of Object.keys(filterObj)) { 
+            for (key of Object.keys(filterObj)) {
                 filterArr.push({
                     formula_id_f: key,
                     formula_text: filterObj[key].formula_text,
@@ -850,6 +791,78 @@ $(document).ready(function () {
             }
             objectsInUse[filterFunnelId].contains = filterArr
             objectsInUse[filterFunnelId].spaceUsed = objectsInUse[filterFunnelId].spaceUsed + pptVolume
+
+            // Update the new test tube html
+            var newHtml = [`<p> ${objectsInUse[end].item_name} </p> <a onclick='inspect("${end}")'> Inspect </a>`]
+            objectsInUse[end].contains.forEach(r => {
+                if (r.formula_id_f == "H₂O (l)") {
+                    newHtml.push(`<p> ${r.formula_id_f} </p>`)
+                } else {
+                    newHtml.push(`<p> ${r.volume} cm³ ${r.formula_id_f} </p>`)
+                }
+            })
+            if (!$(`#${end} > .popup`).length) {
+                $(`#${end}`).append("<div class='popup'></div>")
+            }
+            $(`#${end} > .popup`).html(newHtml.join(" ")).hide()
+
+
+            // Update the old test tube html
+            var oldHtml = [`<p> ${objectsInUse[start].item_name} </p> <a onclick='inspect("${start}")'> Inspect </a>`]
+            objectsInUse[start].contains.forEach(r => {
+                if (r.formula_id_f == "H₂O (l)") {
+                    oldHtml.push(`<p> ${r.formula_id_f} </p>`)
+                } else {
+                    oldHtml.push(`<p> ${r.volume} cm³ ${r.formula_id_f} </p>`)
+                }
+            })
+            if (!$(`#${start} > .popup`).length) {
+                $(`#${start}`).append("<div class='popup'></div>")
+            }
+
+            $(`#${start} > .popup`).html(oldHtml.join(" ")).hide()
+
+
+
+            // Update the filter funnel html
+            var filterHtml = [`<p> ${filterFunnel.item_name} </p> <a onclick='inspectFilter("${filterFunnelId}")'> Inspect </a> <a onclick='detach("${filterFunnelId}")'> Detach </a>`]
+
+            objectsInUse[filterFunnelId].contains.forEach(r => {
+                if (r.formula_id_f == "H₂O (l)") {
+                    filterHtml.push(`<p> ${r.formula_id_f} </p>`)
+                } else {
+                    filterHtml.push(`<p> ${r.volume} cm³ ${r.formula_id_f} </p>`)
+                }
+            })
+            if (!$(`#${filterFunnelId} > .popup`).length) {
+                $(`#${filterFunnelId}`).append("<div class='popup'></div>")
+            }
+            // for (key of Object.keys(filterObj)) { 
+            //     filterHtml.push(`<p> ${filterObj[key].volume} cm³ ${key} <p>`)
+            // }
+            $(`#${filterFunnelId} > .popup`).html(filterHtml.join(" ")).hide()
+
+
+            // What's left: water, possible ppt
+            if (ppt == "yes") {
+                // Old test tube contains nothing lol
+                objectsInUse[start].spaceUsed = 0
+
+            } else {
+                objectsInUse[start].spaceUsed = pptVolume
+
+
+            }
+
+
+
+            // update the new test tube space
+            objectsInUse[end].spaceUsed = objectsInUse[end].spaceUsed + volToTransfer
+
+
+            // Update HTML
+
+
         }
 
 
@@ -877,154 +890,23 @@ $(document).ready(function () {
 
 
 
-        // function common(amt, ppt) {
-        //     var tubeContents = objectsInUse[start].contains
-        //     var newTubeContents = objectsInUse[end].contains
-        //     // calculate amount to subtract 
 
-        //     // HTML popup
-        //     var oldHtmlArr = [`<p> ${objectsInUse[start].item_name} </p>`, `<a onclick='inspect("${start}")'> Inspect </a>`]
-        //     var newHtmlArr = [`<p> ${objectsInUse[end].item_name} </p>`, `<a onclick='inspect("${end}")'> Inspect </a>`]
-        //     var newHtmlArrThingsToAdd = []
-        //     for (var i = 0; i < tubeContents.length; i++) {
-        //         var reagent = tubeContents[i]
-        //         if (reagent.formula_id_f.split(" ")[1] != "(s)") {
-        //             if (reagent.formula_id_f != "H₂O (l)") {
-        //                 // is not ppt and is not water
-        //                 // i.e. we ignore the water
-        //                 var volumeToSubtractPerReagent = (((amt) / (startTubeVolume)) * (reagent.volume)).toFixed(2)
-        //                 var oldTubeFinalVolumePerReagent = (Number(reagent.volume) - volumeToSubtractPerReagent).toFixed(2) // for each reagent
-
-        //                 // Let's deal with the old tube first. 
-        //                 // First we need to a) delete the reagent in contains if it doesn't exist anymore, 
-        //                 // or b) we need to set its volume.
-
-        //                 // Then, we need to deal with the HTML array. 
-        //                 // Since we are already looping over the whole array, we will just set the push the new volumes
-        //                 // of each reagent, NOT INCLUDING WATER
-        //                 // We don't push if volume == 0
-
-        //                 if (Number(oldTubeFinalVolumePerReagent) == 0) {
-        //                     // nothing left
-        //                     objectsInUse[start].contains.splice(i, 1)
-
-        //                 } else {
-        //                     objectsInUse[start].contains[i].volume = oldTubeFinalVolumePerReagent;
-        //                     oldHtmlArr.push(`<p> ${oldTubeFinalVolumePerReagent} cm³ ${reagent.formula_id_f} </p>`)
-        //                 }
-
-
-
-        //                 // Now we need to deal with the new tube.
-        //                 // First we need to check if this reagent exists.
-        //                 // If it exists, we just change its volume, if it doesn't then we need to add it.
-        //                 var existsInNew = false
-        //                 for (var j = 0; j < objectsInUse[end].contains.length; j++) {
-        //                     var newTubeReagent = objectsInUse[end].contains[j]
-        //                     if (newTubeReagent.formula_id_f == reagent.formula_id_f) { 
-        //                         // It does exist!
-        //                         // Modify its volume
-        //                         objectsInUse[end].contains[j].volume = (Number(objectsInUse[end].contains[j].volume) + Number(volumeToSubtractPerReagent)).toFixed(2)
-        //                         // Push to html Array
-        //                         newHtmlArr.push(`<p> ${objectsInUse[end].contains[j].volume} cm³ ${reagent.formula_id_f} </p>`)
-        //                         existsInNew = true
-        //                         break
-        //                     }
-        //                 }
-        //                 if (!existsInNew) { 
-        //                     objectsInUse[end].contains.push({
-        //                         formula_id_f: reagent.formula_id_f,
-        //                         formula_text: reagent.formula_text,
-        //                         volume: volumeToSubtractPerReagent,
-        //                         old_reagentL: reagent.old_reagentL,
-        //                         old_regeantR: reagent.old_reagentR
-        //                     })
-        //                     // Push to html array
-        //                     newHtmlArr.push(`<p> ${volumeToSubtractPerReagent} cm³ ${reagent.formula_id_f} </p>`)
-
-        //                 } 
-
-
-
-
-
-
-
-        //             }
-
-
-
-
-
-        //         } else if (ppt && reagent.formula_id_f.split(" ")[1] == "(s)") {
-        //             // Transferring the ppt to the filter funnel
-        //             // check if it exists
-        //             var exists = false
-        //             for (var j = 0; j < objectsInUse[filterFunnelId].contains.length; j++) {
-        //                 var r = objectsInUse[filterFunnelId].contains[j]
-        //                 if (r.formula_id_f == reagent.formula_id_f) {
-        //                     // exists
-        //                     exists = true
-        //                     objectsInUse[filterFunnelId].contains[j].volume = Number(objectsInUse[filterFunnelId].contains[j].volume) + Number(reagent.volume)
-        //                     newHtmlArr.push(`<p> ${objectsInUse[filterFunnelId].contains[j].volume} cm³ ${reagent.formula_id_f} </p>`)
-        //                     break
-        //                 }
-        //             }
-        //             if (!exists) {
-        //                 objectsInUse[filterFunnelId].contains.push({
-        //                     formula_id_f: reagent.formula_id_f,
-        //                     formula_text: reagent.formula_text,
-        //                     volume: reagent.volume,
-        //                     old_reagentL: reagent.old_reagentL,
-        //                     old_regeantR: reagent.old_reagentR
-        //                 })
-        //                 newHtmlArr.push(`<p> ${volumeToSubtractPerReagent} cm³ ${reagent.formula_id_f} </p>`)
-        //             }
-
-        //             // Remove old reagent
-
-
-        //         }
-        //     }
-        //     // Update the old tube contains volume
-        //     objectsInUse[start].spaceUsed = Number(objectsInUse[start].spaceUsed) - Number(amt)
-        //     objectsInUse[end].spaceUsed = Number(objectsInUse[end].spaceUsed) + Number(amt)
-
-
-        //     // Set the HTML popups
-        //     // old
-        //     $(`#${start} > .popup`).html(oldHtmlArr.join(" "))
-        //     // new
-        //     if ($(`#${end} > .popup`).length) {
-        //         $(`#${end} > .popup`).html(newHtmlArr.join(" "))
-        //     } else {
-        //         $(`#${end}`).append("<div class='popup'></div>")
-        //         $(`#${end} > .popup`).html(newHtmlArr.join(" ")).hide()
-        //     }
-
-
-
-
-        // }
-
-
-
-        // 3) Go check out containsTemp, for each of the chemical's volumes, divide that by x
-        // where x is equal to [user input]/[total volume not including water]*volume of that reagent
-
-        // Subtract the amount from "start"'s containsTemp
-
-        // Add the amount to "end"'s containsTemp
-
-        // if PPt is selected, remove all ppl from start's contains and put it in the filter funnel
-
-        // if ppt is not selected, don't touch it
-        // remember to update the spaceUsed properties too
 
     }
 
     makeMovable = async function (id) {
         if (preventMove) return
+        // If clickedd on a filter which is attached to a test tube, return also
+        if (objectsInUse[id].linked_to) {
+            if (objectsInUse[id].linked_to.split("-")[0] == "test_tube") {
+                // This is a funnel
+                makeMovable(objectsInUse[id].linked_to)
+                return
+
+            }
+        }
+
+
         if (isMoving) { // ignore if something is already moving
             // HELD ITEM (currentlyMovingElem): check if can interact with the item (variable ID) being clicked 
 
@@ -1075,23 +957,6 @@ $(document).ready(function () {
 
 
                                     console.log(item, "-------%---------", heldItem)
-                                    // if (item.formula_text == heldItem.formula_text) { 
-                                    //     obj.push({ 
-                                    //         formula_text: heldItem.formula_text,
-                                    //         formula_id_f: formatChemForm(heldItem.formula_id),
-                                    //         volume: Number(item.volume) + Number(value)
-                                    //     })
-                                    //     console.log('same')
-                                    // } else { 
-                                    //     obj.push({ // add new item
-                                    //         formula_text: heldItem.formula_text,
-                                    //         formula_id_f: formatChemForm(heldItem.formula_id),
-                                    //         volume: Number(value)
-                                    //     })
-
-                                    //     obj.push(item) // keep old item
-                                    //     console.log('different')
-                                    // }
 
                                 })
 
@@ -1130,7 +995,12 @@ $(document).ready(function () {
                             }
 
                             itemClicked.contains.forEach(item => {
-                                updatedHTMLArr.push(`<p> ${item.volume} cm³ ${item.formula_id_f} </p>`)
+                                if (item.formula_id_f == "H₂O (l)") {
+                                    updatedHTMLArr.push(`<p> ${item.formula_id_f} </p>`) // ID1
+                                } else {
+                                    updatedHTMLArr.push(`<p> ${item.volume} cm³ ${item.formula_id_f} </p>`)
+                                }
+
                             })
                             updatedHTMLArr.push("</div>")
                             console.log("RUNNING")
@@ -1145,7 +1015,7 @@ $(document).ready(function () {
                             // $(`#${itemClicked.div_id}`).contextMenu(d)
                         }
                         console.log(itemClicked, "ITEM CLICKED AFTER ADDING")
-                    })
+                    }).setHeader("Solution Transfer")
 
 
             } else if (heldItem.apparatus_id == "folded_filter" && itemClicked.interact_with.split(",").includes("folded_filter")) {
@@ -1179,7 +1049,7 @@ $(document).ready(function () {
                     "left": left,
                     "top": top,
                     "pointer-events": "auto",
-                    "background-image": `${app.image_url}`
+                    "background-image": `${app.image_url}`,
                 })
 
                 // add right click
@@ -1227,6 +1097,8 @@ $(document).ready(function () {
                     })
                     $(e.target).children('.popup').show()
                 })
+
+
 
                 // Add to objectsInUse
                 objectsInUse[new_id] = app
@@ -1279,7 +1151,13 @@ $(document).ready(function () {
 
                     // Teleport the item to the correct place
 
-
+                    // Generate HTML popup
+                    // Add html popup
+                    var filterHtml = [`<p> ${objectsInUse[currentlyMovingElem].item_name} <p> <a onclick='inspect("${currentlyMovingElem}")'> Inspect </a> <a onclick='detach("${currentlyMovingElem}")'> Detach </a>`]
+                    objectsInUse[currentlyMovingElem].contains.forEach(e => {
+                        filterHtml.push(`<p> ${e.volume} cm³ ${e.formula_id_f}`)
+                    })
+                    $(`#${new_id} > .popup`).html(filterHtml.join(" "))
 
 
                     // Change the background picture of the test tube
@@ -1317,6 +1195,10 @@ $(document).ready(function () {
             return
         }
         isMoving = true
+
+        $('body').css("pointer-events", "none")
+
+
         $(document).on('mousemove', function (e) {
 
             $(`#${id}`).css({
@@ -1435,6 +1317,7 @@ $(document).ready(function () {
         // Draw the big screen
         console.log("INSPECTINGGGGGGGGGGGGGGGGGGGGGGGGG")
         preventMove = true
+        var tube = objectsInUse[id]
         alertify.prompt("inspecting shit", "",
             function (evt, value) {
                 $('#inspect').remove()
@@ -1449,7 +1332,7 @@ $(document).ready(function () {
                 $("#rxt-status").remove()
                 $("#shake").remove()
                 preventMove = false
-            })
+            }).setHeader(`${tube.item_name} Inspection`)
 
         // Hide input box and expand the box
         $('.ajs-input').hide()
@@ -1463,7 +1346,7 @@ $(document).ready(function () {
         $("#tube-image-div").append(`<div id='ppt-1' class="ppt"></div>`).append(`<div id='ppt-2' class="ppt"></div>`).append(`<div id='ppt-3' class="ppt"></div>`)
         // Add the buttons to shake test tube
 
-        var tube = objectsInUse[id]
+        
 
 
         /* -------------- PART 1: WHAT'S INSIDE THE TUBE AND WHAT DOES IT REACT WITH --------------*/
@@ -1484,6 +1367,33 @@ $(document).ready(function () {
 
         console.log('executed -------------------------------')
         /* Calculate the query for database */
+
+        // If there's nothing in the test tube other than solid, add AIR to the available reaction list but if theres already air then dont
+        if (Number(tube.chemVols) == 0) {
+            tube.contains.push({
+                formula_id_f: 'air',
+                formula_text: "air",
+                volume: 20
+            })
+        } else {
+            // remove air if exists
+            var a = $.extend([], tube.contains)
+            for (var i = 0; i < a.length; a++) { 
+                if (a.formula_id_f == "air") { 
+                    tube.contains.splice(i, 1)
+                }
+            }
+
+
+        }
+
+
+
+
+
+
+
+
         var reagentsToQuery = []
         var reagents = []
         console.log("ONE: TUBE", tube)
@@ -1593,7 +1503,13 @@ $(document).ready(function () {
 
             var HTMLarr = []
             for (reagent of Object.keys(volCol)) {
-                HTMLarr.push(`<p> ${volCol[reagent].volume} cm³ ${formatChemForm(reagent)}, ${volCol[reagent].color} ${volCol[reagent].state}, ${volCol[reagent].odor} </p>`)
+                if (reagent == "H₂O_(l)") {
+                    HTMLarr.push(`<p> ${formatChemForm(reagent)}, ${volCol[reagent].color} ${volCol[reagent].state}, ${volCol[reagent].odor} </p>`) // ID1         
+                } else {
+                    HTMLarr.push(`<p> ${volCol[reagent].volume} cm³ ${formatChemForm(reagent)}, ${volCol[reagent].color} ${volCol[reagent].state}, ${volCol[reagent].odor} </p>`)
+                }
+
+
                 if (volCol[reagent].color !== "colorless") {
 
                     // If it's solid, add it to the ppt array instead
@@ -1727,7 +1643,18 @@ $(document).ready(function () {
 
 
             }
-            $('#info').html(`<p> ${volCol[t.formula_id].volume} cm³ ${formatChemForm(t.formula_id)}, ${volCol[t.formula_id].color} ${volCol[t.formula_id].state}, ${volCol[t.formula_id].odor} </p>`)
+
+            /* Control HTML */
+            if (t.formula_id == "H₂O_(l)") {
+                $('#info').html(`<p> ${formatChemForm(t.formula_id)}  </p>`)
+                // ID1
+            } else if (t.formula_id == "air") { 
+                $('#info').html(`<p> Air </p>`)
+                
+            } else  {
+                $('#info').html(`<p> ${volCol[t.formula_id].volume} cm³ ${formatChemForm(t.formula_id)}, ${volCol[t.formula_id].color} ${volCol[t.formula_id].state}, ${volCol[t.formula_id].odor} </p>`)
+
+            }
 
         }
 
@@ -1846,10 +1773,29 @@ $(document).ready(function () {
         var tube = objectsInUse[id]
 
 
+        // If there's nothing in the test tube other than solid, add AIR to the available reaction list but if theres already air then dont
+        if (Number(tube.chemVols) == 0) {
+            tube.contains.push({
+                formula_id_f: 'air',
+                formula_text: "air",
+                volume: 20
+            })
+        } else {
+            // remove air if exists
+            var a = $.extend([], tube.contains)
+            for (var i = 0; i < a.length; a++) { 
+                if (a.formula_id_f == "air") { 
+                    tube.contains.splice(i, 1)
+                }
+            }
+
+
+        }
+
         /* -------------- PART 1: WHAT'S INSIDE THE TUBE AND WHAT DOES IT REACT WITH --------------*/
 
 
-
+        console.log(tube, '---------------0-------------------')
 
 
         // Color
@@ -1978,7 +1924,12 @@ $(document).ready(function () {
 
             var HTMLarr = []
             for (reagent of Object.keys(volCol)) {
-                HTMLarr.push(`<p> ${volCol[reagent].volume} cm³ ${formatChemForm(reagent)}, ${volCol[reagent].color} ${volCol[reagent].state}, ${volCol[reagent].odor} </p>`)
+                if (reagent == "H₂O_(l)") {
+                    HTMLarr.push(`<p> ${formatChemForm(reagent)}, ${volCol[reagent].color} ${volCol[reagent].state}, ${volCol[reagent].odor} </p>`) // ID1         
+                } else {
+                    HTMLarr.push(`<p> ${volCol[reagent].volume} cm³ ${formatChemForm(reagent)}, ${volCol[reagent].color} ${volCol[reagent].state}, ${volCol[reagent].odor} </p>`)
+                }
+
                 if (volCol[reagent].color !== "colorless") {
 
                     // If it's solid, add it to the ppt array instead
@@ -2014,37 +1965,11 @@ $(document).ready(function () {
                 }
 
             }
-            $('#info').html(HTMLarr.join(" "))
+            // $('#info').html(HTMLarr.join(" "))
 
 
 
-            /*
-            // get rid of duplications
-            allReactingReagentsSimple = [...new Set(allReactingReagentsSimple)]
-            console.log(allReactingReagents, "--------------------", JSON.stringify(allReactingReagents), volCol)
- 
-            // allReactingReagents {"Ca²⁺_(conc)":["NaOH_(aq)"],"Al³⁺_(aq)":["NaOH_(aq)","NH₃_(aq)"]}
-            // volCol {}
- 
-            // Generate a string to input as the info. Should include color and volume data and state data
-            
-            for (key of Object.keys(volCol)) {
-                HTMLarr.push(`<p> ${volCol[key].volume} cm³ ${formatChemForm(key)}, ${volCol[key].color} ${volCol[key].state}, ${volCol[key].odor} </p>`)
-                if (volCol[key].color !== "colorless") {
-                    if (volCol[key].hex) {
-                        colorArray.push(volCol[key].hex)
-                    } else {
-                        colorArray.push(volCol[key].color)
-                    }
-                    colorWeight.push("1")
- 
-                }
- 
-            }
- 
-            $('#info').html(HTMLarr.join(" "))
- 
-            */
+
 
 
 
@@ -2114,8 +2039,13 @@ $(document).ready(function () {
 
 
             }
-            $('#info').html(`<p> ${volCol[t.formula_id].volume} cm³ ${formatChemForm(t.formula_id)}, ${volCol[t.formula_id].color} ${volCol[t.formula_id].state}, ${volCol[t.formula_id].odor} </p>`)
+            // if (t.formula_id == "H₂O_(l)") { 
+            //     $('#info').html(`<p> ${formatChemForm(t.formula_id)}, ${volCol[t.formula_id].color} ${volCol[t.formula_id].state}, ${volCol[t.formula_id].odor} </p>`)
+            //     // ID1
+            // } else { 
+            //     $('#info').html(`<p> ${volCol[t.formula_id].volume} cm³ ${formatChemForm(t.formula_id)}, ${volCol[t.formula_id].color} ${volCol[t.formula_id].state}, ${volCol[t.formula_id].odor} </p>`)
 
+            // }
         }
 
 
@@ -2394,7 +2324,7 @@ $(document).ready(function () {
             // Update the HTML text            
             var updatedHtmlArr = []
             // and the context menu
-            var popupHtmlArr = [`<p> ${tube.item_name} </p>`, `<a onclick="inspect('${tube.div_id}')"> Inspect </a>`]
+            var popupHtmlArr = [`<p> ${tube.item_name} </p>`, `<a onclick="inspect('${tube.div_id}')"> Inspect </a>`] // ID2
             // and the tube Apparatus class
             var containsTemp = []
             for (reagent of Object.keys(volColTemp)) {
@@ -2403,8 +2333,20 @@ $(document).ready(function () {
                 var volume = (volColTemp[reagent].volume).toFixed(2)
                 var state = volColTemp[reagent].state
                 var odor = volColTemp[reagent].odor
-                updatedHtmlArr.push(`<p> ${volume} cm³ ${formatChemForm(reagent)}, ${color} ${state}, ${odor}`)
-                popupHtmlArr.push(`<p> ${volume} cm³ </p> <p> ${formatChemForm(reagent)}`)
+
+                /* Control HTML */
+                if (reagent == "H₂O_(l)") {
+                    updatedHtmlArr.push(`<p> ${formatChemForm(reagent)}`) // ID1
+                    popupHtmlArr.push(`<p> ${formatChemForm(reagent)} </p>`)
+                } else if (reagent == "air") { 
+                    updatedHtmlArr.push(`<p> Air </p>`) // ID1
+                    popupHtmlArr.push(`<p> Air </p>`)
+                } else  {
+                    updatedHtmlArr.push(`<p> ${volume} cm³ ${formatChemForm(reagent)}, ${color} ${state}, ${odor}`)
+                    popupHtmlArr.push(`<p> ${volume} cm³ </p> <p> ${formatChemForm(reagent)}`)
+                }
+
+
                 containsTemp.push({
                     formula_id_f: formatChemForm(reagent),
                     formula_text: volColTemp[reagent].formula_text,
@@ -2479,11 +2421,16 @@ $(document).ready(function () {
             }
             // First, we need to check if any of the existing ppts have dissolved / whatever, then we can animate that 
             // i.e. is in the volCol object but not in the new volColTemp object
+
+            // Also need to check that 
             for (reagent of Object.keys(volCol)) {
                 // PPT
                 if (volCol[reagent].state == "precipitate") {
                     // Find out if this reagent exists in the new object
                     if (volColTemp[reagent]) {
+
+
+
                         // yes, still exists
                         // Don't do anything to it, set its div to FALSE
                         availableColorDivs[pptSDrawn[reagent]] = false
@@ -2493,9 +2440,15 @@ $(document).ready(function () {
                         // animate it's disapperance
                         // CODE HERE
                         console.log(pptSDrawn[reagent], "this is the PPT DIV ID")
+                        
+
+
                         $(`#ppt-${pptSDrawn[reagent]}`).fadeTo(7500, 0, () => {
                             $(this).css('filter', '')
                         })
+
+
+
 
 
                     }
@@ -2535,19 +2488,40 @@ $(document).ready(function () {
                         // This means that the the old reagentL was a ppt,
                         // hence we need to change that ppt's color INSTEAD of drawing a new ppt
                         // first find the div id for that
-                        var div_id = `ppt-${pptsDrawn[oldReagentL]}`
+                        var div_id = `ppt-${pptSDrawn[oldReagentL]}`
                         // Now, change the color of THIS div only.
                         // blah blah change color code
+                        $(`#${div_id}`).css({
+                            'filter': `${filteredCss}`,
+                            "-webkit-transition": "-webkit-filter 10s linear",
+                            "transition": "filter 10s linear",
+                            "opacity": "1"
+                        })
+                        $(`#${div_id}`).stop(true)
+                        $(`#${div_id}`).fadeTo(1000, 1, () => {
+                            
+                        })
+
 
                         // Remove availableColorDivs for this one
-                        availableColorDivs[pptsDrawn[oldReagentL]] = false
+                        availableColorDivs[pptSDrawn[oldReagentL]] = false
                     } else if (volCol[oldReagentR].state == "precipitate") {
                         // This means that the the old reagentR was a ppt,
                         // hence we need to change that ppt's color INSTEAD of drawing a new ppt
                         // first find the div id for that
-                        var div_id = `ppt-${pptsDrawn[oldReagentR]}`
+                        var div_id = `ppt-${pptSDrawn[oldReagentR]}`
                         // Now, change the color of THIS div only.
                         // blah blah change color code
+                        $(`#${div_id}`).css({
+                            'filter': `${filteredCss}`,
+                            "-webkit-transition": "-webkit-filter 10s linear",
+                            "transition": "filter 10s linear",
+                            "opacity": "1"
+                        })
+                        $(`#${div_id}`).stop(true)
+                        $(`#${div_id}`).fadeTo(1000, 1, () => {
+                            
+                        })
 
                         // Remove availableColorDivs for this one
                         availableColorDivs[pptSDrawn[oldReagentR]] = false
@@ -2832,9 +2806,201 @@ $(document).ready(function () {
 
     }
 
-    // module.exports = { 
-    //     clickedBasket: clickedBasket
-    // }
+    inspectFilter = async function (id) {
+        preventMove = true
+        alertify.prompt("Inspecting filter", "",
+            function (evt, value) {
+                $("#filter-inspect").remove()
+                $("#filter-info").remove()
+                $("#reactAir").remove()
+                preventMove = false
+            }, function () {
+                $("#filter-inspect").remove()
+                $("#filter-info").remove()
+                $("#reactAir").remove()
+                preventMove = false
+            }).setHeader("Filter Inspection")
+        // Hide input box
+        $('.ajs-input').hide()
+
+        // Insert container for image
+        $('.ajs-content').append('<div id="filter-inspect"></div>').append(`<button id="reactAir" onclick="reactAir('${id}')"> React with air </button>`).append('<div id="filter-info"></div>')
+        $('#filter-inspect').append('<div id="filter-image-div"></div>')
+        $('#filter-image-div').append('<div id="filter-background-image"></div>')
+        $("#filter-image-div").append('<div id="filter-ppt-1" class="filter-ppt"></div>').append('<div id="filter-ppt-2" class="filter-ppt"></div>').append('<div id="filter-ppt-3" class="filter-ppt"></div>')
+        var funnel = objectsInUse[id]
+        var pptSDrawn = {
+
+        }
+        var reagentsToQuery = []
+        var pptVolume = {}
+        funnel.contains.forEach(ppt => {
+            reagentsToQuery.push(ppt.formula_id_f.split(" ").join("_"))
+            pptVolume[ppt.formula_id_f] = ppt.volume
+        })
+        var data = JSON.parse(await Promise.resolve(($.get('/inspect/getPpt', { arr: reagentsToQuery }))))
+
+        var infoHtml = []
+        infoHtml.push(`<p id="rxt-status"> Click the button to begin reaction. </p>`)
+        var volCol = {}
+        for (var i = 1; i < data.length + 1; i++) {
+            var ppt = data[i - 1]
+            if (!pptSDrawn[i - 1]) {
+                // pptSDrawn[i] = ppt.formula_id
+                pptSDrawn[ppt.formula_id] = i
+            }
+
+            // generate color
+            var color;
+            if (ppt.hex) {
+                color = chroma(ppt.hex).rgb()
+            } else {
+                color = chroma(ppt.color).rgb()
+            }
+
+
+            var color = new Color(color[0], color[1], color[2])
+            var solver = new Solver(color)
+            var result = solver.solve()
+            var filteredCss = result.filter // returns the filtered string   
+            // Add ppt div
+            $(`#filter-ppt-${i}`).css({
+                "filter": `${filteredCss}`,
+                "opacity": "1"
+            })
+
+            infoHtml.push(`<p> ${pptVolume[formatChemForm(ppt.formula_id)]} cm³ ${formatChemForm(ppt.formula_id)}, ${ppt.color} ${ppt.state} <p>`)
+            volCol[ppt.formula_id] = {
+                volume: pptVolume[formatChemForm(ppt.formula_id)],
+                color: ppt.color,
+                state: ppt.state
+            }
+        }
+
+
+        $("#filter-info").html(infoHtml.join(" "))
+
+        // await timeout(5000)
+
+        reactAir = async function () {
+            $('#reactAir').prop('disabled', true);
+
+
+            // Query database for possible reactions with air
+            var data = JSON.parse(await Promise.resolve(($.get('/inspect/getAirReaction', { arr: reagentsToQuery }))))
+            if (data.length) {
+                $("#rxt-status").html("Reaction in progress...")
+                // There's a reaction
+                var oldPptItems = funnel.contains
+                var newPptItems = []
+                for (var i = 0; i < data.length; i++) {
+                    var newPpt = data[i]
+                    var oldDivNumber = pptSDrawn[newPpt.formula_id]
+                    if (volCol[newPpt.produces_1]) {
+                        // the new ppt already exists in volCol, thus it already existed, thus no change 
+                        // Just change its volume and delete the old ppt
+                        volCol[newPpt.produces_1].volume = Number(volCol[newPpt.produces_1].volume) + Number(volCol[newPpt.formula_id].volume)
+                        var oldDivNumber = pptSDrawn[newPpt.formula_id]
+                        $(`#filter-ppt-${oldDivNumber}`).css({
+                            "filter": "",
+                            "opacity": "0"
+                        })
+
+                    } else {
+                        // volCol[newPpt.formula_id] is the OLD ppt
+                        volCol[newPpt.produces_1] = {
+                            volume: volCol[newPpt.formula_id].volume, // same volume
+                            color: newPpt.color,
+                            state: newPpt.state,
+                            formula_text: newPpt.formula_text
+                        }
+                        // Transition the color
+                        var rgbcol = []
+                        if (newPpt.hex) {
+                            rgbcol = chroma(newPpt.hex).rgb()
+                        } else {
+                            rgbcol = chroma(newPpt.color).rgb()
+                        }
+                        var color = new Color(rgbcol[0], rgbcol[1], rgbcol[2])
+                        var solver = new Solver(color)
+                        var result = solver.solve()
+                        var filteredCss = result.filter // returns the filtered string    
+
+
+                        $(`#filter-ppt-${oldDivNumber}`).css({
+                            "filter": `${filteredCss}`,
+                            "-webkit-transition": "-webkit-filter 500ms linear",
+                            "transition": "filter 10s linear"
+                        })
+
+                        // Delete the old key, set the new key
+                        delete pptSDrawn[newPpt.formula_id]
+                        pptSDrawn[newPpt.produces_1] = oldDivNumber
+
+
+
+
+
+                    }
+
+
+                    delete volCol[newPpt.formula_id]
+
+
+                }
+
+
+                await timeout(10000)
+
+                // Reset the html array
+                var newHtml = []
+                newHtml.push(`<p id="rxt-status"> Reaction complete. </p>`)
+                var newContains = []
+                for (key of Object.keys(volCol)) {
+                    newHtml.push(`<p> ${volCol[key].volume} cm³ ${formatChemForm(key)}, ${volCol[key].color} ${volCol[key].state}`)
+                    newContains.push({
+                        formula_id_f: formatChemForm(key),
+                        formula_text: volCol[key].formula_text,
+                        volume: volCol[key].volume
+                    })
+                }
+                $("#filter-info").html(newHtml.join(" "))
+
+                // Reset what the tube contains
+                objectsInUse[id].contains = newContains
+
+                // Transition the color
+
+
+
+
+
+
+
+                $('#reactAir').prop('disabled', false);
+
+            } else {
+                $("#rxt-status").html("No further reaction possible.")
+                $('#reactAir').prop('disabled', true);
+            }
+
+
+
+        }
+
+
+
+    }
+
+    detach = function (id) {
+        var linkedTo = objectsInUse[id].linked_to
+
+        // Remove the link reference in both
+        objectsInUse[id].linked_to = ""
+        objectsInUse[linkedTo].linked_to = ""
+        $(`#${id} > .popup`).hide()
+        makeMovable(id)
+    }
 
     function formatChemForm(str) {
         return str.split("_").join(" ")

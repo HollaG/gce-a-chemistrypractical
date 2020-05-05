@@ -16,7 +16,7 @@ class Apparatus {
     get chemVols() { 
         var a = 0
         this.contains.forEach(e => { 
-            if (e.formula_id_f.split(" ")[1] == "(aq)") { 
+            if (e.formula_id_f.split(" ")[1] == "(aq)" || e.formula_text == "air") { 
                 a = a + e.volume
             }
         })

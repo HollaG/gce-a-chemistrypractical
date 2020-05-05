@@ -436,37 +436,79 @@ router.get('/inspect/getIons', async (req, res, next) => {
 
 })
 
+router.get('/inspect/getPpt', async (req, res, next) => { 
+    try {
+        console.log('starting')
+        var connection = await mysql.createConnection(config.db_config)
+        console.log('after-connection')
+        var query = decodeURI(req.query.arr).split(",")
+        console.log(query)
+        var result = []
+        for (var i = 0; i < query.length; i++) {
+            var r = await connection.query(`SELECT * FROM reference WHERE formula_id = ?`, query[i]);
+            console.log(r[0], i)
+            console.log('-----------------------')
+            console.log(r[0].length)
 
-function timeout(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-}
-var arr = ["Ca", "Mg"]
-arr.forEach(async e => {
-    for (var i = 0; i < 10; i++) {
 
-        await timeout(1000)
-        console.log(i, e)
+
+            if (r[0].length) {
+                r[0].forEach(element => {
+                    result.push(element)
+                })
+            }
 
 
 
+        }
+
+
+        // console.log('done!')
+        res.send(JSON.stringify(result))
+        console.log("^^^^^^^^^^^^^^^^")
+        console.log(result)
+    } catch (e) {
+
+    } finally {
 
     }
+
+
 })
-    ;
 
-for (var i = 0; i < 10; i++) {
-    (async () => {
-        await timeout(1000)
-        console.log(i)
+router.get('/inspect/getAirReaction', async (req, res, next) => { 
+    try { 
 
-    })();
+        var connection = await mysql.createConnection(config.db_config)
+        console.log('after-connection')
+        var query = decodeURI(req.query.arr).split(",")
+        console.log(query)
+        var result = []
+        for (var i = 0; i < query.length; i++) { 
+            r = await connection.query(`SELECT ions.formula_id, ions.produces_1, reference.color, reference.state, reference.formula_text, reference.hex FROM ions INNER JOIN reference ON ions.produces_1 = reference.formula_id WHERE ions.formula_id = ? AND ions.reacts_with_indiv_1 = "air"`,[query[i]])
+            if (r[0].length) {
+                r[0].forEach(element => {
+                    result.push(element)
+                })
+            }
+        }
+        console.log(result,  "-------------------------")
+        res.send(JSON.stringify(result))
+    } catch (e) { 
 
 
-}
+    } finally {
+
+    }
+    
+    
+    
+ 
+    
 
 
+})
 
-console.log("not blocked")
 
 
 module.exports = router

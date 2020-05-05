@@ -1,48 +1,67 @@
 .basket { 
+    
     position: absolute;
-    width: 10vw;
-    height: 5vw;
-    top: 5vw;
-    left: 5vw;
-    background-color: red;
+    width: 20vw;
+    height: 9.7vw;
+    top: 2.7vw;
+    left: 2.5vw;
+    cursor: pointer;
+    /* background-color: red; */
 
 }
 
 .working-area { 
     position: absolute;
-    width: 55vw;
-    height: 15vw;
-    top: 20vw;
-    left: 20vw;
-    background-color: gray;
+    width: 64vw;
+    height: 19.5vw;
+    top: 22vw;
+    left: 22.5vw;
+    transform: skewX(15deg);
+    /* cursor: pointer; */
+    /* background-color: gray; */
+    
     /* z-index: 5 */
 }
 
 .rack { 
     position: absolute;
-    width: 15vw;
-    height: 2vw;
-    top: 15vw;
-    left: 23vw;
-    background-color: red
+    width: 16.5vw;
+    height: 4vw;
+    top: 16vw;
+    left: 6vw;
+    cursor: pointer;
+    /* background-color: red */
 }
 
 .bench { 
     position: absolute;
-    width: 15vw; 
-    height: 4vw;
-    top: 5vw;
-    left: 23vw;
-    background-color: red;
+    width: 22vw;
+    height: 21.5vw;
+    top: 0vw;
+    left: 22.5vw;
+    cursor: pointer;
+    /* background-color: red; */
 }
 
 .reagents { 
     position: absolute;
-    width: 8vw;
-    height: 8vw;
-    top: 29vw;
-    left: 5vw;
-    background-color: red;
+    cursor: pointer;
+    width: 11.5vw;
+    height: 7vw;
+    top: 20.5vw;
+    left: 8vw;
+    /* background-color: red; */
+}
+.qa-sheet { 
+    position: absolute;
+    width: 11.3vw;
+    height: 13.7vw;
+    top: 28.5vw;
+    left: 9.6vw;
+    cursor: pointer;
+    opacity: 0.5;
+    
+    transform: skewX(15deg);
 }
 /* Overlay the context menu */
 .popup { 
@@ -237,9 +256,84 @@
    
 }
 
+/* Inspect Filter Page */
+#filter-inspect { 
+    width: 25vw;
+    height: 25vw;
+    margin: auto;
+    z-index: 200;
+    overflow: hidden;
+}
+
+#filter-image-div { 
+    width: 100%;
+    height: 100%;
+}
+
+#filter-background-image { 
+    background-image: url('/images/filter-inspect.png');
+    background-repeat: no-repeat;
+    background-size: 100% auto;
+    background-position: bottom;
+    width: 100%;
+    height: 100%;
+    z-index:0
+}
+
+.filter-ppt { 
+    opacity: 0;
+    
+}
+#filter-ppt-1 {
+    background-image: url('/images/filter-ppt1.png');    
+    width: 100%;
+    height: 100%;
+    position: relative;
+    top: -100%;
+    z-index: 32;
+    background-repeat: no-repeat;
+    background-position: bottom;
+    /* left: 0%; */
+    background-size: contain;
+}
+
+#filter-ppt-2 { 
+    background-image: url('/images/filter-ppt2.png');
+    width: 100%;
+    height: 100%;
+    position: relative;
+    top: -200%;
+    z-index: 31;
+    background-repeat: no-repeat;
+    background-position: bottom;
+    /* left: 0%; */
+    background-size: contain;
+}
+
+#filter-ppt-3 { 
+    background-image: url('/images/filter-ppt3.png');
+    width: 100%;
+    height: 100%;
+    position: relative;
+    top: -300%;
+    z-index: 30;
+    background-repeat: no-repeat;
+    background-position: bottom;
+    /* left: 0%; */
+    background-size: contain;
+}
+
+
 .on-working-area { 
     z-index: 10;
+    cursor: pointer;
+}
+.popup {
+    cursor: auto
+}
 
+.popup > a { 
+    cursor: pointer
 }
 .moving { 
     /* width: 100px;
@@ -250,7 +344,13 @@
     z-index: 100
 }
 
-.bench-bottle, .reagent-bottle { 
+.bench-bottle { 
+    width: 6vw !important;
+    height: 6vw !important;
+    position: absolute;
+    background-size: cover
+}
+.reagent-bottle { 
     width: 5vw !important;
     height: 5vw !important;
     position: absolute;
@@ -284,6 +384,7 @@
 .test_tube { 
     width: 5vw !important;
     height: 5vw !important;
+    /* z-index: 10; */
 }
 
 .boiling_tube { 
@@ -294,6 +395,7 @@
 .funnel, .filter_funnel { 
     width: 4vw !important;
     height: 4vw !important;
+    /* z-index: 5 */
 }
 
 .filter, .folded_filter { 

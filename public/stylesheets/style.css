@@ -1,9 +1,10 @@
 body {
   margin: 0;
   font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
-  background-image: url('/images/v3.jpeg');
+  background-image: url('/images/background.jpg');
   background-repeat: no-repeat;
   background-size: 100% auto;
+  background-position: contain;
   /* height: 1000px; */
 }
 
