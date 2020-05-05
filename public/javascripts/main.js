@@ -38,8 +38,7 @@ $(document).ready(function () {
 
     // Compound - cation-anion relationship
     clickedBasket = async function () {
-        // AJAX to server to retrieve apparatus in the basket
-        var data = JSON.parse(await Promise.resolve(($.get('/fetch', { clicked: "basket" }))))
+        
 
 
         // Prompt user: which to select?
@@ -165,6 +164,11 @@ $(document).ready(function () {
         // select the prompt and hide the default input box
         $('.ajs-input').hide()
 
+
+        // AJAX to server to retrieve apparatus in the basket
+        var data = JSON.parse(await Promise.resolve(($.get('/fetch', { clicked: "basket" }))))
+
+
         // insert custom select element
         // var str = data.map(row => `<option value='${row.apparatus_id}'> ${row.item_name} </option>`)
         var str = []
@@ -192,7 +196,7 @@ $(document).ready(function () {
     }
 
     clickedRack = async function () {
-        var data = JSON.parse(await Promise.resolve(($.get('/fetch', { clicked: "rack" }))))
+        
         alertify.prompt('Select apparatus', 'boiling_tube',
             async function (evt, value) {
                 var timesUsed = objectsUsed[value] || 0
@@ -304,6 +308,7 @@ $(document).ready(function () {
         // select the prompt and hide the input
         $('.ajs-input').hide()
 
+        var data = JSON.parse(await Promise.resolve(($.get('/fetch', { clicked: "rack" }))))
         // insert custom select element
         // var str = data.map(row => `<option value='${row.apparatus_id}'> ${row.item_name} </option>`)
         var str = []
@@ -331,8 +336,7 @@ $(document).ready(function () {
 
     clickedBench = async function () {
 
-        var data = JSON.parse(await Promise.resolve(($.get('/fetch', { clicked: "bench" }))))
-
+        
         alertify.prompt('Select chemical', 'ammonia_0_aq',
             async function (evt, value) {
                 var timesUsed = objectsUsed[value] || 0
@@ -421,6 +425,8 @@ $(document).ready(function () {
         // select the prompt and hide the input
         $('.ajs-input').hide()
 
+        var data = JSON.parse(await Promise.resolve(($.get('/fetch', { clicked: "bench" }))))
+
         // insert custom select element
         // var str = data.map(row => `<option value='${row.apparatus_id}'> ${row.item_name} </option>`)
         var str = []
@@ -447,8 +453,7 @@ $(document).ready(function () {
 
     clickedReagents = async function () {
         console.log('clicked')
-        var data = JSON.parse(await Promise.resolve(($.get('/fetch', { clicked: "reagents" }))))
-
+        
         // console.log(JSON.stringify(data))
         alertify.prompt('Select chemical', 'aluminium_3p_aq',
             async function (evt, value) {
@@ -540,6 +545,9 @@ $(document).ready(function () {
             }).setHeader("Reagents")
         // select the prompt and hide the input
         $('.ajs-input').hide()
+
+        var data = JSON.parse(await Promise.resolve(($.get('/fetch', { clicked: "reagents" }))))
+
 
         // insert custom select element
         // var str = data.map(row => `<option value='${row.apparatus_id}'> ${row.item_name} </option>`)
