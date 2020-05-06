@@ -900,8 +900,8 @@ $(document).ready(function () {
                     // $(`#${funnel_id}`).remove()
 
                     // Get the position of the clicked test tube
-                    var left = ((((Number($(`#${tube_id}`).css("left").replace(/\D/g, ''))) / document.body.clientWidth) * 100) + 0.5817) + "vw"  // returns PX values
-                    var top = ((((Number($(`#${tube_id}`).css("top").replace(/\D/g, ''))) / document.body.clientWidth) * 100) - 1) + "vw"  // returns PX values
+                    var left = ((((Number($(`#${tube_id}`).css("left").replace(/[^0-9.]/g, "", ''))) / Number(document.body.clientWidth)) * 100) + 0.5817) + "vw"  // returns PX values
+                    var top = ((((Number($(`#${tube_id}`).css("top").replace(/[^0-9.]/g, "", ''))) / Number(document.body.clientWidth)) * 100) - 1) + "vw"  // returns PX values
 
 
                     // Disable pointer-events
@@ -910,9 +910,7 @@ $(document).ready(function () {
                         "left": left,
                         "top": top
                     })
-                    // Set it down at a certain position
-                    putDownItemInWorkingArea()
-
+                    
                     // Teleport the item to the correct place
 
                     // Generate HTML popup
@@ -923,6 +921,9 @@ $(document).ready(function () {
                     })
                     $(`#${new_id} > .popup`).html(filterHtml.join(" "))
 
+
+                    // Set it down at a certain position
+                    putDownItemInWorkingArea()
 
                     // Change the background picture of the test tube
                     // $(`#${tube_id}`).css({
@@ -972,8 +973,8 @@ $(document).ready(function () {
 
                     // Set position
                     
-                    var newLeft = ((((Number($(`#${id}`).css("left").replace(/\D/g, ''))) / document.body.clientWidth) * 100) + 6.3) + "vw"  // returns PX values
-                    var newTop = ((((Number($(`#${id}`).css("top").replace(/\D/g, ''))) / document.body.clientWidth) * 100) + 2.7) + "vw"  // returns PX values
+                    var newLeft = ((((Number($(`#${id}`).css("left").replace(/[^0-9.]/g, "", ''))) / document.body.clientWidth) * 100) + 6.3) + "vw"  // returns PX values
+                    var newTop = ((((Number($(`#${id}`).css("top").replace(/[^0-9.]/g, "", ''))) / document.body.clientWidth) * 100) + 2.7) + "vw"  // returns PX values
 
                     // Set down the first test tube at this position
                     $(`#${currentlyMovingElem}`).css({                        
@@ -988,8 +989,8 @@ $(document).ready(function () {
 
                     // Set position
                     
-                    var newLeft = ((((Number($(`#${id}`).css("left").replace(/\D/g, ''))) / document.body.clientWidth) * 100) - 1.3) + "vw"  // returns PX values
-                    var newTop = ((((Number($(`#${id}`).css("top").replace(/\D/g, ''))) / document.body.clientWidth) * 100) + 2.7) + "vw"  // returns PX values
+                    var newLeft = ((((Number($(`#${id}`).css("left").replace(/[^0-9.]/g, "", ''))) / document.body.clientWidth) * 100) - 1.3) + "vw"  // returns PX values
+                    var newTop = ((((Number($(`#${id}`).css("top").replace(/[^0-9.]/g, "", ''))) / document.body.clientWidth) * 100) + 2.7) + "vw"  // returns PX values
 
                     // Set down the first test tube at this position
                     $(`#${currentlyMovingElem}`).css({                        
@@ -2671,6 +2672,24 @@ $(document).ready(function () {
                 pptSDrawn[ppt.formula_id] = i
             }
 
+
+            // Generate new color
+            var color;
+            if (ppt.hex) {
+                color = chroma(ppt.hex)
+            } else {
+                color = chroma(ppt.color)
+            }
+
+            $(`#filter-ppt-${i}`).css({
+                "background-color": color,
+                "opacity": "1"
+            })
+
+
+
+            /*
+
             // generate color
             var color;
             if (ppt.hex) {
@@ -2690,6 +2709,7 @@ $(document).ready(function () {
                 "opacity": "1"
             })
 
+            */
             infoHtml.push(`<p> ${pptVolume[formatChemForm(ppt.formula_id)]} cm³ ${formatChemForm(ppt.formula_id)}, ${ppt.color} ${ppt.state} <p>`)
             volCol[ppt.formula_id] = {
                 volume: pptVolume[formatChemForm(ppt.formula_id)],
