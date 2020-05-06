@@ -5,7 +5,7 @@ $(document).ready(function () {
     var isMoving = false // used to check if you click on another div when youre holding a div
     var preventMove = false // used to check when youre clicking on a link in the popup
     var heldItem = ""
-    var objectsUsed = {
+    objectsUsed = {
 
     }
     var currentlyMovingElem;
@@ -38,7 +38,7 @@ $(document).ready(function () {
 
     // Compound - cation-anion relationship
     clickedBasket = async function () {
-        
+
 
 
         // Prompt user: which to select?
@@ -195,8 +195,8 @@ $(document).ready(function () {
 
     }
 
-    clickedRack = async function () {
-        
+    clickedRack = async function (id) {
+
         alertify.prompt('Select apparatus', 'boiling_tube',
             async function (evt, value) {
                 var timesUsed = objectsUsed[value] || 0
@@ -268,6 +268,8 @@ $(document).ready(function () {
                         if (objectsInUse[elementIdToReference].attribute == "inspectable") {
                             popupHTML.push(`<a onclick="inspect('${elementIdToReference}')"> Inspect </a>`)
                         }
+                        popupHTML.push(`<a onclick="duplicate('${elementIdToReference}')"> Duplicate </a>`)
+                    
                         popupHTML.push(`</div>`)
 
 
@@ -336,7 +338,7 @@ $(document).ready(function () {
 
     clickedBench = async function () {
 
-        
+
         alertify.prompt('Select chemical', 'ammonia_0_aq',
             async function (evt, value) {
                 var timesUsed = objectsUsed[value] || 0
@@ -453,7 +455,7 @@ $(document).ready(function () {
 
     clickedReagents = async function () {
         console.log('clicked')
-        
+
         // console.log(JSON.stringify(data))
         alertify.prompt('Select chemical', 'aluminium_3p_aq',
             async function (evt, value) {
@@ -575,6 +577,7 @@ $(document).ready(function () {
     putDownItemInWorkingArea = async function () {
         console.log('putdown')
         if (isMoving) {
+            preventMove = false
             isMoving = false;
             console.log('putdownla')
             console.log(currentlyMovingElem)
@@ -1354,7 +1357,7 @@ $(document).ready(function () {
         $("#tube-image-div").append(`<div id='ppt-1' class="ppt"></div>`).append(`<div id='ppt-2' class="ppt"></div>`).append(`<div id='ppt-3' class="ppt"></div>`)
         // Add the buttons to shake test tube
 
-        
+
 
 
         /* -------------- PART 1: WHAT'S INSIDE THE TUBE AND WHAT DOES IT REACT WITH --------------*/
@@ -1386,8 +1389,8 @@ $(document).ready(function () {
         } else {
             // remove air if exists
             var a = $.extend([], tube.contains)
-            for (var i = 0; i < a.length; a++) { 
-                if (a.formula_id_f == "air") { 
+            for (var i = 0; i < a.length; a++) {
+                if (a.formula_id_f == "air") {
                     tube.contains.splice(i, 1)
                 }
             }
@@ -1656,10 +1659,10 @@ $(document).ready(function () {
             if (t.formula_id == "H₂O_(l)") {
                 $('#info').html(`<p> ${formatChemForm(t.formula_id)}  </p>`)
                 // ID1
-            } else if (t.formula_id == "air") { 
+            } else if (t.formula_id == "air") {
                 $('#info').html(`<p> Air </p>`)
-                
-            } else  {
+
+            } else {
                 $('#info').html(`<p> ${volCol[t.formula_id].volume} cm³ ${formatChemForm(t.formula_id)}, ${volCol[t.formula_id].color} ${volCol[t.formula_id].state}, ${volCol[t.formula_id].odor} </p>`)
 
             }
@@ -1791,8 +1794,8 @@ $(document).ready(function () {
         } else {
             // remove air if exists
             var a = $.extend([], tube.contains)
-            for (var i = 0; i < a.length; a++) { 
-                if (a.formula_id_f == "air") { 
+            for (var i = 0; i < a.length; a++) {
+                if (a.formula_id_f == "air") {
                     tube.contains.splice(i, 1)
                 }
             }
@@ -2346,10 +2349,10 @@ $(document).ready(function () {
                 if (reagent == "H₂O_(l)") {
                     updatedHtmlArr.push(`<p> ${formatChemForm(reagent)}`) // ID1
                     popupHtmlArr.push(`<p> ${formatChemForm(reagent)} </p>`)
-                } else if (reagent == "air") { 
+                } else if (reagent == "air") {
                     updatedHtmlArr.push(`<p> Air </p>`) // ID1
                     popupHtmlArr.push(`<p> Air </p>`)
-                } else  {
+                } else {
                     updatedHtmlArr.push(`<p> ${volume} cm³ ${formatChemForm(reagent)}, ${color} ${state}, ${odor}`)
                     popupHtmlArr.push(`<p> ${volume} cm³ </p> <p> ${formatChemForm(reagent)}`)
                 }
@@ -2448,7 +2451,7 @@ $(document).ready(function () {
                         // animate it's disapperance
                         // CODE HERE
                         console.log(pptSDrawn[reagent], "this is the PPT DIV ID")
-                        
+
 
 
                         $(`#ppt-${pptSDrawn[reagent]}`).fadeTo(7500, 0, () => {
@@ -2507,7 +2510,7 @@ $(document).ready(function () {
                         })
                         $(`#${div_id}`).stop(true)
                         $(`#${div_id}`).fadeTo(1000, 1, () => {
-                            
+
                         })
 
 
@@ -2528,7 +2531,7 @@ $(document).ready(function () {
                         })
                         $(`#${div_id}`).stop(true)
                         $(`#${div_id}`).fadeTo(1000, 1, () => {
-                            
+
                         })
 
                         // Remove availableColorDivs for this one
@@ -3009,6 +3012,105 @@ $(document).ready(function () {
         $(`#${id} > .popup`).hide()
         makeMovable(id)
     }
+
+    duplicate = function (id) {
+        try {
+            // check number of objects used
+            var objectToDuplicate = objectsInUse[id]
+            var objectToDuplicateNumber = objectsUsed[objectToDuplicate.apparatus_id] // only allow duplicate apparatus
+            // Update times used
+            objectsUsed[objectToDuplicate.apparatus_id] = Number(objectToDuplicateNumber) + 1
+            // Create new object
+            currentlyMovingElem = `${objectToDuplicate.apparatus_id}-${Number(objectToDuplicateNumber)}`
+            $('.movables').append(`<div class='interactive ${objectToDuplicate.apparatus_id} apparatus moving' id='${currentlyMovingElem}' onclick="makeMovable('${currentlyMovingElem}')"> </div>`)
+            
+            isMoving = true
+            preventMove = true
+            $(document).on('mousemove', function (e) {
+                if (isMoving) {
+                    $(`#${currentlyMovingElem}`).css({
+                        left: ((e.pageX - $(`#${currentlyMovingElem}`).width() / 2) / document.body.clientWidth) * 100 + "vw",
+                        top: ((e.pageY - $(`#${currentlyMovingElem}`).height() / 2) / document.body.clientWidth) * 100 + "vw",
+
+                        "pointer-events": "none",
+                        'background-image': objectToDuplicate.image_url
+
+                    });
+
+
+
+                }
+
+            });
+            $('body').css({ 'pointer-events': 'none' })
+            $('.working-area').css({ 'pointer-events': 'auto' })
+            // Clone apparatus
+            var newObj = $.extend(true, Object.create(Object.getPrototypeOf(objectsInUse[id])), objectsInUse[id]);
+            newObj.div_id = currentlyMovingElem
+            objectsInUse[currentlyMovingElem] = newObj
+
+            $(`#${currentlyMovingElem}`).contextmenu(function (e) {
+                // triggers on child divs too, so prevent that
+                if (this != e.target) return; // https://stackoverflow.com/questions/34113635/click-event-on-child-div-trigger-action-despite-click-handler-was-set-on-parent
+                // Prevent default right-click
+                e.preventDefault()
+                // get rid of all elements below
+
+                if ($(`#${e.target.id}`).children().length == 0) {
+                    // no children aka first time
+                    var elementIdToReference = e.target.id
+
+                    var popupHTML = [`<div class="popup"> <p> ${objectsInUse[elementIdToReference].item_name} </p>`]
+
+                    if (objectsInUse[elementIdToReference].attribute == "inspectable") {
+                        popupHTML.push(`<a onclick="inspect('${elementIdToReference}')"> Inspect </a>`)
+                    }
+                    popupHTML.push(`<a onclick="duplicate('${elementIdToReference}')"> Duplicate </a>`)
+                    popupHTML.push(`</div>`)
+
+
+
+
+                    $(e.target).append(popupHTML.join(" "))
+                }
+                // $(e.target).empty()
+
+                console.log("prevented handler for", e.target)
+
+                // Listener for click, so as to remove the popup
+                $('body').click(function (evt) {
+                    // https://stackoverflow.com/questions/12661797/jquery-click-anywhere-in-the-page-except-on-1-div
+                    if (evt.target.classList.contains('popup'))
+                        return;
+                    //For descendants of menu_content being clicked, remove this check if you do not want to put constraint on descendants.
+                    if ($(evt.target).closest('.popup').length)
+                        return;
+
+                    //Do processing of click event here for every element except with id menu_content
+                    $(e.target).children('.popup').hide()
+                    console.log("bodyclick")
+
+                })
+                // add popup
+                $(e.target).children('.popup').show()
+            })
+           
+
+
+        } catch (e) {
+
+        } finally {
+
+        }
+    }
+
+    function popupHtml(id) { 
+
+    }
+
+
+
+
 
     function formatChemForm(str) {
         return str.split("_").join(" ")
