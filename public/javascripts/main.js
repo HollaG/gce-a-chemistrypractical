@@ -66,30 +66,6 @@ $(document).ready(function () {
                 // Set global variable to tell that an item is moving
                 isMoving = true
 
-                // Make div follow cursor
-                $(document).on('mousemove', function (e) {
-                    console.log(isMoving)
-                    if (isMoving) {
-                        $(`#${currentlyMovingElem}`).css({
-                            left: ((e.pageX - $(`#${currentlyMovingElem}`).width() / 2) / document.body.clientWidth) * 100 + "vw",
-                            top: ((e.pageY - $(`#${currentlyMovingElem}`).height() / 2) / document.body.clientWidth) * 100 + "vw",
-
-                            "pointer-events": "none", // allow click-through
-                            'background-image': data[value][0].image_url // set background image
-
-                        });
-
-
-
-                    }
-
-                });
-
-                // Prevent clicking on the body
-                $('body').css({ 'pointer-events': 'none' })
-                // except the working-area
-                $('.working-area').css({ 'pointer-events': 'auto' })
-
                 mostRecentApparatus = data[value][0]
 
 
@@ -99,58 +75,8 @@ $(document).ready(function () {
 
 
 
-
-
-
-                console.log("^^^^^^^^^^^^^^^^^")
-                console.log(objectsInUse)
-                $(`#${currentlyMovingElem}`).contextmenu(function (e) {
-                    // triggers on child divs too, so prevent that
-                    console.log(this, "thisthisthishtishtishits")
-                    if (this != e.target) {
-                        console.log("FALSE FALSE FALSE FALSE")
-                        isMoving = false
-                        return
-                    }; // https://stackoverflow.com/questions/34113635/click-event-on-child-div-trigger-action-despite-click-handler-was-set-on-parent
-                    // Prevent default right-click
-                    e.preventDefault()
-                    // get rid of all elements below
-                    if ($(`#${e.target.id}`).children().length == 0) {
-                        // no children aka first time
-                        var elementIdToReference = e.target.id
-
-                        // var popupHTML = `<div class="popup"> <p> ${objectsInUse[elementIdToReference].item_name} </p></div>`
-                        var popupHTMLArr = [`<div class="popup">`, `<p> ${objectsInUse[elementIdToReference].item_name} </p>`]
-                        if (item.attribute == "foldable") {
-                            popupHTMLArr.push(`<a onclick='fold("${this.id}")'> Fold filter paper </a>`)
-
-                        }
-                        popupHTMLArr.push(`</div>`)
-
-                        $(e.target).append(popupHTMLArr.join(" "))
-                    }
-
-                    console.log("prevented handler for", e.target)
-                    var elementIdToReference = e.target.id
-
-
-
-
-                    // Listener for click, so as to remove the popup
-                    $('body').click(function (evt) {
-                        // https://stackoverflow.com/questions/12661797/jquery-click-anywhere-in-the-page-except-on-1-div
-                        if (evt.target.classList.contains('popup'))
-                            return;
-                        //For descendants of menu_content being clicked, remove this check if you do not want to put constraint on descendants.
-                        if ($(evt.target).closest('.popup').length)
-                            return;
-
-                        //Do processing of click event here for every element except with id menu_content
-                        $(e.target).children('.popup').hide()
-
-                    })
-                    $(e.target).children('.popup').show()
-                })
+                // Make div follow cursor
+                popupHtml()
 
             }, function () {
                 alertify.error('cancel')
@@ -211,28 +137,6 @@ $(document).ready(function () {
                 $('#rack-prompt').remove();
                 heldItem = value
                 isMoving = true
-                var vH = $('html').height();
-                var vW = $('html').width();
-                $(document).on('mousemove', function (e) {
-                    if (isMoving) {
-                        $(`#${currentlyMovingElem}`).css({
-                            left: ((e.pageX - $(`#${currentlyMovingElem}`).width() / 2) / document.body.clientWidth) * 100 + "vw",
-                            top: ((e.pageY - $(`#${currentlyMovingElem}`).height() / 2) / document.body.clientWidth) * 100 + "vw",
-
-                            "pointer-events": "none",
-                            'background-image': data[value][0].image_url
-
-                        });
-
-
-
-                    }
-
-                });
-
-
-                $('body').css({ 'pointer-events': 'none' })
-                $('.working-area').css({ 'pointer-events': 'auto' })
 
                 mostRecentApparatus = data[value][0]
 
@@ -248,56 +152,8 @@ $(document).ready(function () {
                     })
                 }
 
+                popupHtml()
 
-
-
-
-                $(`#${currentlyMovingElem}`).contextmenu(function (e) {
-                    // triggers on child divs too, so prevent that
-                    if (this != e.target) return; // https://stackoverflow.com/questions/34113635/click-event-on-child-div-trigger-action-despite-click-handler-was-set-on-parent
-                    // Prevent default right-click
-                    e.preventDefault()
-                    // get rid of all elements below
-
-                    if ($(`#${e.target.id}`).children().length == 0) {
-                        // no children aka first time
-                        var elementIdToReference = e.target.id
-
-                        var popupHTML = [`<div class="popup"> <p> ${objectsInUse[elementIdToReference].item_name} </p>`]
-
-                        if (objectsInUse[elementIdToReference].attribute == "inspectable") {
-                            popupHTML.push(`<a onclick="inspect('${elementIdToReference}')"> Inspect </a>`)
-                        }
-                        popupHTML.push(`<a onclick="duplicate('${elementIdToReference}')"> Duplicate </a>`)
-                    
-                        popupHTML.push(`</div>`)
-
-
-
-
-                        $(e.target).append(popupHTML.join(" "))
-                    }
-                    // $(e.target).empty()
-
-                    console.log("prevented handler for", e.target)
-
-                    // Listener for click, so as to remove the popup
-                    $('body').click(function (evt) {
-                        // https://stackoverflow.com/questions/12661797/jquery-click-anywhere-in-the-page-except-on-1-div
-                        if (evt.target.classList.contains('popup'))
-                            return;
-                        //For descendants of menu_content being clicked, remove this check if you do not want to put constraint on descendants.
-                        if ($(evt.target).closest('.popup').length)
-                            return;
-
-                        //Do processing of click event here for every element except with id menu_content
-                        $(e.target).children('.popup').hide()
-                        console.log("bodyclick")
-
-                    })
-                    // add popup
-                    $(e.target).children('.popup').show()
-                })
 
 
             }, function () {
@@ -353,26 +209,7 @@ $(document).ready(function () {
                 $('#bench-prompt').remove();
                 heldItem = value
                 isMoving = true
-                var vH = $('html').height();
-                var vW = $('html').width();
-                $(document).on('mousemove', function (e) {
-                    if (isMoving) {
-                        $(`#${currentlyMovingElem}`).css({
-                            left: ((e.pageX - $(`#${currentlyMovingElem}`).width() / 2) / document.body.clientWidth) * 100 + "vw",
-                            top: ((e.pageY - $(`#${currentlyMovingElem}`).height() / 2) / document.body.clientWidth) * 100 + "vw",
-                            "pointer-events": "none",
-                            'background-image': 'url(/images/mini/reagent-bottle.png)'
-                        });
 
-                    }
-
-
-                });
-
-
-                $('body').css({ 'pointer-events': 'none' })
-                $('.working-area').css({ 'pointer-events': 'auto' })
-                console.log('------------------------------', data, value)
                 mostRecentChemical = data[value][0]
 
                 // -----
@@ -381,41 +218,8 @@ $(document).ready(function () {
                 // var chemNumber = `bench-${mostRecentChemical.formula_text}-${Number(objectsUsed[mostRecentChemical.formula_text]) - 1}`
                 objectsInUse[chemNumber] = new BenchReagent(mostRecentChemical, currentlyMovingElem)
 
-                $(`#${currentlyMovingElem}`).contextmenu(function (e) {
-                    // triggers on child divs too, so prevent that
-                    if (this != e.target) return; // https://stackoverflow.com/questions/34113635/click-event-on-child-div-trigger-action-despite-click-handler-was-set-on-parent
-                    // Prevent default right-click
-                    e.preventDefault()
-                    // get rid of all elements below
-                    if ($(`#${e.target.id}`).children().length == 0) {
-                        // no children aka first time
-                        var elementIdToReference = e.target.id
 
-                        var popupHTML = `<div class="popup"> <p> ${objectsInUse[elementIdToReference].name} </p> <p> ${formatChemForm(objectsInUse[elementIdToReference].formula_id)} </p> </div>`
-
-                        $(e.target).append(popupHTML)
-                    }
-
-                    console.log("prevented handler for", e.target)
-                    var elementIdToReference = e.target.id
-
-
-
-                    // Listener for click, so as to remove the popup
-                    $('body').click(function (evt) {
-                        // https://stackoverflow.com/questions/12661797/jquery-click-anywhere-in-the-page-except-on-1-div
-                        if (evt.target.classList.contains('popup'))
-                            return;
-                        //For descendants of menu_content being clicked, remove this check if you do not want to put constraint on descendants.
-                        if ($(evt.target).closest('.popup').length)
-                            return;
-
-                        //Do processing of click event here for every element except with id menu_content
-                        $(e.target).children('.popup').hide()
-
-                    })
-                    $(e.target).children('.popup').show()
-                })
+                popupHtml()
 
 
             }, function () {
@@ -473,24 +277,6 @@ $(document).ready(function () {
                 isMoving = true
                 var vH = $('html').height();
                 var vW = $('html').width();
-                $(document).on('mousemove', function (e) {
-                    if (isMoving) {
-                        $(`#${currentlyMovingElem}`).css({
-                            left: ((e.pageX - $(`#${currentlyMovingElem}`).width() / 2) / document.body.clientWidth) * 100 + "vw",
-                            top: ((e.pageY - $(`#${currentlyMovingElem}`).height() / 2) / document.body.clientWidth) * 100 + "vw",
-                            "pointer-events": "none",
-                            'background-image': 'url(/images/mini/fa-bottle.png)'
-                        });
-
-                    }
-
-
-                });
-
-
-                $('body').css({ 'pointer-events': 'none' })
-                $('.working-area').css({ 'pointer-events': 'auto' })
-
                 mostRecentChemical = data[value][0]
 
                 // -------------
@@ -503,41 +289,7 @@ $(document).ready(function () {
                 objectsInUse[currentlyMovingElem] = new FAReagent(mostRecentChemical, reactionData, currentlyMovingElem)
 
 
-
-                $(`#${currentlyMovingElem}`).contextmenu(function (e) {
-                    // triggers on child divs too, so prevent that
-                    if (this != e.target) return; // https://stackoverflow.com/questions/34113635/click-event-on-child-div-trigger-action-despite-click-handler-was-set-on-parent
-                    // Prevent default right-click
-                    e.preventDefault()
-                    // get rid of all elements below
-                    if ($(`#${e.target.id}`).children().length == 0) {
-                        // no children aka first time
-                        var elementIdToReference = e.target.id
-
-                        var popupHTML = `<div class="popup"> <p> ${objectsInUse[elementIdToReference].name} </p> <p> ${formatChemForm(objectsInUse[elementIdToReference].formula_id)} </p> </div>`
-
-                        $(e.target).append(popupHTML)
-                    }
-
-                    console.log("prevented handler for", e.target)
-                    var elementIdToReference = e.target.id
-
-
-                    // Listener for click, so as to remove the popup
-                    $('body').click(function (evt) {
-                        // https://stackoverflow.com/questions/12661797/jquery-click-anywhere-in-the-page-except-on-1-div
-                        if (evt.target.classList.contains('popup'))
-                            return;
-                        //For descendants of menu_content being clicked, remove this check if you do not want to put constraint on descendants.
-                        if ($(evt.target).closest('.popup').length)
-                            return;
-
-                        //Do processing of click event here for every element except with id menu_content
-                        $(e.target).children('.popup').hide()
-
-                    })
-                    $(e.target).children('.popup').show()
-                })
+                popupHtml()
 
             }, function () {
                 alertify.error('cancel')
@@ -999,7 +751,7 @@ $(document).ready(function () {
                             var updatedHTMLArr = [`<div class="popup"> <p> ${itemClicked.item_name} </p>`]
                             // ITEM ATTRIBUTES                             
 
-                            if (itemClicked.attribute == "inspectable") {
+                            if (itemClicked.attribute.split(",").includes("inspectable")) {
                                 updatedHTMLArr.push(`<a onclick='inspect("${itemClicked.div_id}")'> Inspect </a>`)
 
                                 // only if theres thing in the test tube
@@ -1122,6 +874,7 @@ $(document).ready(function () {
                 // Remove the old filter from objectsInUse
                 delete objectsInUse[id]
                 isMoving = false
+                $('body').css("pointer-events", "auto")
             } else if (heldItem.apparatus_id == "filter_funnel" && itemClicked.interact_with.split(",").includes("filter_funnel")) {
                 // check if it already has a filter funnel on it
                 var tube_id = id
@@ -1178,7 +931,7 @@ $(document).ready(function () {
 
 
                     isMoving = false
-
+                    
 
                 }
 
@@ -1194,6 +947,62 @@ $(document).ready(function () {
                 filter(testTubeId, testTubeWithFilterId)
                 //
 
+
+
+
+            } else if (heldItem.apparatus_id == "test_tube" && itemClicked.interact_with.split(",").includes("test_tube")) {
+                // holding test tube and clicking on the delivery tube
+
+
+                var linkedTo;
+                if (!(objectsInUse[id].linked_to)) { 
+                    linkedTo = []
+                } else { 
+                    linkedTo = objectsInUse[id].linked_to.split(",")
+                }
+                 
+                var tube_id = currentlyMovingElem
+                var left = $(`#${id}`).css('left')
+                var top = $(`#${id}`).css('top')
+                
+                if (linkedTo.length == 0) {                     
+                    // Not linked to anything
+                    // First test tube to attach should go on the rubber bung
+                    
+
+                    // Set position
+                    
+                    var newLeft = ((((Number($(`#${id}`).css("left").replace(/\D/g, ''))) / document.body.clientWidth) * 100) + 6.3) + "vw"  // returns PX values
+                    var newTop = ((((Number($(`#${id}`).css("top").replace(/\D/g, ''))) / document.body.clientWidth) * 100) + 2.7) + "vw"  // returns PX values
+
+                    // Set down the first test tube at this position
+                    $(`#${currentlyMovingElem}`).css({                        
+                        "left": newLeft,
+                        "top": newTop
+                    })
+                    putDownItemInWorkingArea()
+                    linkedTo.push(tube_id)
+                } else if (linkedTo.length == 1) {
+                    // Linked to test tube with the rubber bung
+                    
+
+                    // Set position
+                    
+                    var newLeft = ((((Number($(`#${id}`).css("left").replace(/\D/g, ''))) / document.body.clientWidth) * 100) - 1.3) + "vw"  // returns PX values
+                    var newTop = ((((Number($(`#${id}`).css("top").replace(/\D/g, ''))) / document.body.clientWidth) * 100) + 2.7) + "vw"  // returns PX values
+
+                    // Set down the first test tube at this position
+                    $(`#${currentlyMovingElem}`).css({                        
+                        "left": newLeft,
+                        "top": newTop
+                    })
+                    putDownItemInWorkingArea()
+                    linkedTo.push(tube_id)
+
+                } else {
+                    // linked to 2 test tubes
+                }
+                objectsInUse[id].linked_to = linkedTo.join(",")
 
 
 
@@ -1270,7 +1079,8 @@ $(document).ready(function () {
             "left": left,
             "top": top,
             "pointer-events": "auto",
-            "background-image": `${app.image_url}`
+            "background-image": `${app.image_url}`,
+            "cursor": 'pointer'
         })
 
         // Create context menu
@@ -3023,78 +2833,14 @@ $(document).ready(function () {
             // Create new object
             currentlyMovingElem = `${objectToDuplicate.apparatus_id}-${Number(objectToDuplicateNumber)}`
             $('.movables').append(`<div class='interactive ${objectToDuplicate.apparatus_id} apparatus moving' id='${currentlyMovingElem}' onclick="makeMovable('${currentlyMovingElem}')"> </div>`)
-            
+
             isMoving = true
-            preventMove = true
-            $(document).on('mousemove', function (e) {
-                if (isMoving) {
-                    $(`#${currentlyMovingElem}`).css({
-                        left: ((e.pageX - $(`#${currentlyMovingElem}`).width() / 2) / document.body.clientWidth) * 100 + "vw",
-                        top: ((e.pageY - $(`#${currentlyMovingElem}`).height() / 2) / document.body.clientWidth) * 100 + "vw",
-
-                        "pointer-events": "none",
-                        'background-image': objectToDuplicate.image_url
-
-                    });
-
-
-
-                }
-
-            });
-            $('body').css({ 'pointer-events': 'none' })
-            $('.working-area').css({ 'pointer-events': 'auto' })
-            // Clone apparatus
+            preventMove = true            
             var newObj = $.extend(true, Object.create(Object.getPrototypeOf(objectsInUse[id])), objectsInUse[id]);
             newObj.div_id = currentlyMovingElem
             objectsInUse[currentlyMovingElem] = newObj
-
-            $(`#${currentlyMovingElem}`).contextmenu(function (e) {
-                // triggers on child divs too, so prevent that
-                if (this != e.target) return; // https://stackoverflow.com/questions/34113635/click-event-on-child-div-trigger-action-despite-click-handler-was-set-on-parent
-                // Prevent default right-click
-                e.preventDefault()
-                // get rid of all elements below
-
-                if ($(`#${e.target.id}`).children().length == 0) {
-                    // no children aka first time
-                    var elementIdToReference = e.target.id
-
-                    var popupHTML = [`<div class="popup"> <p> ${objectsInUse[elementIdToReference].item_name} </p>`]
-
-                    if (objectsInUse[elementIdToReference].attribute == "inspectable") {
-                        popupHTML.push(`<a onclick="inspect('${elementIdToReference}')"> Inspect </a>`)
-                    }
-                    popupHTML.push(`<a onclick="duplicate('${elementIdToReference}')"> Duplicate </a>`)
-                    popupHTML.push(`</div>`)
-
-
-
-
-                    $(e.target).append(popupHTML.join(" "))
-                }
-                // $(e.target).empty()
-
-                console.log("prevented handler for", e.target)
-
-                // Listener for click, so as to remove the popup
-                $('body').click(function (evt) {
-                    // https://stackoverflow.com/questions/12661797/jquery-click-anywhere-in-the-page-except-on-1-div
-                    if (evt.target.classList.contains('popup'))
-                        return;
-                    //For descendants of menu_content being clicked, remove this check if you do not want to put constraint on descendants.
-                    if ($(evt.target).closest('.popup').length)
-                        return;
-
-                    //Do processing of click event here for every element except with id menu_content
-                    $(e.target).children('.popup').hide()
-                    console.log("bodyclick")
-
-                })
-                // add popup
-                $(e.target).children('.popup').show()
-            })
-           
+            
+            popupHtml()
 
 
         } catch (e) {
@@ -3104,8 +2850,113 @@ $(document).ready(function () {
         }
     }
 
-    function popupHtml(id) { 
+    function popupHtml() {
+        // Before calling this function, set 
+        // isMoving to true;
+        // preventMove (choose);
+        // currentMovingElem;
+        // objectsInUse[currentlyMovingElem] MUST exist
 
+        var backgroundImageUrl = ''
+        if (objectsInUse[currentlyMovingElem].image_url) { 
+            backgroundImageUrl = objectsInUse[currentlyMovingElem].image_url
+        } else if (objectsInUse[currentlyMovingElem].location == "FAbasket") {
+            backgroundImageUrl = 'url(/images/mini/fa-bottle.png)'
+        } else if (objectsInUse[currentlyMovingElem].location == "bench") { 
+            backgroundImageUrl = 'url(/images/mini/reagent-bottle.png)'
+        }
+
+        $(document).on('mousemove', function (e) {
+            if (isMoving) {
+                $(`#${currentlyMovingElem}`).css({
+                    left: ((e.pageX - $(`#${currentlyMovingElem}`).width() / 2) / document.body.clientWidth) * 100 + "vw",
+                    top: ((e.pageY - $(`#${currentlyMovingElem}`).height() / 2) / document.body.clientWidth) * 100 + "vw",
+
+                    "pointer-events": "none",
+                    'background-image': backgroundImageUrl
+
+                });
+
+
+
+            }
+
+        });
+        $('body').css({ 'pointer-events': 'none' })
+        $('.working-area').css({ 'pointer-events': 'auto' })
+
+        $(`#${currentlyMovingElem}`).contextmenu(function (e) {
+            // triggers on child divs too, so prevent that
+            if (this != e.target) return; // https://stackoverflow.com/questions/34113635/click-event-on-child-div-trigger-action-despite-click-handler-was-set-on-parent
+            // Prevent default right-click
+            e.preventDefault()
+            // get rid of all elements below
+
+            if ($(`#${e.target.id}`).children().length == 0) {
+                // no children aka first time
+                var elementIdToReference = e.target.id
+
+                var popupHTML = [`<div class="popup">`]
+                
+
+                var className = objectsInUse[elementIdToReference].constructor.name
+                if (className == "Apparatus") {
+                    var attributes = objectsInUse[elementIdToReference].attribute.split(",")
+                    popupHTML.push(`<p> ${objectsInUse[elementIdToReference].item_name} </p>`)
+                    if (attributes.includes("inspectable")) { 
+                        popupHTML.push(`<a onclick="inspect('${elementIdToReference}')"> Inspect </a>`)
+                    }
+                    if (attributes.includes("foldable")) {
+                        popupHTML.push(`<a onclick='fold("${elementIdToReference}")'> Fold filter paper </a>`)
+                    }
+                    if (attributes.includes("duplicate")) { 
+                        popupHTML.push(`<a onclick="duplicate('${elementIdToReference}')"> Duplicate </a>`)
+                    }
+                } else if (className == "FAReagent" || className == "BenchReagent") {
+                    popupHTML.push(`<p> ${objectsInUse[elementIdToReference].name} </p>`)
+                }
+                
+
+
+                popupHTML.push(`</div>`)
+
+
+
+
+                // var popupHTML = [`<div class="popup"> <p> ${objectsInUse[elementIdToReference].item_name} </p>`]
+
+                // if (objectsInUse[elementIdToReference].attribute == "inspectable") {
+                //     popupHTML.push(`<a onclick="inspect('${elementIdToReference}')"> Inspect </a>`)
+                // }
+                // popupHTML.push(`<a onclick="duplicate('${elementIdToReference}')"> Duplicate </a>`)
+                // popupHTML.push(`</div>`)
+
+
+
+
+                $(e.target).append(popupHTML.join(" "))
+            }
+            // $(e.target).empty()
+
+            console.log("prevented handler for", e.target)
+
+            // Listener for click, so as to remove the popup
+            $('body').click(function (evt) {
+                // https://stackoverflow.com/questions/12661797/jquery-click-anywhere-in-the-page-except-on-1-div
+                if (evt.target.classList.contains('popup'))
+                    return;
+                //For descendants of menu_content being clicked, remove this check if you do not want to put constraint on descendants.
+                if ($(evt.target).closest('.popup').length)
+                    return;
+
+                //Do processing of click event here for every element except with id menu_content
+                $(e.target).children('.popup').hide()
+                console.log("bodyclick")
+
+            })
+            // add popup
+            $(e.target).children('.popup').show()
+        })
     }
 
 
