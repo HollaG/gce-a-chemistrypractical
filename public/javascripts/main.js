@@ -786,6 +786,11 @@ $(document).ready(function () {
 
                                 // only if theres thing in the test tube
                             }
+                            if (itemClicked.attribute.split(",").includes("duplicate")) {
+                                updatedHTMLArr.push(`<a onclick='duplicate("${itemClicked.div_id}")'> Duplicate </a>`)
+
+                                // only if theres thing in the test tube
+                            }
 
                             itemClicked.contains.forEach(item => {
                                 if (item.formula_id_f == "H₂O (l)") {
