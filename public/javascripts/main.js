@@ -3102,5 +3102,26 @@ $(document).ready(function () {
     function getRandomArbitrary(min, max) {
         return Math.random() * (max - min) + min;
     }
+    function preloadImages(array) {
+        if (!preloadImages.list) {
+            preloadImages.list = [];
+        }
+        var list = preloadImages.list;
+        for (var i = 0; i < array.length; i++) {
+            var img = new Image();
+            img.onload = function() {
+                var index = list.indexOf(this);
+                if (index !== -1) {
+                    // remove image from the array once it's loaded
+                    // for memory consumption reasons
+                    list.splice(index, 1);
+                }
+            }
+            list.push(img);
+            img.src = array[i];
+        }
+    }
+    
+    preloadImages(["/images/mini/fa-bottle.png", "/images/mini/reagent-bottle.png", "/images/mini/test-tube.png", "/images/filter-paper-unfolded.png", "/images/filter-paper-folded.png", "/images/funnel.png", "/images/filter-funnel.png", "/images/mini/delivery-tube.png"]);
 
 })
