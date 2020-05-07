@@ -660,14 +660,44 @@ $(document).ready(function () {
     makeMovable = async function (id) {
         if (preventMove) return
         // If clickedd on a filter which is attached to a test tube, return also
-        if (objectsInUse[id].linked_to) {
-            if (objectsInUse[id].linked_to.split("-")[0] == "test_tube") {
-                // This is a funnel
-                makeMovable(objectsInUse[id].linked_to)
-                return
+        if (!isMoving) {
+            if (objectsInUse[id].linked_to) {
+                var linkedTo = objectsInUse[id].linked_to.split(",")
+                if (linkedTo.length == 1) {
+                    if (linkedTo[0].split("-")[0] == "test_tube" && objectsInUse[id].apparatus_id == "filter_funnel") { // Clicked on something that is linked to a test tube AND is a filter funnel
+                        // Ensure that both of them are linked to each other
+                        if (objectsInUse[linkedTo[0]].linked_to == id) {
+                            makeMovable(linkedTo[0])
+                            return
+                        }
+
+
+
+
+                    } else if (linkedTo[0].split("-")[0] == "delivery_tube" && objectsInUse[linkedTo[0]].apparatus_id == "delivery_tube") { // clicked on a test tube that is linked to the apparatus with an id of delivery tube
+                        makeMovable(linkedTo[0])
+                        return
+                    }
+                } else if (linkedTo.length == 2) {
+                    if ((linkedTo[0] == linkedTo[1]) && linkedTo[0].split("-")[0] == "delivery_tube") {
+                        // Both are linked to the delivery tube
+                        makeMovable(linkedTo[0])
+                        return
+                    }
+                }
+
+
+
+                // if it's linked to a certain delivery tube, make that delivery tube moveable
+                // move all the things linked to the deliverty tube
+                // els if () { 
+
+                // }e
+
 
             }
         }
+
 
 
         if (isMoving) { // ignore if something is already moving
@@ -910,16 +940,20 @@ $(document).ready(function () {
                         "left": left,
                         "top": top
                     })
-                    
+
                     // Teleport the item to the correct place
 
                     // Generate HTML popup
                     // Add html popup
-                    var filterHtml = [`<p> ${objectsInUse[currentlyMovingElem].item_name} <p> <a onclick='inspect("${currentlyMovingElem}")'> Inspect </a> <a onclick='detach("${currentlyMovingElem}")'> Detach </a>`]
+                    var filterHtml = [`<p> ${objectsInUse[currentlyMovingElem].item_name} <p> <a onclick='inspectFilter("${currentlyMovingElem}")'> Inspect </a> <a onclick='detach("${currentlyMovingElem}")'> Detach </a>`]
                     objectsInUse[currentlyMovingElem].contains.forEach(e => {
                         filterHtml.push(`<p> ${e.volume} cm³ ${e.formula_id_f}`)
                     })
-                    $(`#${new_id} > .popup`).html(filterHtml.join(" "))
+
+                    if (!$(`#${currentlyMovingElem} > .popup`).length) {
+                        $(`#${currentlyMovingElem}`).append(`<div class="popup"></div>`)
+                    }
+                    $(`#${currentlyMovingElem} > .popup`).html(filterHtml.join(" ")).hide()
 
 
                     // Set it down at a certain position
@@ -932,7 +966,7 @@ $(document).ready(function () {
 
 
                     isMoving = false
-                    
+
 
                 }
 
@@ -956,49 +990,54 @@ $(document).ready(function () {
 
 
                 var linkedTo;
-                if (!(objectsInUse[id].linked_to)) { 
+                if (!(objectsInUse[id].linked_to)) {
                     linkedTo = []
-                } else { 
+                } else {
                     linkedTo = objectsInUse[id].linked_to.split(",")
                 }
-                 
+
                 var tube_id = currentlyMovingElem
                 var left = $(`#${id}`).css('left')
                 var top = $(`#${id}`).css('top')
-                
-                if (linkedTo.length == 0) {                     
+
+                if (linkedTo.length == 0) {
                     // Not linked to anything
                     // First test tube to attach should go on the rubber bung
-                    
+
 
                     // Set position
-                    
+
                     var newLeft = ((((Number($(`#${id}`).css("left").replace(/[^0-9.]/g, "", ''))) / document.body.clientWidth) * 100) + 6.3) + "vw"  // returns PX values
                     var newTop = ((((Number($(`#${id}`).css("top").replace(/[^0-9.]/g, "", ''))) / document.body.clientWidth) * 100) + 2.7) + "vw"  // returns PX values
 
                     // Set down the first test tube at this position
-                    $(`#${currentlyMovingElem}`).css({                        
+                    $(`#${currentlyMovingElem}`).css({
                         "left": newLeft,
                         "top": newTop
                     })
                     putDownItemInWorkingArea()
                     linkedTo.push(tube_id)
-                } else if (linkedTo.length == 1) {
+                    objectsInUse[tube_id].linked_to = id
+                    $(`#${id} > .popup`).html(`<p> ${objectsInUse[id].item_name} </p> <a onclick='detach("${id}")'> Detach </a>`)
+                } else if (linkedTo.length == 1 && linkedTo) {
                     // Linked to test tube with the rubber bung
-                    
+
 
                     // Set position
-                    
+
                     var newLeft = ((((Number($(`#${id}`).css("left").replace(/[^0-9.]/g, "", ''))) / document.body.clientWidth) * 100) - 1.3) + "vw"  // returns PX values
                     var newTop = ((((Number($(`#${id}`).css("top").replace(/[^0-9.]/g, "", ''))) / document.body.clientWidth) * 100) + 2.7) + "vw"  // returns PX values
 
                     // Set down the first test tube at this position
-                    $(`#${currentlyMovingElem}`).css({                        
+                    $(`#${currentlyMovingElem}`).css({
                         "left": newLeft,
                         "top": newTop
                     })
                     putDownItemInWorkingArea()
                     linkedTo.push(tube_id)
+                    objectsInUse[tube_id].linked_to = id
+                    $(`#${id} > .popup`).html(`<p> ${objectsInUse[id].item_name} </p> <a onclick='detach("${id}")'> Detach </a>`)
+
 
                 } else {
                     // linked to 2 test tubes
@@ -1028,18 +1067,58 @@ $(document).ready(function () {
                 "pointer-events": "none", // allow click through this element
             })
             if (objectsInUse[id]) {
+
                 if (objectsInUse[id].linked_to) {
+                    var linkedTo = objectsInUse[id].linked_to.split(",")
                     // it's linked to something
-                    if (objectsInUse[id].linked_to.split("-")[0] == "filter_funnel") {
-                        $(`#${objectsInUse[id].linked_to}`).css({
-                            left: ((((e.pageX - $(`#${currentlyMovingElem}`).width() / 2) / document.body.clientWidth) * 100) + 0.5817) + "vw",
-                            top: ((((e.pageY - $(`#${currentlyMovingElem}`).height() / 2) / document.body.clientWidth) * 100) - 1) + "vw",
+                    if (linkedTo.length == 1) {
+                        // only 1 thing
+                        if (linkedTo[0].split("-")[0] == "filter_funnel") {
+                            $(`#${linkedTo[0]}`).css({
+                                left: ((((e.pageX - $(`#${currentlyMovingElem}`).width() / 2) / document.body.clientWidth) * 100) + 0.5817) + "vw",
+                                top: ((((e.pageY - $(`#${currentlyMovingElem}`).height() / 2) / document.body.clientWidth) * 100) - 1) + "vw",
+                                "pointer-events": "none", // allow click through this element
+
+                            })
+                            $(`#${linkedTo[0]}`).toggleClass('moving').toggleClass('on-working-area')
+                        } else if (linkedTo[0].split("-")[0] == "test_tube" && objectsInUse[id].apparatus_id == "delivery_tube") {
+                            // Move the test tube
+                            $(`#${linkedTo[0]}`).css({
+                                left: ((((e.pageX - $(`#${currentlyMovingElem}`).width() / 2) / document.body.clientWidth) * 100) + 6.3) + "vw",
+                                top: ((((e.pageY - $(`#${currentlyMovingElem}`).height() / 2) / document.body.clientWidth) * 100) + 2.7) + "vw",
+                                "pointer-events": "none", // allow click through this element
+
+                            })
+                            $(`#${linkedTo[0]}`).toggleClass('moving').toggleClass('on-working-area')
+                        }
+
+                    } else if (linkedTo.length == 2) {
+                        // 2 things connected to it
+                        $(`#${linkedTo[0]}`).css({
+                            left: ((((e.pageX - $(`#${currentlyMovingElem}`).width() / 2) / document.body.clientWidth) * 100) + 6.3) + "vw",
+                            top: ((((e.pageY - $(`#${currentlyMovingElem}`).height() / 2) / document.body.clientWidth) * 100) + 2.7) + "vw",
                             "pointer-events": "none", // allow click through this element
 
                         })
-                        $(`#${objectsInUse[id].linked_to}`).toggleClass('moving').toggleClass('on-working-area')
+                        $(`#${linkedTo[0]}`).toggleClass('moving').toggleClass('on-working-area')
+
+                        $(`#${linkedTo[1]}`).css({
+                            left: ((((e.pageX - $(`#${currentlyMovingElem}`).width() / 2) / document.body.clientWidth) * 100) - 1.3) + "vw",
+                            top: ((((e.pageY - $(`#${currentlyMovingElem}`).height() / 2) / document.body.clientWidth) * 100) + 2.7) + "vw",
+                            "pointer-events": "none", // allow click through this element
+
+                        })
+                        $(`#${linkedTo[1]}`).toggleClass('moving').toggleClass('on-working-area')
 
                     }
+
+                    if (objectsInUse[id].linked_to.split("-")[0] == "filter_funnel") {
+
+
+                    } else if (objectsInUse[id].linked_to.split(",")) {
+
+                    }
+
 
                 }
             }
@@ -1200,8 +1279,8 @@ $(document).ready(function () {
         } else {
             // remove air if exists
             var a = $.extend([], tube.contains)
-            for (var i = 0; i < a.length; a++) {
-                if (a.formula_id_f == "air") {
+            for (var i = 0; i < a.length; i++) {
+                if (a[i].formula_id_f == "air") {
                     tube.contains.splice(i, 1)
                 }
             }
@@ -1544,14 +1623,11 @@ $(document).ready(function () {
 
 
             for (var i = 1; i < colorPptArray.length + 1; i++) {
-                var rgbcol = chroma(colorPptArray[i - 1][0]).rgb()
-                var color = new Color(rgbcol[0], rgbcol[1], rgbcol[2])
-                var solver = new Solver(color)
-                var result = solver.solve()
-                var filteredCss = result.filter // returns the filtered string                
-                console.log(filteredCss)
+                var rgbcol = chroma(colorPptArray[i - 1][0])
+
+
                 $(`#ppt-${i}`).css({
-                    "filter": `${filteredCss}`,
+                    "background-color": rgbcol,
                     "opacity": "1"
                 })
                 pptSDrawn[colorPptArray[i - 1][1]] = i
@@ -1935,11 +2011,8 @@ $(document).ready(function () {
                 var solver = new Solver(color)
                 var result = solver.solve()
                 var filteredCss = result.filter // returns the filtered string                
-                console.log(filteredCss)
-                // $(`#ppt-${i}`).css({
-                //     "filter": `${filteredCss}`,
-                //     "opacity": "1"
-                // })
+
+
                 pptSDrawn[colorPptArray[i - 1][1]] = i
                 // { 
                 //     Ca(OH)2_(s): 1
@@ -2033,8 +2106,8 @@ $(document).ready(function () {
                         reagentLTemp = [volCol[reagentL].cation, volCol[reagentL].anion, reagentL]
                     }
                     var reactionData = JSON.parse(await Promise.resolve(($.get('/inspect/getProduct', { left: encodeURI(reagentLTemp), right: encodeURI([reagentR]) }))))
-
-
+                    // array
+                    
 
                     console.log(reactionData)
 
@@ -2048,11 +2121,14 @@ $(document).ready(function () {
                     var reagentRVolume = Number(tempReagentRObj[reagentR][1]) / Number(tempReagentRObj[reagentR][0])
                     // var reagentRVolume = Number(volCol[reagentR].volume)/Number(tempReagentRObj[reagentR]) // Divide the volume allocated for tihs reaction by the number of times this reactant is used
 
+                    // // Get the ratio
+                    // var ratio = JSON.parse(await Promise.resolve(($.get('/inspect/getRatio', { left: encodeURI(reagentLTemp), right: encodeURI([reagentR]) }))))
+                    
 
                     // Calculate how much reagentL was used in THIS reaction.
                     var reagentLUsed = 0
                     // Find which reagent, L or R, is in excess.
-                    if (reagentLVolumePerReaction / 5 < reagentRVolume) {
+                    if (reagentLVolumePerReaction / 5 < reagentRVolume) { // Variable ID3
                         // ReagentR is in excess
                         // ReagentL will have 0 volume for this reaction
                         reagentLVolumeAfterReaction = reagentLVolumeAfterReaction - reagentLVolumePerReaction
@@ -2060,7 +2136,7 @@ $(document).ready(function () {
                         reagentRVolumeAfterReaction = reagentRVolumeAfterReaction - Number(reagentLVolumePerReaction / 5)
 
 
-                    } else if (reagentLVolumePerReaction / 5 >= reagentRVolume) {
+                    } else if (reagentLVolumePerReaction / 5 >= reagentRVolume) { // Variable ID3
                         // ReagentL is in excess or they have the same ratio
                         reagentLVolumeAfterReaction = reagentLVolumeAfterReaction - reagentRVolume * 5
                         reagentLUsed = reagentRVolume * 5
@@ -2081,28 +2157,39 @@ $(document).ready(function () {
                     // We need to check if that object already exists as well.
                     // The volume of the new reactant is equal to the volume of reagentL used to create this reactant.
                     var reagentNVolume = reagentLUsed
-                    if (volColTemp[reactionData.formula_id]) {
-                        // already exists, just change the volume
-                        volColTemp[reactionData['formula_id']].volume = volColTemp[reactionData['formula_id']].volume + reagentNVolume
 
-                    } else {
-                        // doesn't exist, create new
-                        volColTemp[reactionData['formula_id']] = {
-                            color: reactionData['color'],
-                            odor: reactionData['odor'],
-                            volume: reagentNVolume,
-                            state: reactionData['state'],
-                            hex: reactionData['hex'],
-                            cation: reactionData['cation'],
-                            anion: reactionData['anion'],
-                            formula_text: reactionData['formula_text'],
-                            old_reagentL: reagentL,
-                            old_reagentR: reagentR
+                    for (var j = 0; j < reactionData.length; j++) { 
+                        var numberOfProducts = reactionData.length
+                        var prod = reactionData[i]
+                        if (volColTemp[prod.formula_id]) {
+                            // already exists, just change the volume
+                            volColTemp[prod['formula_id']].volume = volColTemp[prod['formula_id']].volume + Number(reagentNVolume/numberOfProducts)
+    
+                        } else {
+                            // doesn't exist, create new
+                            volColTemp[prod['formula_id']] = {
+                                color: prod['color'],
+                                odor: prod['odor'],
+                                volume: Number(reagentNVolume/numberOfProducts),
+                                state: prod['state'],
+                                hex: prod['hex'],
+                                cation: prod['cation'],
+                                anion: prod['anion'],
+                                formula_text: prod['formula_text'],
+                                old_reagentL: reagentL,
+                                old_reagentR: reagentR
+                            }
                         }
                     }
 
+
+
+
+
+                    
+
                     // The volume of water is equal to the volume of reagentR used, which is equal to 1/5 the volume of reagentLUsed
-                    var waterVolume = Number(reagentLUsed / 5)
+                    var waterVolume = Number(reagentLUsed / 5) // Variable ID3
 
                     if (volColTemp['H₂O_(l)']) {
                         // already exists, just change the volume
@@ -2146,9 +2233,33 @@ $(document).ready(function () {
             // Update the HTML text            
             var updatedHtmlArr = []
             // and the context menu
-            var popupHtmlArr = [`<p> ${tube.item_name} </p>`, `<a onclick="inspect('${tube.div_id}')"> Inspect </a>`] // ID2
+            var popupHtmlArr = [`<p> ${tube.item_name} </p>`, `<a onclick="inspect('${tube.div_id}')"> Inspect </a> <a onclick='duplicate("${tube.div_id}")'> Duplicate </a>`] // ID2
             // and the tube Apparatus class
             var containsTemp = []
+
+            // CHECK FOR ATTACHED TUBE VIA DELIVERY TUBE, IF HAVE, SET TO TRUE
+            var transferGas = false
+            var newTube;
+            if (tube.linked_to) {
+                if (tube.linked_to.split("-")[0] == "delivery_tube") {
+                    if (objectsInUse[tube.linked_to].linked_to) {
+                        var deliveryTubeLinkedTo = objectsInUse[tube.linked_to].linked_to.split(",")
+                        var firstTubeIndex = deliveryTubeLinkedTo.indexOf(id)
+                        var secondTubeIndex = 1 - firstTubeIndex
+
+
+                        if (objectsInUse[tube.linked_to].linked_to.split("-")[0] == "test_tube") {
+                            // If 1) tube is linked to something,
+                            // 2) that something is a delivery tube, 
+                            // 3) that delivery tube is linked to something, 
+                            // 4) that something is a test tube
+                            transferGas = true
+                            newTube = objectsInUse[objectsInUse[tube.linked_to].linked_to.split(",")[secondTubeIndex]]
+                        }
+                    }
+                }
+            }
+
             for (reagent of Object.keys(volColTemp)) {
                 var hex = volColTemp[reagent].hex
                 var color = volColTemp[reagent].color
@@ -2158,14 +2269,18 @@ $(document).ready(function () {
 
                 /* Control HTML */
                 if (reagent == "H₂O_(l)") {
-                    updatedHtmlArr.push(`<p> ${formatChemForm(reagent)}`) // ID1
+                    updatedHtmlArr.push(`<p> ${formatChemForm(reagent)} </p>`) // ID1
                     popupHtmlArr.push(`<p> ${formatChemForm(reagent)} </p>`)
                 } else if (reagent == "air") {
                     updatedHtmlArr.push(`<p> Air </p>`) // ID1
                     popupHtmlArr.push(`<p> Air </p>`)
                 } else {
                     updatedHtmlArr.push(`<p> ${volume} cm³ ${formatChemForm(reagent)}, ${color} ${state}, ${odor}`)
-                    popupHtmlArr.push(`<p> ${volume} cm³ </p> <p> ${formatChemForm(reagent)}`)
+                    if (state != "gas") {
+                        popupHtmlArr.push(`<p> ${volume} cm³ </p> <p> ${formatChemForm(reagent)}`)
+                    }
+
+
                 }
 
 
@@ -2207,9 +2322,41 @@ $(document).ready(function () {
                     } else {
                         colorGasArray.push([color, reagent])
                     }
+                    // Transfer the gas
+                    if (transferGas) {
+                        // if gas
+                        newTube.contains.push({
+                            formula_id_f: formatChemForm(reagent),
+                            formula_text: volColTemp[reagent].formula_text,
+                            volume: volume,
+                            old_reagentL: volColTemp[reagent].old_reagentL,
+                            old_reagentR: volColTemp[reagent].old_reagentR
+                        })
+                    }
                 }
 
+
+
+
+
+
+
             }
+            if (transferGas) {
+                // Update the new Tube html 
+                var htmlArrNewTube = [`<p> ${newTube.item_name} </p> <a onclick='inspect("${newTube.div_id}")'> Inspect </a> <a onclick='duplicate("${newTube.div_id}")'> Duplicate </a>`]
+                newTube.contains.forEach(e => {
+                    if (e.formula_id_f == "H₂O (l)") {
+                        htmlArrNewTube.push(`<p> ${e.formula_id_f} </p>`)
+                    } else {
+                        htmlArrNewTube.push(`<p> ${e.volume} cm³ ${e.formula_id_f} </p>`)
+                    }
+                })
+                $(`#${newTube.div_id} > .popup`).html(htmlArrNewTube)
+
+            }
+
+
 
             // We should probably only set the transition property before the second drawing
             $('#color-max').css({
@@ -2288,13 +2435,8 @@ $(document).ready(function () {
 
 
             for (var i = 1; i < colorPptArray.length + 1; i++) {
-                var rgbcol = chroma(colorPptArray[i - 1][0]).rgb()
-                var color = new Color(rgbcol[0], rgbcol[1], rgbcol[2])
-                var solver = new Solver(color)
-                var result = solver.solve()
-                var filteredCss = result.filter // returns the filtered string
-                // $("#tube-image-div").append(`<div id='ppt-${i}' class="ppt"></div>`)
-                console.log(filteredCss)
+                var rgbcol = chroma(colorPptArray[i - 1][0])
+
                 // Check if 
                 console.log(colorPptArray)
 
@@ -2314,9 +2456,8 @@ $(document).ready(function () {
                         // Now, change the color of THIS div only.
                         // blah blah change color code
                         $(`#${div_id}`).css({
-                            'filter': `${filteredCss}`,
-                            "-webkit-transition": "-webkit-filter 10s linear",
-                            "transition": "filter 10s linear",
+                            "background-color": rgbcol,
+                            "transition": "background-color 10s linear",
                             "opacity": "1"
                         })
                         $(`#${div_id}`).stop(true)
@@ -2335,9 +2476,8 @@ $(document).ready(function () {
                         // Now, change the color of THIS div only.
                         // blah blah change color code
                         $(`#${div_id}`).css({
-                            'filter': `${filteredCss}`,
-                            "-webkit-transition": "-webkit-filter 10s linear",
-                            "transition": "filter 10s linear",
+                            "background-color": rgbcol,
+                            "transition": "background-color 10s linear",
                             "opacity": "1"
                         })
                         $(`#${div_id}`).stop(true)
@@ -2354,7 +2494,7 @@ $(document).ready(function () {
                                 // If available = true
                                 // blah blah draw the color
                                 console.log(divs)
-                                $(`#ppt-${divs}`).css('filter', `${filteredCss}`)
+                                $(`#ppt-${divs}`).css('background-color', `${rgbcol}`)
                                 $(`#ppt-${divs}`).fadeTo(7500, 1, () => {
 
                                     console.log('done')
@@ -2388,6 +2528,7 @@ $(document).ready(function () {
             var baseHeight = -315 // subtract 4% from this everytime
             $('.gas').remove()
             colorGasArray.forEach(async reagent => {
+                // Includes colorless
 
                 // This thing is a gas
                 // Does the gas react with air to produdce another thing?? Find out here: 
@@ -2513,35 +2654,6 @@ $(document).ready(function () {
 
             })
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
             $('#info').html(updatedHtmlArr.join(" "))
 
             // Update the context-menu info            
@@ -2606,6 +2718,9 @@ $(document).ready(function () {
             // Update the test-tube object with what it contains            
             tube.contains = noGasesContainsTemp
 
+
+
+
             // Reset the original volColTemp array:
             volCol = {};
             volCol = jQuery.extend({}, volColTemp)
@@ -2629,6 +2744,9 @@ $(document).ready(function () {
     }
 
     inspectFilter = async function (id) {
+        $(`.filter-ppt`).css({
+            "transition": ""
+        })
         preventMove = true
         alertify.prompt("Inspecting filter", "",
             function (evt, value) {
@@ -2686,36 +2804,13 @@ $(document).ready(function () {
                 "opacity": "1"
             })
 
-
-
-            /*
-
-            // generate color
-            var color;
-            if (ppt.hex) {
-                color = chroma(ppt.hex).rgb()
-            } else {
-                color = chroma(ppt.color).rgb()
-            }
-
-
-            var color = new Color(color[0], color[1], color[2])
-            var solver = new Solver(color)
-            var result = solver.solve()
-            var filteredCss = result.filter // returns the filtered string   
-            // Add ppt div
-            $(`#filter-ppt-${i}`).css({
-                "filter": `${filteredCss}`,
-                "opacity": "1"
-            })
-
-            */
             infoHtml.push(`<p> ${pptVolume[formatChemForm(ppt.formula_id)]} cm³ ${formatChemForm(ppt.formula_id)}, ${ppt.color} ${ppt.state} <p>`)
             volCol[ppt.formula_id] = {
                 volume: pptVolume[formatChemForm(ppt.formula_id)],
                 color: ppt.color,
                 state: ppt.state
             }
+
         }
 
 
@@ -2724,17 +2819,27 @@ $(document).ready(function () {
         // await timeout(5000)
 
         reactAir = async function () {
+            var reagentsToQuery = []
+
+            funnel.contains.forEach(ppt => {
+                reagentsToQuery.push(ppt.formula_id_f.split(" ").join("_"))
+
+            })
             $('#reactAir').prop('disabled', true);
 
-
+            $(`.filter-ppt`).css({
+                "transition": "background-color 7.5s linear"
+            })
             // Query database for possible reactions with air
             var data = JSON.parse(await Promise.resolve(($.get('/inspect/getAirReaction', { arr: reagentsToQuery }))))
             if (data.length) {
                 $("#rxt-status").html("Reaction in progress...")
                 // There's a reaction
+
                 var oldPptItems = funnel.contains
                 var newPptItems = []
                 for (var i = 0; i < data.length; i++) {
+
                     var newPpt = data[i]
                     var oldDivNumber = pptSDrawn[newPpt.formula_id]
                     if (volCol[newPpt.produces_1]) {
@@ -2743,7 +2848,7 @@ $(document).ready(function () {
                         volCol[newPpt.produces_1].volume = Number(volCol[newPpt.produces_1].volume) + Number(volCol[newPpt.formula_id].volume)
                         var oldDivNumber = pptSDrawn[newPpt.formula_id]
                         $(`#filter-ppt-${oldDivNumber}`).css({
-                            "filter": "",
+                            "background-color": "",
                             "opacity": "0"
                         })
 
@@ -2756,22 +2861,17 @@ $(document).ready(function () {
                             formula_text: newPpt.formula_text
                         }
                         // Transition the color
-                        var rgbcol = []
+                        var rgbcol;
                         if (newPpt.hex) {
-                            rgbcol = chroma(newPpt.hex).rgb()
+                            rgbcol = chroma(newPpt.hex)
                         } else {
-                            rgbcol = chroma(newPpt.color).rgb()
+                            rgbcol = chroma(newPpt.color)
                         }
-                        var color = new Color(rgbcol[0], rgbcol[1], rgbcol[2])
-                        var solver = new Solver(color)
-                        var result = solver.solve()
-                        var filteredCss = result.filter // returns the filtered string    
 
 
                         $(`#filter-ppt-${oldDivNumber}`).css({
-                            "filter": `${filteredCss}`,
-                            "-webkit-transition": "-webkit-filter 500ms linear",
-                            "transition": "filter 10s linear"
+                            "background-color": `${rgbcol}`,
+
                         })
 
                         // Delete the old key, set the new key
@@ -2834,13 +2934,16 @@ $(document).ready(function () {
     }
 
     detach = function (id) {
-        var linkedTo = objectsInUse[id].linked_to
-
-        // Remove the link reference in both
-        objectsInUse[id].linked_to = ""
-        objectsInUse[linkedTo].linked_to = ""
-        $(`#${id} > .popup`).hide()
-        makeMovable(id)
+        var linkedTo;
+        if (objectsInUse[id].linked_to) {
+            linkedTo = objectsInUse[id].linked_to.split(",")
+            linkedTo.forEach(e => {
+                objectsInUse[e].linked_to = ""
+            })
+            objectsInUse[id].linked_to = ""
+            $(`#${id} > .popup`).hide()
+            makeMovable(id)
+        }
     }
 
     duplicate = function (id) {
@@ -2855,11 +2958,11 @@ $(document).ready(function () {
             $('.movables').append(`<div class='interactive ${objectToDuplicate.apparatus_id} apparatus moving' id='${currentlyMovingElem}' onclick="makeMovable('${currentlyMovingElem}')"> </div>`)
 
             isMoving = true
-            preventMove = true            
+            preventMove = true
             var newObj = $.extend(true, Object.create(Object.getPrototypeOf(objectsInUse[id])), objectsInUse[id]);
             newObj.div_id = currentlyMovingElem
             objectsInUse[currentlyMovingElem] = newObj
-            
+
             popupHtml()
 
 
@@ -2878,11 +2981,11 @@ $(document).ready(function () {
         // objectsInUse[currentlyMovingElem] MUST exist
 
         var backgroundImageUrl = ''
-        if (objectsInUse[currentlyMovingElem].image_url) { 
+        if (objectsInUse[currentlyMovingElem].image_url) {
             backgroundImageUrl = objectsInUse[currentlyMovingElem].image_url
         } else if (objectsInUse[currentlyMovingElem].location == "FAbasket") {
             backgroundImageUrl = 'url(/images/mini/fa-bottle.png)'
-        } else if (objectsInUse[currentlyMovingElem].location == "bench") { 
+        } else if (objectsInUse[currentlyMovingElem].location == "bench") {
             backgroundImageUrl = 'url(/images/mini/reagent-bottle.png)'
         }
 
@@ -2905,60 +3008,64 @@ $(document).ready(function () {
         $('body').css({ 'pointer-events': 'none' })
         $('.working-area').css({ 'pointer-events': 'auto' })
 
+        // add popup html
+
+        var elementIdToReference = currentlyMovingElem
+
+        var popupHTML = [`<div class="popup">`]
+
+
+        var className = objectsInUse[elementIdToReference].constructor.name
+        if (className == "Apparatus") {
+            var attributes = objectsInUse[elementIdToReference].attribute.split(",")
+            popupHTML.push(`<p> ${objectsInUse[elementIdToReference].item_name} </p>`)
+            if (attributes.includes("inspectable")) {
+                popupHTML.push(`<a onclick="inspect('${elementIdToReference}')"> Inspect </a>`)
+            }
+            if (attributes.includes("foldable")) {
+                popupHTML.push(`<a onclick='fold("${elementIdToReference}")'> Fold filter paper </a>`)
+            }
+            if (attributes.includes("duplicate")) {
+                popupHTML.push(`<a onclick="duplicate('${elementIdToReference}')"> Duplicate </a>`)
+            }
+            objectsInUse[currentlyMovingElem].contains.forEach(ele => {
+                if (ele.formula_id_f == "H₂O (l)") {
+                    popupHTML.push(`<p> ${ele.formula_id_f} </p>`)
+                } else {
+                    popupHTML.push(`<p> ${ele.volume} cm³ ${ele.formula_id_f} </p>`)
+                }
+
+            })
+        } else if (className == "FAReagent" || className == "BenchReagent") {
+            popupHTML.push(`<p> ${objectsInUse[elementIdToReference].name} </p>`)
+        }
+
+
+
+        popupHTML.push(`</div>`)
+
+
+        $(`#${currentlyMovingElem}`).append(popupHTML.join(" "))
+        $(`#${currentlyMovingElem} > .popup`).hide()
+
+
+
+
+
+
         $(`#${currentlyMovingElem}`).contextmenu(function (e) {
+            $(`#${e.target.id}`).css({
+                "z-index": "100"
+            })
+
+
             // triggers on child divs too, so prevent that
             if (this != e.target) return; // https://stackoverflow.com/questions/34113635/click-event-on-child-div-trigger-action-despite-click-handler-was-set-on-parent
             // Prevent default right-click
             e.preventDefault()
-            // get rid of all elements below
+            // get rid of all elements below           
 
-            if ($(`#${e.target.id}`).children().length == 0) {
-                // no children aka first time
-                var elementIdToReference = e.target.id
-
-                var popupHTML = [`<div class="popup">`]
-                
-
-                var className = objectsInUse[elementIdToReference].constructor.name
-                if (className == "Apparatus") {
-                    var attributes = objectsInUse[elementIdToReference].attribute.split(",")
-                    popupHTML.push(`<p> ${objectsInUse[elementIdToReference].item_name} </p>`)
-                    if (attributes.includes("inspectable")) { 
-                        popupHTML.push(`<a onclick="inspect('${elementIdToReference}')"> Inspect </a>`)
-                    }
-                    if (attributes.includes("foldable")) {
-                        popupHTML.push(`<a onclick='fold("${elementIdToReference}")'> Fold filter paper </a>`)
-                    }
-                    if (attributes.includes("duplicate")) { 
-                        popupHTML.push(`<a onclick="duplicate('${elementIdToReference}')"> Duplicate </a>`)
-                    }
-                } else if (className == "FAReagent" || className == "BenchReagent") {
-                    popupHTML.push(`<p> ${objectsInUse[elementIdToReference].name} </p>`)
-                }
-                
-
-
-                popupHTML.push(`</div>`)
-
-
-
-
-                // var popupHTML = [`<div class="popup"> <p> ${objectsInUse[elementIdToReference].item_name} </p>`]
-
-                // if (objectsInUse[elementIdToReference].attribute == "inspectable") {
-                //     popupHTML.push(`<a onclick="inspect('${elementIdToReference}')"> Inspect </a>`)
-                // }
-                // popupHTML.push(`<a onclick="duplicate('${elementIdToReference}')"> Duplicate </a>`)
-                // popupHTML.push(`</div>`)
-
-
-
-
-                $(e.target).append(popupHTML.join(" "))
-            }
-            // $(e.target).empty()
-
-            console.log("prevented handler for", e.target)
+            
 
             // Listener for click, so as to remove the popup
             $('body').click(function (evt) {
@@ -2972,6 +3079,9 @@ $(document).ready(function () {
                 //Do processing of click event here for every element except with id menu_content
                 $(e.target).children('.popup').hide()
                 console.log("bodyclick")
+                $(`#${e.target.id}`).css({
+                    "z-index": ""
+                })
 
             })
             // add popup
