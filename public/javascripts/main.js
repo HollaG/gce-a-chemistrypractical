@@ -3143,8 +3143,10 @@ $(document).ready(function () {
 
     litmus = function () {
         if (currentlyMovingElem && !placedLitmus) {
-            placedLitmus = true
+            
             if (objectsInUse[currentlyMovingElem].apparatus_id == "damp_red_litmus" || objectsInUse[currentlyMovingElem].apparatus_id == "damp_blue_litmus") {
+                placedLitmus = true
+                $(document).unbind("mousemove")
                 // run code
                 $("#litmus").append("<div id='paper-before'></div>")
                 if (objectsInUse[currentlyMovingElem].apparatus_id == "damp_red_litmus") {
