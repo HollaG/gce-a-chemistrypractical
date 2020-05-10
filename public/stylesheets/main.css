@@ -451,7 +451,7 @@
     min-width: 20%;
     min-height: 10%;
     background-color: white;
-    bottom: -12.5vw;
+    bottom: -11vw;
     transition: bottom ease 0.5s;
     border-radius: 1vw 1vw 0 0;
     pointer-events: auto !important;
@@ -465,7 +465,7 @@
 
 .inventory > p { 
     text-align: center;
-    font-size: large;
+    font-size: 1.5vw;
 
 }
 .slots { 
