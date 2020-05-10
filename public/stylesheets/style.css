@@ -5,9 +5,11 @@ body {
   background-repeat: no-repeat;
   background-size: 100% auto;
   background-position: contain;
+  overflow: hidden;
   /* height: 1000px; */
 }
 
+body::-webkit-scrollbar { width: 0 !important }
 html, body { 
   height: 100%;
 }

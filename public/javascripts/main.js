@@ -8,13 +8,16 @@ $(document).ready(function () {
     objectsUsed = {
 
     }
-    var currentlyMovingElem;
+    var currentlyMovingElem = ''
     var mostRecentApparatus;
     var mostRecentChemical;
 
     var tubes = {}
     var bench = {}
     var reagents = {}
+
+    var hasLitmus = ""
+    var placedLitmus;
 
     objectsInUse = {
 
@@ -34,6 +37,86 @@ $(document).ready(function () {
         "Ca(OH)₂_(aq)",
         "KMnO₄_(aq)",
         "KI_(aq)"]
+
+    inventoryContents = {
+
+    }
+
+    var inventoryContentsOpp = {
+
+    }
+
+    preventInventory = false
+
+    inventory = function (slot) {
+        // Case 1: picking up something from the slot
+
+        console.log('inventory triggered')
+        if (inventoryContents[slot] && !currentlyMovingElem) {
+            // Clicked on slot and nothing is moving
+            // Set z-index
+
+
+
+            preventMove = false
+
+            currentlyMovingElem = inventoryContents[slot]
+            
+
+
+            var ele = inventoryContents[slot]
+            var heldItemDiv = $(`#${ele}`)
+            $(".movables").append(heldItemDiv)
+            $(`#${inventoryContents[slot]}`).css({
+                
+                "position": "absolute",
+                "width": "",
+                "height": ""
+            })
+            
+            delete inventoryContents[slot]
+            delete inventoryContentsOpp[ele]
+            makeMovable(ele)
+            return
+        } else if (isMoving && !preventInventory) {
+            // Case 2: putting down something in the slot
+            if (!inventoryContents[slot]) {
+                // If there's nothing in this slot
+                var ele = currentlyMovingElem
+                var heldItemDiv = $(`#${ele}`)
+                // Add this to the slot
+                $(`#slot-${slot}`).append(heldItemDiv)
+                // Add this to the inven
+                inventoryContents[slot] = ele
+                inventoryContentsOpp[ele] = slot
+                // Set isMoving = false
+
+                // Toggle classes
+                putDownItemInWorkingArea()
+                console.log(ele)
+                // Set position
+                $(`#${ele}`).css({
+                    "left": "",
+                    "top": "",
+                    "position": "relative",
+                    "width": "100%",
+                    "height": "100%",
+                    
+
+
+                })
+
+            }
+
+        }
+
+
+    }
+
+
+
+
+
 
 
     // Compound - cation-anion relationship
@@ -331,6 +414,7 @@ $(document).ready(function () {
         if (isMoving) {
             preventMove = false
             isMoving = false;
+            preventInventory = false
             console.log('putdownla')
             console.log(currentlyMovingElem)
 
@@ -343,6 +427,9 @@ $(document).ready(function () {
                 // it's linked to something
                 $(`#${objectsInUse[currentlyMovingElem].linked_to}`).toggleClass('moving').toggleClass('on-working-area').css({
                     "pointer-events": "auto"
+                })
+                $('.slot').css({
+                    'cursor': "auto"
                 })
 
 
@@ -658,10 +745,18 @@ $(document).ready(function () {
     }
 
     makeMovable = async function (id) {
+        console.log("make")
         if (preventMove) return
+        if (inventoryContentsOpp[id]) return
         // If clickedd on a filter which is attached to a test tube, return also
         if (!isMoving) {
             if (objectsInUse[id].linked_to) {
+                // Prevent them from putting it in inventory
+                preventInventory = true
+                $('.slot').css({
+                    'cursor': "not-allowed"
+                })
+
                 var linkedTo = objectsInUse[id].linked_to.split(",")
                 if (linkedTo.length == 1) {
                     if (linkedTo[0].split("-")[0] == "test_tube" && objectsInUse[id].apparatus_id == "filter_funnel") { // Clicked on something that is linked to a test tube AND is a filter funnel
@@ -694,6 +789,8 @@ $(document).ready(function () {
 
                 // }e
 
+
+            } else {
 
             }
         }
@@ -1220,17 +1317,32 @@ $(document).ready(function () {
     }
 
     inspect = async function (id) {
+        // Set placed litmus to false
+        placedLitmus = false
+
+        // Set hotbar to top
+        $(`.inventory`).css({
+            "z-index": "2000"
+        })
+
+
+
         // Draw the big screen
         console.log("INSPECTINGGGGGGGGGGGGGGGGGGGGGGGGG")
         preventMove = true
         var tube = objectsInUse[id]
-        alertify.prompt("inspecting shit", "",
+        alertify.prompt(`Observing ${tube.item_name} #${Number(id.split('-')[1]) + 1}`, "",
             function (evt, value) {
                 $('#inspect').remove()
                 $('#info').remove()
                 $("#rxt-status").remove()
                 $("#shake").remove()
+                $("#litmus").remove()
                 preventMove = false
+                $(`.inventory`).css({
+                    "z-index": ""
+                })
+                $("#litmus").remove()
             },
             function () {
                 $('#inspect').remove()
@@ -1238,7 +1350,18 @@ $(document).ready(function () {
                 $("#rxt-status").remove()
                 $("#shake").remove()
                 preventMove = false
+                $(`.inventory`).css({
+                    "z-index": ""
+                })
+
             }).setHeader(`${tube.item_name} Inspection`)
+
+        $('.ajs-content').append('<div id="litmus" onclick="litmus()"></div>')
+        $('#litmus').css({
+            "height": "4vw",
+            "width": "100%",
+            "pointer-events": "auto"
+        })
 
         // Hide input box and expand the box
         $('.ajs-input').hide()
@@ -2112,7 +2235,7 @@ $(document).ready(function () {
                     }
                     var reactionData = JSON.parse(await Promise.resolve(($.get('/inspect/getProduct', { left: encodeURI(reagentLTemp), right: encodeURI([reagentR]) }))))
                     // array
-                    
+
 
                     console.log(reactionData)
 
@@ -2128,7 +2251,7 @@ $(document).ready(function () {
 
                     // // Get the ratio
                     // var ratio = JSON.parse(await Promise.resolve(($.get('/inspect/getRatio', { left: encodeURI(reagentLTemp), right: encodeURI([reagentR]) }))))
-                    
+
 
                     // Calculate how much reagentL was used in THIS reaction.
                     var reagentLUsed = 0
@@ -2163,19 +2286,19 @@ $(document).ready(function () {
                     // The volume of the new reactant is equal to the volume of reagentL used to create this reactant.
                     var reagentNVolume = reagentLUsed
 
-                    for (var j = 0; j < reactionData.length; j++) { 
+                    for (var j = 0; j < reactionData.length; j++) {
                         var numberOfProducts = reactionData.length
                         var prod = reactionData[i]
                         if (volColTemp[prod.formula_id]) {
                             // already exists, just change the volume
-                            volColTemp[prod['formula_id']].volume = volColTemp[prod['formula_id']].volume + Number(reagentNVolume/numberOfProducts)
-    
+                            volColTemp[prod['formula_id']].volume = volColTemp[prod['formula_id']].volume + Number(reagentNVolume / numberOfProducts)
+
                         } else {
                             // doesn't exist, create new
                             volColTemp[prod['formula_id']] = {
                                 color: prod['color'],
                                 odor: prod['odor'],
-                                volume: Number(reagentNVolume/numberOfProducts),
+                                volume: Number(reagentNVolume / numberOfProducts),
                                 state: prod['state'],
                                 hex: prod['hex'],
                                 cation: prod['cation'],
@@ -2191,7 +2314,7 @@ $(document).ready(function () {
 
 
 
-                    
+
 
                     // The volume of water is equal to the volume of reagentR used, which is equal to 1/5 the volume of reagentLUsed
                     var waterVolume = Number(reagentLUsed / 5) // Variable ID3
@@ -2540,6 +2663,7 @@ $(document).ready(function () {
                 var gasReaction = JSON.parse(await Promise.resolve(($.get('/inspect/getProduct', { left: reagent[1], right: "air" }))))
 
                 var secondaryColor = ""
+                var litmusGas;
                 if (!gasReaction.error) {
                     // got secondary reaction
                     if (gasReaction.color != "colorless") {
@@ -2552,9 +2676,48 @@ $(document).ready(function () {
                         }
                     }
 
+                    litmusGas = gasReaction.produces_1
+
+                } else {
+                    // Check for litmus reaction
+                    litmusGas = reagent[1]
                 }
 
+                // Check for litmus reaction
+                if (hasLitmus) {
+                    var litmusReaction = JSON.parse(await Promise.resolve(($.get('/inspect/getProduct', { left: litmusGas, right: hasLitmus }))))
+                    if (litmusReaction[0]) {
+                        // Change the color 
+                        if (litmusReaction[0].produces_1 == "damp_blue_litmus") {
+                            // draw blue
+                            $(`#paper-after`).css({
+                                "background-image": "linear-gradient(#f4bbc5, #aab6dd)",
+                                "opacity": "1"
+                            })
+                        } else if (litmusReaction[0].produces_1 == "damp_red_litmus") {
+                            // draw red
+                            $(`#paper-after`).css({
+                                "background-image": "linear-gradient(#aab6dd, #f4bbc5)",
+                                "opacity": "1"
+                            })
+                        } else {
+                            // draw white
+                            if (hasLitmus == "damp_red_litmus") {
+                                $(`#paper-after`).css({
+                                    "background-image": "linear-gradient(#f4bbc5, white)",
+                                    "opacity": "1"
+                                })
+                            } else { 
+                                $(`#paper-after`).css({
+                                    "background-image": "linear-gradient(#aab6dd, white)",
+                                    "opacity": "1"
+                                })
+                            }
+                            
+                        }
 
+                    }
+                }
 
 
                 for (let i = 1; i < 30; i++) {
@@ -2978,6 +3141,44 @@ $(document).ready(function () {
         }
     }
 
+    litmus = function () {
+        if (currentlyMovingElem && !placedLitmus) {
+            placedLitmus = true
+            if (objectsInUse[currentlyMovingElem].apparatus_id == "damp_red_litmus" || objectsInUse[currentlyMovingElem].apparatus_id == "damp_blue_litmus") {
+                // run code
+                $("#litmus").append("<div id='paper-before'></div>")
+                if (objectsInUse[currentlyMovingElem].apparatus_id == "damp_red_litmus") {
+                    $("#paper-before").css({
+                        "background-color": "#f4bbc5"
+                    })
+                    hasLitmus = "damp_red_litmus"
+                } else {
+                    $("#paper-before").css({
+                        "background-color": "#aab6dd"
+                    })
+                    hasLitmus = "damp_blue_litmus"
+                }
+
+                $("#litmus").append("<div id='paper-after'></div>")
+                // Remove (or delete) the litmus paper? 
+                // $(`#${currentlyMovingElem}`).css({
+                //     'opacity': '0'
+                // })
+                $(`#${currentlyMovingElem}`).remove()
+                delete objectsInUse[currentlyMovingElem]
+                isMoving = false
+                currentlyMovingElem = ""
+                $('.movables > .interactive').css({ 'pointer-events': 'auto' })
+                $('body').css({ 'pointer-events': 'auto' })
+
+            }
+        }
+
+
+
+    }
+
+
     function popupHtml() {
         // Before calling this function, set 
         // isMoving to true;
@@ -3070,7 +3271,7 @@ $(document).ready(function () {
             e.preventDefault()
             // get rid of all elements below           
 
-            
+
 
             // Listener for click, so as to remove the popup
             $('body').click(function (evt) {
@@ -3114,7 +3315,7 @@ $(document).ready(function () {
         var list = preloadImages.list;
         for (var i = 0; i < array.length; i++) {
             var img = new Image();
-            img.onload = function() {
+            img.onload = function () {
                 var index = list.indexOf(this);
                 if (index !== -1) {
                     // remove image from the array once it's loaded
@@ -3126,7 +3327,7 @@ $(document).ready(function () {
             img.src = array[i];
         }
     }
-    
+
     preloadImages(["/images/mini/fa-bottle.png", "/images/mini/reagent-bottle.png", "/images/mini/test-tube.png", "/images/filter-paper-unfolded.png", "/images/filter-paper-folded.png", "/images/funnel.png", "/images/filter-funnel.png", "/images/mini/delivery-tube.png"]);
 
 })

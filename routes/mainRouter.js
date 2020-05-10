@@ -320,7 +320,7 @@ router.get('/inspect/getProduct', async (req, res, next) => {
             for (var j = 0; j < reagentR.length; j++) { 
                 console.log(i, j, reagentL[i], reagentR[j])
                 
-                var result = await connection.query(`SELECT ions.produces_1, reference.* FROM ions INNER JOIN reference ON ions.produces_1 = reference.formula_id WHERE ions.formula_id = ? AND ions.reacts_with_indiv_1 = ?`, [reagentL[i], reagentR[j]])
+                var result = await connection.query(`SELECT ions.produces_1, reference.* FROM ions LEFT JOIN reference ON ions.produces_1 = reference.formula_id WHERE ions.formula_id = ? AND ions.reacts_with_indiv_1 = ?`, [reagentL[i], reagentR[j]])
                 console.log(result[0])
                 // What if there's more than one?????????
                 if (result[0].length) { 
