@@ -48,6 +48,110 @@ $(document).ready(function () {
 
     preventInventory = false
 
+    var bunsenOn = false
+    var bunsenLit = false
+    var heatShieldInPlace = false
+    var gogglesWorn = false
+
+    light = function () {
+        console.log('try light')
+        if (bunsenOn && currentlyMovingElem.split("-")[0] == "lighter" && !bunsenLit) {
+            bunsenLit = true
+            $('.light').addClass("lit")
+            var warnings = []
+            if (!heatShieldInPlace) {
+                warnings.push("WARNING: <b>Heat Shield</b> not in proper position. (Click on it)")
+            }
+            if (!gogglesWorn) {
+                warnings.push("WARNING: <b>Safety Goggles</b> not worn. (Put in inventory)")
+            }
+            if (warnings.length) {
+                alertify.prompt(warnings.join("<br />"), (evt, value) => $('.ajs-cancel').show(), () => $('.ajs-cancel').show()).setHeader(`Warnings (${warnings.length})`)
+                $('.ajs-input').hide()
+                $('.ajs-cancel').hide()
+            }
+        }
+
+
+    }
+
+    toggleBunsen = function () {
+        if (bunsenOn && heatShieldInPlace) {
+            // bunsen burner ON, heatshield in place   
+            $('.light').removeClass("lit")
+            bunsenOn = false
+            bunsenLit = false
+            $('body').css({
+                'background-image': "url(/images/background-heat-shield.jpg)"
+            })
+        } else if (!bunsenOn && heatShieldInPlace) {
+            // bunsen burner OFF, heatshield in place
+            bunsenOn = true
+            bunsenLit = false
+            $('body').css({
+                'background-image': "url(/images/background-tap-on-heat-shield.jpg)"
+            })
+        } else if (bunsenOn && !heatShieldInPlace) {
+            // bunsen burner ON, heatshield not in place
+            bunsenOn = false
+            $('.light').removeClass("lit")
+            $('body').css({
+                'background-image': "url(/images/background.jpg)"
+            })
+        } else if (!bunsenOn && !heatShieldInPlace) {
+            // bunsen burner off, heatshield not in place
+            bunsenOn = true
+            $('body').css({
+                'background-image': "url(/images/background-tap-on.jpg)"
+            })
+
+        }
+
+    }
+
+    toggleHeatShield = function () {
+        if (bunsenOn && heatShieldInPlace) {
+            // bunsen burner ON, heatshield in place   
+            heatShieldInPlace = false
+            $('body').css({
+                'background-image': "url(/images/background-tap-on.jpg)"
+            })
+            $('.heat-shield-1').toggleClass("new-1")
+            $('.heat-shield-2').toggleClass("new-2")
+            $('.heat-shield-3').toggleClass("new-3")
+        } else if (!bunsenOn && heatShieldInPlace) {
+            // bunsen burner OFF, heatshield in place
+            heatShieldInPlace = false
+            $('body').css({
+                'background-image': "url(/images/background.jpg)"
+            })
+            $('.heat-shield-1').toggleClass("new-1")
+            $('.heat-shield-2').toggleClass("new-2")
+            $('.heat-shield-3').toggleClass("new-3")
+        } else if (bunsenOn && !heatShieldInPlace) {
+            // bunsen burner ON, heatshield not in place
+            heatShieldInPlace = true
+
+            $('body').css({
+                'background-image': "url(/images/background-tap-on-heat-shield.jpg)"
+            })
+            $('.heat-shield-1').toggleClass("new-1")
+            $('.heat-shield-2').toggleClass("new-2")
+            $('.heat-shield-3').toggleClass("new-3")
+        } else if (!bunsenOn && !heatShieldInPlace) {
+            // bunsen burner off, heatshield not in place
+            heatShieldInPlace = true
+
+            $('body').css({
+                'background-image': "url(/images/background-heat-shield.jpg)"
+            })
+            $('.heat-shield-1').toggleClass("new-1")
+            $('.heat-shield-2').toggleClass("new-2")
+            $('.heat-shield-3').toggleClass("new-3")
+
+        }
+    }
+
     inventory = function (slot) {
         // Case 1: picking up something from the slot
 
@@ -61,19 +165,19 @@ $(document).ready(function () {
             preventMove = false
 
             currentlyMovingElem = inventoryContents[slot]
-            
+
 
 
             var ele = inventoryContents[slot]
             var heldItemDiv = $(`#${ele}`)
             $(".movables").append(heldItemDiv)
             $(`#${inventoryContents[slot]}`).css({
-                
+
                 "position": "absolute",
                 "width": "",
                 "height": ""
             })
-            
+
             delete inventoryContents[slot]
             delete inventoryContentsOpp[ele]
             makeMovable(ele)
@@ -101,7 +205,7 @@ $(document).ready(function () {
                     "position": "relative",
                     "width": "100%",
                     "height": "100%",
-                    
+
 
 
                 })
@@ -112,6 +216,53 @@ $(document).ready(function () {
 
 
     }
+
+
+
+    var inFlame = false
+    $(".light").mouseenter(async () => {
+        if (bunsenLit && currentlyMovingElem.split("-")[0] == "splint") {
+            inFlame = true
+            await timeout(1000)
+            console.log('timed out')
+            console.log(inFlame)
+            if (inFlame) {
+                // update
+                var oldId = currentlyMovingElem
+                var oldIdNumber = oldId.split("-")[1]
+
+                // Get current left and top pos
+                var left = $(`#${currentlyMovingElem}`).css('left')
+                var top = $(`#${currentlyMovingElem}`).css("top")
+
+                var newId = `lit_splint-${oldIdNumber}`
+                currentlyMovingElem = newId
+
+
+
+                var data = JSON.parse(await Promise.resolve(($.get('/fetch/specific', { apparatus: "lit_splint" }))))
+                delete objectsInUse[oldId]
+                $(`#${oldId}`).remove()
+                var app = new Apparatus(data)
+                $('.movables').append(`<div class='interactive ${app.apparatus_id} apparatus moving' id='${newId}' onclick="makeMovable('${newId}')"> </div>`)
+                $(`#${newId}`).css({
+                    left: left,
+                    top: top,
+                    "background-image": app.image_url
+                })
+                objectsInUse[newId] = app
+                // Delete old splint from objectsInUse
+
+
+                isMoving = true
+
+                popupHtml()
+
+            }
+        }
+    })
+    $(".light").mouseleave(() => inFlame = false)
+
 
 
 
@@ -1349,6 +1500,7 @@ $(document).ready(function () {
                 $('#info').remove()
                 $("#rxt-status").remove()
                 $("#shake").remove()
+                $("#litmus").remove()
                 preventMove = false
                 $(`.inventory`).css({
                     "z-index": ""
@@ -2684,6 +2836,8 @@ $(document).ready(function () {
                 }
 
                 // Check for litmus reaction
+                // rememmeber to disable it after one reaction
+                // !!
                 if (hasLitmus) {
                     var litmusReaction = JSON.parse(await Promise.resolve(($.get('/inspect/getProduct', { left: litmusGas, right: hasLitmus }))))
                     if (litmusReaction[0]) {
@@ -2700,20 +2854,25 @@ $(document).ready(function () {
                                 "background-image": "linear-gradient(#aab6dd, #f4bbc5)",
                                 "opacity": "1"
                             })
-                        } else {
+                        } else if (litmusReaction[0].produces_1 == "bleached_red_litmus" || litmusReaction[0].produces_1 == "bleached_blue_litmus"){
                             // draw white
                             if (hasLitmus == "damp_red_litmus") {
                                 $(`#paper-after`).css({
                                     "background-image": "linear-gradient(#f4bbc5, white)",
                                     "opacity": "1"
                                 })
-                            } else { 
+                            } else {
                                 $(`#paper-after`).css({
                                     "background-image": "linear-gradient(#aab6dd, white)",
                                     "opacity": "1"
                                 })
                             }
+
+                        } else if (litmusReaction[0].produces_1 == "popped_lit_splint") { 
+                            $('#splint-after').hide(1000, () => $('#splint-after').show(2500))
+                        } else if (litmusReaction[0].produces_1 == "relighted_glowing_splint") { 
                             
+                            $('#splint-after').hide(1000, () => $('#splint-after').show(2500))
                         }
 
                     }
@@ -3141,9 +3300,43 @@ $(document).ready(function () {
         }
     }
 
-    litmus = function () {
-        if (currentlyMovingElem && !placedLitmus) {
+    extinguish = async function (id) {
+        var oldId = id
+        var oldIdNumber = oldId.split("-")[1]
+
+        // prevent move
+        preventMove = true
+
+        var data = JSON.parse(await Promise.resolve(($.get('/fetch/specific', { apparatus: "glowing_splint" }))))
+        var app = new Apparatus(data)
+        var newId = `glowing_splint-${oldIdNumber}`
+        objectsInUse[newId] = app
+        
+        // Get current left and top pos
+        var left = $(`#${oldId}`).css('left')
+        var top = $(`#${oldId}`).css("top")
+        delete objectsInUse[oldId]
+        $(`#${oldId}`).remove()
+
+        
+        $('.movables').append(`<div class='interactive ${app.apparatus_id} apparatus moving' id='${newId}' onclick="makeMovable('${newId}')"> </div>`)
+        $(`#${newId}`).css({
+            left: left,
+            top: top,
+            "background-image": app.image_url,
             
+        })   
+        
+        currentlyMovingElem = newId
+        isMoving = true
+        popupHtml()
+        putDownItemInWorkingArea()
+        preventMove = false
+    }
+
+    litmus = function () { // actually litmus is catchall term now
+        if (currentlyMovingElem && !placedLitmus) {
+
             if (objectsInUse[currentlyMovingElem].apparatus_id == "damp_red_litmus" || objectsInUse[currentlyMovingElem].apparatus_id == "damp_blue_litmus") {
                 placedLitmus = true
                 $(document).unbind("mousemove")
@@ -3173,6 +3366,40 @@ $(document).ready(function () {
                 $('.movables > .interactive').css({ 'pointer-events': 'auto' })
                 $('body').css({ 'pointer-events': 'auto' })
 
+            } else if (objectsInUse[currentlyMovingElem].apparatus_id == "lit_splint") { 
+                placedLitmus = true
+                $(document).unbind('mousemove')
+                hasLitmus = "lit"
+                $('#litmus').append("<div id='splint-before'> </div>").append('<div id="splint-after"></div>')
+                $('#splint-after').css("background-image", "url(/images/mini/lit-splint.png)")
+
+
+
+
+
+                $(`#${currentlyMovingElem}`).remove()
+                delete objectsInUse[currentlyMovingElem]
+                isMoving = false
+                currentlyMovingElem = ""
+                $('.movables > .interactive').css({ 'pointer-events': 'auto' })
+                $('body').css({ 'pointer-events': 'auto' })
+            } else if (objectsInUse[currentlyMovingElem].apparatus_id == "glowing_splint") { 
+                placedLitmus = true
+                $(document).unbind('mousemove')
+                hasLitmus = "glowing_splint"
+                $('#litmus').append("<div id='splint-before'> </div>").append('<div id="splint-after"></div>')
+                $('#splint-after').css("background-image", "url(/images/mini/glowing-splint.png)")
+
+
+
+
+
+                $(`#${currentlyMovingElem}`).remove()
+                delete objectsInUse[currentlyMovingElem]
+                isMoving = false
+                currentlyMovingElem = ""
+                $('.movables > .interactive').css({ 'pointer-events': 'auto' })
+                $('body').css({ 'pointer-events': 'auto' })
             }
         }
 
@@ -3235,6 +3462,9 @@ $(document).ready(function () {
             }
             if (attributes.includes("duplicate")) {
                 popupHTML.push(`<a onclick="duplicate('${elementIdToReference}')"> Duplicate </a>`)
+            }
+            if (attributes.includes("extinguish")) {
+                popupHTML.push(`<a onclick="extinguish('${elementIdToReference}')"> Extinguish </a>`)
             }
             objectsInUse[currentlyMovingElem].contains.forEach(ele => {
                 if (ele.formula_id_f == "H₂O (l)") {
