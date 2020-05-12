@@ -455,7 +455,7 @@ $(document).ready(function () {
             }
             var observer = new MutationObserver(callback)
             observer.observe(targetNode, config)
-        })
+       
         
         
     }
