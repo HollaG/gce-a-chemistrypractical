@@ -444,20 +444,20 @@ $(document).ready(function () {
     function timeout(ms) {
         return new Promise(resolve => setTimeout(resolve, ms));
     }
-    function ajaxWait() {
-        
+    async function ajaxWait() {
+        const b = new Promise((resolve, reject) => { 
             var targetNode = document.getElementsByClassName("ajs-content")[0]
             var config = { attributes: true, childList: true, subtree: true }
             var callback = async function (mutationsList, observer) {
-                observer.disconnect()
+            observer.disconnect()
 
-                return new Promise(resolve => resolve())
-            }
+            resolve()
+              }
             var observer = new MutationObserver(callback)
             observer.observe(targetNode, config)
-       
-        
-        
+        })
+        await Promise.resolve(b) 
+        return new Promise(resolve => resolve)
     }
 
 
