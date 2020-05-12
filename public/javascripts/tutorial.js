@@ -56,7 +56,7 @@ $(document).ready(function () {
                 case 2: // listen for when take test tube
 
                     // Disable all options except for test tube
-                    await waitForAJAX()
+                    Promise.resolve(waitForAJAX)
                     $(".ss-option").addClass("ss-disabled no-click")
                     selectByHtml("Test Tube").removeClass("ss-disabled no-click")
 
@@ -88,7 +88,7 @@ $(document).ready(function () {
                     break;
                 case 5: // listen for when take reagent bottle
                     // Disable all options except for test tube
-                    await waitForAJAX()
+                    Promise.resolve(waitForAJAX)
                     $(".ss-option").addClass("ss-disabled no-click")
                     selectByHtml("Chromium (III) Cr³⁺ (aq)").removeClass("ss-disabled no-click")
 
