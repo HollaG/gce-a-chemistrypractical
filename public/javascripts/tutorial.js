@@ -457,7 +457,7 @@ $(document).ready(function () {
             observer.observe(targetNode, config)
         })
         await Promise.resolve(b) 
-        return new Promise(resolve => resolve)
+        return new Promise(resolve => resolve())
     }
 
 
