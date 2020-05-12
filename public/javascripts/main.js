@@ -1251,7 +1251,7 @@ $(document).ready(function () {
 
                 }
 
-            } else if (heldItem.apparatus_id == "test_tube" && itemClicked.interact_with.split(",").includes("filter_funnel")) {
+            } else if ((heldItem.apparatus_id == "test_tube" && itemClicked.interact_with.split(",").includes("filter_funnel"))) {
                 var testTubeId = currentlyMovingElem;
                 var testTubeWithFilterId = id
 
@@ -1266,6 +1266,16 @@ $(document).ready(function () {
 
 
 
+            } else if ((heldItem.apparatus_id == "test_tube" && itemClicked.apparatus_id == "filter_funnel" && itemClicked.linked_to.split("-")[0] == "test_tube")) { 
+                var testTubeId = currentlyMovingElem;
+                var testTubeWithFilterId = objectsInUse[id].linked_to
+
+                // pouring shit from one to another
+                // button to transfer ppt? 
+                // call external function
+                // ONly run THI FUNCTION IF THERE IS A FILTER ON TOP OF IT 
+
+                filter(testTubeId, testTubeWithFilterId)
             } else if (heldItem.apparatus_id == "test_tube" && itemClicked.interact_with.split(",").includes("test_tube")) {
                 // holding test tube and clicking on the delivery tube
 
