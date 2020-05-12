@@ -78,7 +78,7 @@ $(document).ready(function () {
                     $("body").css("pointer-events", "none")
                     $(".reagents").css("pointer-events", "auto")
                     $(".reagents").on("click", async () => { // Step 2
-                        
+
                         await timeout(100)
                         $("body").css("pointer-events", "auto")
                         intro.nextStep()
@@ -129,8 +129,8 @@ $(document).ready(function () {
                     })
                     break;
                 case 9: // listen for when put down bench bottle
-                    
-                    
+
+
 
 
                     $(".working-area").on("click", async () => { // Step 2
@@ -293,7 +293,7 @@ $(document).ready(function () {
             }
             stage = stage + 1
         })
-        intro.onexit(() => { 
+        intro.onexit(() => {
             alert("finish!!!!!!!!!")
 
             // Allow clicks everywhere again
@@ -444,24 +444,23 @@ $(document).ready(function () {
     function timeout(ms) {
         return new Promise(resolve => setTimeout(resolve, ms));
     }
-    function ajaxWait() { 
-        var waitForAJAX = new Promise((resolve, reject) => { 
+    async function ajaxWait() {
+        const b = new Promise((resolve, reject) => { 
             var targetNode = document.getElementsByClassName("ajs-content")[0]
-            var config = {attributes: true, childList: true, subtree: true}
+            var config = { attributes: true, childList: true, subtree: true }
             var callback = async function (mutationsList, observer) {
-                observer.disconnect()
-                
-                resolve()
-            }
+            observer.disconnect()
+
+            resolve()
+              }
             var observer = new MutationObserver(callback)
             observer.observe(targetNode, config)
         })
-        waitForAJAX.then(() => { 
-            return new Promise(resolve => {resolve});
-        })
+        await Promise.resolve(b) 
+        return new Promise(resolve => resolve())
     }
-    
-    
+
+
 
     function selectByHtml(value) {
         return $('.ss-option').filter(function () {
@@ -469,3 +468,4 @@ $(document).ready(function () {
         });
     }
 })
+
