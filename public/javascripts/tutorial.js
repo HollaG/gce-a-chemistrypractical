@@ -56,7 +56,7 @@ $(document).ready(function () {
                 case 2: // listen for when take test tube
 
                     // Disable all options except for test tube
-                    Promise.resolve(waitForAJAX)
+                    await ajaxWait()
                     $(".ss-option").addClass("ss-disabled no-click")
                     selectByHtml("Test Tube").removeClass("ss-disabled no-click")
 
@@ -88,7 +88,7 @@ $(document).ready(function () {
                     break;
                 case 5: // listen for when take reagent bottle
                     // Disable all options except for test tube
-                    Promise.resolve(waitForAJAX)
+                    await ajaxWait()
                     $(".ss-option").addClass("ss-disabled no-click")
                     selectByHtml("Chromium (III) Cr³⁺ (aq)").removeClass("ss-disabled no-click")
 
@@ -444,18 +444,23 @@ $(document).ready(function () {
     function timeout(ms) {
         return new Promise(resolve => setTimeout(resolve, ms));
     }
-
-    var waitForAJAX = new Promise((resolve, reject) => { 
-        var targetNode = document.getElementsByClassName("ajs-content")[0]
-        var config = {attributes: true, childList: true, subtree: true}
-        var callback = async function (mutationsList, observer) {
-            observer.disconnect()
-            
-            resolve()
-        }
-        var observer = new MutationObserver(callback)
-        observer.observe(targetNode, config)
-    })
+    function ajaxWait() { 
+        var waitForAJAX = new Promise((resolve, reject) => { 
+            var targetNode = document.getElementsByClassName("ajs-content")[0]
+            var config = {attributes: true, childList: true, subtree: true}
+            var callback = async function (mutationsList, observer) {
+                observer.disconnect()
+                
+                resolve()
+            }
+            var observer = new MutationObserver(callback)
+            observer.observe(targetNode, config)
+        })
+        waitForAJAX.then(() => { 
+            return new Promise(resolve => {resolve});
+        })
+    }
+    
     
 
     function selectByHtml(value) {
