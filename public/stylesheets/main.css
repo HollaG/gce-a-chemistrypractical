@@ -26,8 +26,8 @@
 .rack { 
     position: absolute;
     width: 16.5vw;
-    height: 4vw;
-    top: 16vw;
+    height: 5.8vw;
+    top: 14.4vw;
     left: 6vw;
     cursor: pointer;
     /* background-color: red */
@@ -435,7 +435,19 @@
     cursor: pointer;
 }
 
+.alertify { 
+    pointer-events: auto !important;
+}
 
+.cust-disabled { 
+    cursor: not-allowed;
+    /* pointer-events: none !important */
+}
+
+.no-click { 
+    pointer-events: none !important
+
+}
 
 .on-working-area { 
     z-index: 10;
@@ -453,7 +465,7 @@
     /* background-color: green; */
     position: absolute;
     pointer-events: none;
-    z-index: 15000
+    z-index: 100
 }
 
 .bench-bottle { 
@@ -647,3 +659,4 @@
     left: 4.5vw;
 
 }
+

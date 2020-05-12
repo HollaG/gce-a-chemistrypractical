@@ -1,0 +1,61 @@
+.help { 
+    background-image: url("/images/mini/help.png");
+    background-size: 100% auto;
+    bottom: 1vw;
+    right: 1vw;
+    width: 4vw;
+    height: 4vw;
+    position: absolute
+}
+
+#help-text { 
+    width: 17vw;
+    height: 3vw;
+    position: absolute;
+    bottom: 1vw;
+    right: 7vw;
+    border-radius: 1.4vw;
+    background-color: white;
+    padding: 1vw;
+    
+}
+
+#help-text::after { 
+    content: " ";
+    position: absolute;
+    bottom: 1.1vw;
+    left: 100%;
+    margin-top: -1vw;
+    border-width: 1vw;
+    border-style: solid;
+    border-color: transparent transparent transparent white;
+}
+
+.introjs-overlay { 
+    background: none !important;
+    display: none !important
+}
+
+.introjs-helperLayer { 
+    background-color: rgba(255,255,255,0.3) !important;
+    z-index: 91
+}
+
+.introjs-tooltipbuttons > a {
+    display: none
+}
+
+.introjs-tooltipbuttons > .introjs-donebutton { 
+    display: inline-block
+}
+
+.introjs-showElement { 
+    z-index: 90
+}
+
+ul[role="tablist"] { 
+    pointer-events: none;
+}
+.alertify .ajs-modal {
+    z-index: 1981 !important; /* OH THE ISSUES OF COMBINING 3 DIFFERENT LIBRARIES */
+}

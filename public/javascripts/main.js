@@ -276,8 +276,13 @@ $(document).ready(function () {
 
 
         // Prompt user: which to select?
-        alertify.prompt('Select apparatus', "dropper",
-            async function (evt, value) {
+        alertify.prompt('Select apparatus', "-",
+            function (evt, value) {
+                if (value == "-") { 
+                    alertify.error()
+                    return false
+                }
+
                 // User clicks OK --> Increment the number of times this apparatus has been used by 1
                 var timesUsed = objectsUsed[value] || 0
                 objectsUsed[value] = timesUsed + 1
@@ -318,12 +323,12 @@ $(document).ready(function () {
                 basketSelect.destroy()
                 $('#basket-prompt').remove()
 
-            }).setHeader("Chemical Basket")
+            }).setHeader("Chemical Basket").set({closableByDimmer: false})
 
 
         // select the prompt and hide the default input box
         $('.ajs-input').hide()
-
+        $(".ajs-ok").addClass("cust-disabled")
 
         // AJAX to server to retrieve apparatus in the basket
         var data = JSON.parse(await Promise.resolve(($.get('/fetch', { clicked: "basket" }))))
@@ -331,7 +336,7 @@ $(document).ready(function () {
 
         // insert custom select element
         // var str = data.map(row => `<option value='${row.apparatus_id}'> ${row.item_name} </option>`)
-        var str = []
+        var str = [`<option data-placeholder="true"></option>`]
         for (key of Object.keys(data)) {
             console.log(key)
             str.push(
@@ -343,8 +348,11 @@ $(document).ready(function () {
         $('.ajs-input').after(`<select id="basket-prompt"> ${str.join(" ")} </select> `)
         // Create custom select element
         var basketSelect = new SlimSelect({
+            
             select: "#basket-prompt",
+            placeholder: "Select an apparatus...",
             onChange: (args) => {
+                $(".ajs-ok").removeClass("cust-disabled")
                 console.log('onchange')
                 console.log(args)
                 $('.ajs-input').val(args.value)
@@ -357,8 +365,12 @@ $(document).ready(function () {
 
     clickedRack = async function (id) {
 
-        alertify.prompt('Select apparatus', 'boiling_tube',
-            async function (evt, value) {
+        alertify.prompt('Select apparatus', '-',
+            function (evt, value) {
+                if (value == "-") { 
+                    alertify.error()
+                    return false
+                }
                 var timesUsed = objectsUsed[value] || 0
                 objectsUsed[value] = timesUsed + 1
                 currentlyMovingElem = `${value}-${timesUsed}`
@@ -395,15 +407,15 @@ $(document).ready(function () {
                 rackSelect.destroy()
                 $('#rack-prompt').remove()
 
-            }).setHeader("Test Tube Rack")
+            }).setHeader("Test Tube Rack").set({closableByDimmer: false})
 
         // select the prompt and hide the input
         $('.ajs-input').hide()
-
+        $(".ajs-ok").addClass("cust-disabled")
         var data = JSON.parse(await Promise.resolve(($.get('/fetch', { clicked: "rack" }))))
         // insert custom select element
         // var str = data.map(row => `<option value='${row.apparatus_id}'> ${row.item_name} </option>`)
-        var str = []
+        var str = [`<option data-placeholder="true"></option>`]
         for (key of Object.keys(data)) {
 
             str.push(
@@ -415,7 +427,9 @@ $(document).ready(function () {
         $('.ajs-input').after(`<select id="rack-prompt"> ${str.join(" ")} </select> `)
         var rackSelect = new SlimSelect({
             select: "#rack-prompt",
+            placeholder: "Select an apparatus...",
             onChange: (args) => {
+                $(".ajs-ok").removeClass("cust-disabled")
                 console.log('onchange')
                 console.log(args)
                 $('.ajs-input').val(args.value)
@@ -429,8 +443,12 @@ $(document).ready(function () {
     clickedBench = async function () {
 
 
-        alertify.prompt('Select chemical', 'ammonia_0_aq',
-            async function (evt, value) {
+        alertify.prompt('Select chemical', '-',
+            function (evt, value) {
+                if (value == "-") { 
+                    alertify.error()
+                    return false
+                }
                 var timesUsed = objectsUsed[value] || 0
                 objectsUsed[value] = timesUsed + 1
                 currentlyMovingElem = `${value}-${timesUsed}`
@@ -461,19 +479,20 @@ $(document).ready(function () {
                 benchSelect.destroy()
                 $('#bench-prompt').remove()
 
-            }).setHeader("Bench Reagents")
+            }).setHeader("Bench Reagents").set({closableByDimmer: false})
         // select the prompt and hide the input
         $('.ajs-input').hide()
+        $(".ajs-ok").addClass("cust-disabled")
 
         var data = JSON.parse(await Promise.resolve(($.get('/fetch', { clicked: "bench" }))))
 
         // insert custom select element
         // var str = data.map(row => `<option value='${row.apparatus_id}'> ${row.item_name} </option>`)
-        var str = []
+        var str = [`<option data-placeholder="true"></option>`]
         for (key of Object.keys(data)) {
 
             str.push(
-                `<option value='${data[key][0].formula_text}'> ${data[key][0].name} </option>`
+                `<option value='${data[key][0].formula_text}'> ${data[key][0].name} ${formatChemForm(data[key][0].formula_id)}</option>`
             )
         }
 
@@ -481,8 +500,10 @@ $(document).ready(function () {
         $('.ajs-input').after(`<select id="bench-prompt"> ${str.join(" ")} </select> `)
         var benchSelect = new SlimSelect({
             select: "#bench-prompt",
+            placeholder: "Select a reagent...",
             onChange: (args) => {
                 console.log('onchange')
+                $(".ajs-ok").removeClass("cust-disabled")
                 console.log(args)
                 $('.ajs-input').val(args.value)
 
@@ -495,8 +516,12 @@ $(document).ready(function () {
         console.log('clicked')
 
         // console.log(JSON.stringify(data))
-        alertify.prompt('Select chemical', 'aluminium_3p_aq',
-            async function (evt, value) {
+        alertify.prompt('Select chemical', '-',
+            function (evt, value) {
+                if (value == "-") { 
+                    alertify.error()
+                    return false
+                }
                 var timesUsed = objectsUsed[value] || 0
                 objectsUsed[value] = timesUsed + 1
                 currentlyMovingElem = `${value}-${timesUsed}`
@@ -518,7 +543,8 @@ $(document).ready(function () {
                 // var chemNumber = `FAbasket-${mostRecentChemical.formula_text}-${Number(objectsUsed[mostRecentChemical.formula_text]) - 1}`
 
 
-                var reactionData = JSON.parse(await Promise.resolve(($.get('/reagentData', { formula_id: encodeURI(mostRecentChemical.formula_id) }))))
+                // var reactionData = JSON.parse(await Promise.resolve(($.get('/reagentData', { formula_id: encodeURI(mostRecentChemical.formula_id) }))))
+                var reactionData = data[value][0]
                 // var data = JSON.parse(await Promise.resolve(($.get('/fetch', { clicked: mostRecentChemical.formula_id }))))
                 objectsInUse[currentlyMovingElem] = new FAReagent(mostRecentChemical, reactionData, currentlyMovingElem)
 
@@ -530,16 +556,16 @@ $(document).ready(function () {
                 reagentSelect.destroy()
                 $('#reagent-prompt').remove()
 
-            }).setHeader("Reagents")
+            }).setHeader("Reagents").set({closableByDimmer: false})
         // select the prompt and hide the input
         $('.ajs-input').hide()
-
+        $(".ajs-ok").addClass("cust-disabled")
         var data = JSON.parse(await Promise.resolve(($.get('/fetch', { clicked: "reagents" }))))
 
 
         // insert custom select element
         // var str = data.map(row => `<option value='${row.apparatus_id}'> ${row.item_name} </option>`)
-        var str = []
+        var str = [`<option data-placeholder="true"></option>`]
         for (key of Object.keys(data)) {
 
             str.push(
@@ -550,9 +576,11 @@ $(document).ready(function () {
 
         $('.ajs-input').after(`<select id="reagent-prompt"> ${str.join(" ")} </select> `)
         var reagentSelect = new SlimSelect({
+            placeholder: "Select a reagent...",
             select: "#reagent-prompt",
             onChange: (args) => {
                 console.log('onchange')
+                $(".ajs-ok").removeClass("cust-disabled")
                 console.log(args)
                 $('.ajs-input').val(args.value)
 
@@ -1494,6 +1522,8 @@ $(document).ready(function () {
                     "z-index": ""
                 })
                 $("#litmus").remove()
+                $(".ajs-ok").show()
+                $(".ajs-cancel").html("Cancel")
             },
             function () {
                 $('#inspect').remove()
@@ -1505,6 +1535,8 @@ $(document).ready(function () {
                 $(`.inventory`).css({
                     "z-index": ""
                 })
+                $(".ajs-ok").show()
+                $(".ajs-cancel").html("Cancel")
 
             }).setHeader(`${tube.item_name} Inspection`)
 
@@ -1527,6 +1559,9 @@ $(document).ready(function () {
         $("#tube-image-div").append(`<div id='ppt-1' class="ppt"></div>`).append(`<div id='ppt-2' class="ppt"></div>`).append(`<div id='ppt-3' class="ppt"></div>`)
         // Add the buttons to shake test tube
 
+        // Replace the buttons
+        $(".ajs-ok").hide()
+        $(".ajs-cancel").html("Close")
 
 
 
@@ -3081,11 +3116,16 @@ $(document).ready(function () {
                 $("#filter-info").remove()
                 $("#reactAir").remove()
                 preventMove = false
+                // Replace the buttons
+                $(".ajs-ok").show()
+                $(".ajs-cancel").html("Cancel")
             }, function () {
                 $("#filter-inspect").remove()
                 $("#filter-info").remove()
                 $("#reactAir").remove()
                 preventMove = false
+                $(".ajs-ok").show()
+                $(".ajs-cancel").html("Cancel")
             }).setHeader("Filter Inspection")
         // Hide input box
         $('.ajs-input').hide()
@@ -3095,6 +3135,9 @@ $(document).ready(function () {
         $('#filter-inspect').append('<div id="filter-image-div"></div>')
         $('#filter-image-div').append('<div id="filter-background-image"></div>')
         $("#filter-image-div").append('<div id="filter-ppt-1" class="filter-ppt"></div>').append('<div id="filter-ppt-2" class="filter-ppt"></div>').append('<div id="filter-ppt-3" class="filter-ppt"></div>')
+        // Replace the buttons
+        $(".ajs-ok").hide()
+        $(".ajs-cancel").html("Close")
         var funnel = objectsInUse[id]
         var pptSDrawn = {
 
@@ -3560,6 +3603,6 @@ $(document).ready(function () {
         }
     }
 
-    preloadImages(["/images/mini/fa-bottle.png", "/images/mini/reagent-bottle.png", "/images/mini/test-tube.png", "/images/filter-paper-unfolded.png", "/images/filter-paper-folded.png", "/images/funnel.png", "/images/filter-funnel.png", "/images/mini/delivery-tube.png"]);
+    preloadImages(["/images/mini/fa-bottle.png", "/images/mini/reagent-bottle.png", "/images/mini/test-tube.png", "/images/filter-paper-unfolded.png", "/images/filter-paper-folded.png", "/images/funnel.png", "/images/filter-funnel.png", "/images/mini/delivery-tube.png", "/images/background-heat-shield.jpg", "/images/background-tap-on-heat-shield.jpg", "/images/background-tap-on.jpg"]);
 
 })

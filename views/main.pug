@@ -3,6 +3,9 @@ extends layout
 
 block content
     link(href="/stylesheets/main.css" rel="stylesheet")
+    link(href="/stylesheets/tutorial.css" rel="stylesheet")
+    script(src="https://cdnjs.cloudflare.com/ajax/libs/intro.js/2.9.3/intro.min.js")
+    
     link(rel="stylesheet" href="//cdn.jsdelivr.net/npm/alertifyjs@1.13.1/build/css/alertify.min.css")
     link(rel="stylesheet" href="//cdn.jsdelivr.net/npm/alertifyjs@1.13.1/build/css/themes/default.min.css")
     //- <script src="https://unpkg.com/@popperjs/core@2/dist/umd/popper.min.js"></script>
@@ -18,9 +21,17 @@ block content
     script(src='/javascripts/classes.js')
     script(src='/javascripts/ppt.js')
     script(src='/javascripts/main.js' type="text/javascript")
+    script(src='/javascripts/tutorial.js' type="text/javascript")
     //- <link rel="stylesheet" href="/stylesheets/contextMenu.css">
     
     <script src="/javascripts/contextMenu.js"></script>
+    link(href="https://cdnjs.cloudflare.com/ajax/libs/intro.js/2.9.3/introjs.min.css" rel="stylesheet")
+    link(rel="preload" href="/images/background-tap-on.jpg" as="image")
+    link(rel="preload" href="/images/background-tap-on-heat-shield.jpg" as="image")
+    link(rel="preload" href="/images/background-heat-shield.jpg" as="image")
+    link(rel="preload" href="/images/mini/delivery-tube.png" as="image")
+
+    
     .basket(onclick='clickedBasket()')
     .rack(onclick='clickedRack()')
     .bench(onclick='clickedBench()')
@@ -31,7 +42,9 @@ block content
     .heat-shield-2(onclick='toggleHeatShield()')
     .heat-shield-3(onclick='toggleHeatShield()')
     .light(onclick='light()')
-    
+    .help(onclick="help()")
+
+
     #moving-div
     .working-area(onclick='putDownItemInWorkingArea()')
     .movables
