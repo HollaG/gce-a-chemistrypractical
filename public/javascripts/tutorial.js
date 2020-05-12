@@ -445,18 +445,18 @@ $(document).ready(function () {
         return new Promise(resolve => setTimeout(resolve, ms));
     }
 
-    function waitForAJAX(target) { 
+    var waitForAJAX = new Promise((resolve, reject) => { 
         var targetNode = document.getElementsByClassName("ajs-content")[0]
         var config = {attributes: true, childList: true, subtree: true}
-        var callback = function (mutationsList, observer) {
+        var callback = async function (mutationsList, observer) {
             observer.disconnect()
             
-            return new Promise(resolve => true)
+            resolve()
         }
         var observer = new MutationObserver(callback)
         observer.observe(targetNode, config)
-
-    }
+    })
+    
 
     function selectByHtml(value) {
         return $('.ss-option').filter(function () {
