@@ -442,7 +442,7 @@
 }
 
 /* AlertifyJS */
-.ajs-ok, .ajs-cancel { 
+.ajs-buttons { 
     cursor: pointer;
 }
 
@@ -476,7 +476,7 @@
     /* background-color: green; */
     position: absolute;
     pointer-events: none;
-    z-index: 10000
+    z-index: 100
 }
 
 .bench-bottle { 
@@ -601,23 +601,16 @@
 .inventory-helper { 
     position: absolute;
     width: 1vw;
-    height: 1vw;
+    height: 3vw;
     /* min-width: 20%; */
-    bottom: 13vw;
+    bottom: 1vw;
     z-index: -1;
     opacity: 0;
     left: 40vw
 }
 .slots { 
     height: 90%;
-    width: 100%;
-   
-
-}
-
-.slot:hover { 
-    background-color: #5c5c5c;
-    cursor: pointer;
+    width: 100%
 }
 .slot { 
     width: 30%;
@@ -626,7 +619,6 @@
     border-radius: 0.5vw;
     
     border: 2px solid black;  
-    transition: background-color 200ms ease-out;
     
    
     

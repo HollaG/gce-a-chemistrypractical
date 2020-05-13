@@ -3,12 +3,8 @@
 $(document).ready(function () {
     help = function () {
         // Prompt user to select what they need help with
-        alertify.prompt("What do you need help with?", "-",
+        alertify.prompt("What do you need help with?", "a",
             function (evt, value) {
-                if (value == "-") {
-                    // alertify.error()
-                    return false
-                }
                 switch (value) {
                     case "a": a(); break;
                     case "b": b(); break;
@@ -26,24 +22,22 @@ $(document).ready(function () {
             }
 
         ).setHeader("FAQ")
-        $(".ajs-ok").addClass("cust-disabled")
         $('.ajs-input').hide()
         var str = [
-            `<option data-placeholder="true"></option>`,
-            `<option value="a"> ✓ Basic: Standard Test for Cation / Anion </option>`,
-            `<option value="b"> ✓ Basic: Filtration </option>`,
-            `<option value="c"> ✓ Advanced: Standard Test for Gas using Litmus Paper </option>`,
-            `<option value="d"> X Advanced: Standard Test for Gas using Delivery Tube </option>`,
-            `<option value="e"> X Advanced: Using the Bunsen Burner </option>`
+            `<option value="a"> Basic: Standard Test for Cation / Anion </option>`,
+            `<option value="b"> Basic: Filtration </option>`,
+            `<option value="c"> Advanced: Standard Test for Gas using Litmus Paper </option>`,
+            `<option value="d"> Advanced: Standard Test for Gas using Delivery Tube </option>`,
+
+
+            `<option value="e"> Advanced: Using the Bunsen Burner </option>`
 
         ]
         $(".ajs-input").after(`<select id='help'> ${str.join(' ')} </select>`)
         var helpSelect = new SlimSelect({
             select: "#help",
-            placeholder: "Select a guide...",
             onChange: (args) => {
                 $('.ajs-input').val(args.value)
-                $(".ajs-ok").removeClass("cust-disabled")
             }
         })
 
@@ -317,7 +311,7 @@ $(document).ready(function () {
             steps: [
                 {
                     element: document.querySelector(".rack"),
-                    intro: "First, take a <b> Test Tube</b> by <b>clicking</b> on the <b>Test Tube Rack</b>.",
+                    intro: "First, take a test tube.",
                     position: "bottom",
                     hideNext: false,
 
@@ -330,7 +324,7 @@ $(document).ready(function () {
                 },
                 {
                     element: document.querySelector(".working-area"),
-                    intro: "Place <b>Test Tube</b> on the <b>Working Area</b> by <b>clicking<b> on the <b>Working Area</b>."
+                    intro: "Place test tube on the working area."
                 },
                 {
                     element: document.querySelector(".reagents"),
@@ -343,7 +337,7 @@ $(document).ready(function () {
                 },
                 {
                     element: document.querySelector(".working-area"),
-                    intro: "Place the <b> Chromium bottle</b> on the <b>Working Area</b>."
+                    intro: "Place bottle on the working area."
                 },
                 {
                     element: document.querySelector(".bench"),
@@ -356,15 +350,15 @@ $(document).ready(function () {
                 },
                 {
                     element: document.querySelector(".working-area"),
-                    intro: "Place the <b> Sodium Hydroxide</b> on the <b>Working Area</b>."
+                    intro: "Place bottle on the working area."
                 },
                 {
                     element: document.querySelector(".chromium_3p_aq"), // dynamic
-                    intro: "Click on the <b>Chromium bottle</b> to pick it up."
+                    intro: "Click on the Chromium bottle to pick it up."
                 },
                 {
                     element: document.querySelector(".test_tube"), // dynamic
-                    intro: "<b>Click on the <b>Test Tube</b> while holding the bottle to <b>transfer solution<b>."
+                    intro: "Click on the test tube while holding the bottle to transfer solution."
                 },
                 {
                     element: document.querySelector(".ajs-body"),
@@ -377,7 +371,7 @@ $(document).ready(function () {
                 },
                 {
                     element: document.querySelector(".sodium_hydroxide_0_aq"), // dynamic
-                    intro: "Click on the <b>Sodium Hydroxide bottle</b> to pick it up."
+                    intro: "Click on the Sodium Hydroxide bottle to pick it up."
                 },
                 {
                     element: document.querySelector(".test_tube"), // dynamic
@@ -385,7 +379,7 @@ $(document).ready(function () {
                 },
                 {
                     element: document.querySelector(".ajs-body"),
-                    intro: "<b>Click on the <b>Test Tube</b> while holding the bottle to <b>transfer solution<b>.",
+                    intro: "Enter the number <b>5</b> to transfer 5 cm³ of solution.",
                     position: "top"
                 },
                 {
@@ -932,7 +926,7 @@ $(document).ready(function () {
             steps: [
                 {
                     element: document.querySelector(".rack"),
-                    intro: "First, take a <b> Test Tube</b> by <b>clicking</b> on the <b>Test Tube Rack</b>.",
+                    intro: "First, take a test tube.",
                     position: "bottom",
                     hideNext: false,
 
@@ -945,7 +939,7 @@ $(document).ready(function () {
                 },
                 {
                     element: document.querySelector(".working-area"),
-                    intro: "Place <b>Test Tube</b> on the <b>Working Area</b> by <b>clicking<b> on the <b>Working Area</b>."
+                    intro: "Place test tube on the working area."
                 },
                 {
                     element: document.querySelector(".reagents"),
@@ -958,7 +952,7 @@ $(document).ready(function () {
                 },
                 {
                     element: document.querySelector(".working-area"),
-                    intro: "Place the <b> Iron (II) bottle</b> on the <b>Working Area</b>."
+                    intro: "Place bottle on the working area."
                 },
                 {
                     element: document.querySelector(".bench"),
@@ -971,15 +965,15 @@ $(document).ready(function () {
                 },
                 {
                     element: document.querySelector(".working-area"),
-                    intro: "Place the <b> Sodium Hydroxide</b> on the <b>Working Area</b>."
+                    intro: "Place bottle on the working area."
                 },
                 {
                     element: document.querySelector(".iron_2p_aq"), // dynamic
-                    intro: "<b>Click</b> on the <b>Iron (II) bottle</b> to pick it up."
+                    intro: "Click on the Iron (II) bottle to pick it up."
                 },
                 {
                     element: document.querySelector(".test_tube"), // dynamic
-                    intro: "<b>Click on the <b>Test Tube</b> while holding the bottle to <b>transfer solution<b>."
+                    intro: "Click on the test tube while holding the bottle to transfer solution."
                 },
                 {
                     element: document.querySelector(".ajs-body"),
@@ -992,11 +986,11 @@ $(document).ready(function () {
                 },
                 {
                     element: document.querySelector(".sodium_hydroxide_0_aq"), // dynamic
-                    intro: "Click on the <b>Sodium Hydroxide bottle</b> to pick it up."
+                    intro: "Click on the Sodium Hydroxide bottle to pick it up."
                 },
                 {
                     element: document.querySelector(".test_tube"), // dynamic
-                    intro: "<b>Click on the <b>Test Tube</b> while holding the bottle to <b>transfer solution<b>."
+                    intro: "Click on the test tube while holding the bottle to transfer solution."
                 },
                 {
                     element: document.querySelector(".ajs-body"),
@@ -1025,7 +1019,7 @@ $(document).ready(function () {
                 },
                 {
                     element: document.querySelector(".rack"),
-                    intro: "Take a <b>Test Tube</b>.",
+                    intro: "Take a test tube.",
 
                 },
                 {
@@ -1035,11 +1029,11 @@ $(document).ready(function () {
                 },
                 {
                     element: document.querySelector(".working-area"),
-                    intro: "Place <b>Test Tube</b> on the working area."
+                    intro: "Place test tube on the working area."
                 },
                 {
                     element: document.querySelector(".basket"),
-                    intro: "Take the <b> Filter Paper</b>."
+                    intro: "Take the filter paper."
                 },
                 {
                     element: document.querySelector(".ajs-body"),
@@ -1048,11 +1042,11 @@ $(document).ready(function () {
                 },
                 {
                     element: document.querySelector(".working-area"),
-                    intro: "Place <b> Filter Paper</b> on the <b>Working Area</b>."
+                    intro: "Place filter paper on the working area."
                 },
                 {
                     element: document.querySelector(".basket"),
-                    intro: "Take the <b>Funnel</b>."
+                    intro: "Take the funnel."
                 },
                 {
                     element: document.querySelector(".ajs-body"),
@@ -1073,11 +1067,11 @@ $(document).ready(function () {
                 },
                 {
                     element: document.querySelector(".folded_filter"), // dynamic
-                    intro: "Click on the <b>Folded Filter</b> to pick it up."
+                    intro: "Click on the folded filter to pick it up."
                 },
                 {
                     element: document.querySelector(".funnel"), // dynamic
-                    intro: "Click on the <b>Funnel</b> to place the <b>Folded Filter</b> on the <b>Funnel</b>."
+                    intro: "Click on the <b>Funnel</b> to place the filter on the funnel."
                 },
                 {
                     element: document.querySelector(".filter_funnel"), //dynamic
@@ -1102,7 +1096,7 @@ $(document).ready(function () {
                 },
                 {
                     element: document.querySelector(".working-area"),
-                    intro: "Put down the <b>Test Tube</b>."
+                    intro: "Put down the Test Tube."
                 },
                 {
                     element: document.querySelector(".filter_funnel"), // dynamic
@@ -1114,11 +1108,11 @@ $(document).ready(function () {
                 },
                 {
                     element: document.querySelector("#shake"), // dynamic
-                    intro: "Click on <b>React</b> to check if the precipitate can react with <b>air</b>."
+                    intro: "Click on <b>React</b> to check if the precipitate can react with air."
                 },
                 {
                     element: document.querySelector("#shake"), // dynamic
-                    intro: "Click on <b>React</b> to check if the precipitate can react with <b>air</b>."
+                    intro: "Click on <b>React</b> to check if the precipitate can react with air."
                 },
                 {
                     element: document.querySelector("#rxt-status"), //dynamic
@@ -1151,7 +1145,6 @@ $(document).ready(function () {
         intro = introJs()
         intro.onchange(async (e) => {
             console.log("stage", stage)
-            $("body").css("pointer-events", "none")
             switch (stage) {
                 case 2: // listen for when take test tube
 
@@ -1172,13 +1165,10 @@ $(document).ready(function () {
                         await timeout(100)
                         intro.nextStep()
                         $(".working-area").off("click");
-                        
                     });
                     break;
                 case 4: // listen for when click on basket
-                    $(".basket").css("pointer-events", "auto")
                     $(".basket").on("click", async () => {
-                        $(".basket").css("pointer-events", "none")
                         await timeout(100)
                         
                         $(".basket").off("click")
@@ -1196,21 +1186,38 @@ $(document).ready(function () {
                         await timeout(100)
                         intro.nextStep()
                         $(".ajs-ok").off("click");
-                        $(".introjs-helperLayer").hide()
                     })
-                    break;
                 case 6: // listen for when click on inventory
-                    $(".slots").on("click", async () => {
-                        
-                        $(".slots").off("click")
+                    $("#slot-1").on("click", async () => {
                         await timeout(100)
                         intro._introItems[6].element = document.querySelector(".test_tube")
                         intro._introItems[6].position = "top"
                         listenRightClick = true
                         intro.nextStep()
-                        
+                        $("#slot-1").off("click")
+                        $("#slot-2").off("click")
+                        $("#slot-3").off("click")
                     })
-                   
+                    $("#slot-2").on("click", async () => {
+                        await timeout(100)
+                        intro._introItems[6].element = document.querySelector(".test_tube")
+                        intro._introItems[6].position = "top"
+                        listenRightClick = true
+                        intro.nextStep()
+                        $("#slot-1").off("click")
+                        $("#slot-2").off("click")
+                        $("#slot-3").off("click")
+                    })
+                    $("#slot-3").on("click", async () => {
+                        await timeout(100)
+                        intro._introItems[6].element = document.querySelector(".test_tube")
+                        intro._introItems[6].position = "top"
+                        listenRightClick = true
+                        intro.nextStep()
+                        $("#slot-1").off("click")
+                        $("#slot-2").off("click")
+                        $("#slot-3").off("click")
+                    })
                     break;
                 case 7: // listen for right click on test tube
                     $(".test_tube").on("contextmenu", async () => {
@@ -1232,7 +1239,7 @@ $(document).ready(function () {
                         intro._introItems[8].position = "top"
                         intro.nextStep()
                         $(".test_tube > .popup > a").off("click"); // issue?
-                        
+                        $(".introjs-helperLayer").hide()
                     })
                     break;
                 case 9:
@@ -1245,15 +1252,14 @@ $(document).ready(function () {
             stage = stage + 1
         })
         intro.onexit(() => {
-            $(".help").css("pointer-events", "auto")
-            $("body").css("pointer-events", "auto")
+            alert('doneededed')
         })
 
         intro.setOptions({
             steps: [
                 {
                     element: document.querySelector(".rack"),
-                    intro: "First, take a <b>Test Tube</b>.",
+                    intro: "First, take a test tube.",
                     position: "bottom",
                     hideNext: false,
 
@@ -1266,20 +1272,20 @@ $(document).ready(function () {
                 },
                 {
                     element: document.querySelector(".working-area"),
-                    intro: "<b>Place Test Tube</b> on the <b>working area</b>."
+                    intro: "Place test tube on the working area."
                 },
                 {
                     element: document.querySelector(".basket"),
-                    intro: "Take the <b>Litmus Paper</b>.",
+                    intro: "Take the litmus paper.",
                 },
                 {
                     element: document.querySelector(".ajs-body"),
-                    intro: "Select either red or blue <b>Litmus Paper</b>.",
+                    intro: "Select either <b>Litmus Paper</b>.",
                     position: "top"
                 },
                 {
                     element: document.querySelector(".inventory-helper"),
-                    intro: "<b> Click </b> on one of the Inventory Slots to place the <b>Litmus Paper</b> into the Inventory. <br /><b> Hover</b> over the Inventory to open it.",
+                    intro: "Place <b>Litmus Paper</b> into one of the <b>Inventory Slots</b>.",
                     scrollToElement: false,
                     position: "right"
                 },
@@ -1289,12 +1295,12 @@ $(document).ready(function () {
                 },
                 {
                     element: document.querySelector(".test_tube > .popup > a"), // dynamic
-                    intro: "<b>Click</b> on <b> Inspect</b>."
+                    intro: "Click on <b> Inspect</b>."
                 },
 
                 {
                     element: document.querySelector("#litmus"),
-                    intro: "<b>Pick up </b> the <b>Litmus Paper</b>, and click here to place it down."
+                    intro: "Pick up the Litmus Paper, and click here to place it down."
                 }
             ]
         })
