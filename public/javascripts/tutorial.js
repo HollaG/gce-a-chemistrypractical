@@ -33,7 +33,7 @@ $(document).ready(function () {
             `<option value="a"> ✓ Basic: Standard Test for Cation / Anion </option>`,
             `<option value="b"> ✓ Basic: Filtration </option>`,
             `<option value="c"> ✓ Advanced: Standard Test for Gas using Litmus Paper </option>`,
-            `<option value="d"> X Advanced: Standard Test for Gas using Delivery Tube </option>`,
+            `<option value="d"> ✓ Advanced: Standard Test for Gas using Delivery Tube </option>`,
             `<option value="e"> X Advanced: Using the Bunsen Burner </option>`
 
         ]
@@ -1172,7 +1172,7 @@ $(document).ready(function () {
                         await timeout(100)
                         intro.nextStep()
                         $(".working-area").off("click");
-                        
+
                     });
                     break;
                 case 4: // listen for when click on basket
@@ -1180,14 +1180,14 @@ $(document).ready(function () {
                     $(".basket").on("click", async () => {
                         $(".basket").css("pointer-events", "none")
                         await timeout(100)
-                        
+
                         $(".basket").off("click")
                         intro.nextStep()
                         $(".introjs-helperLayer").hide()
                     })
                     break;
                 case 5:
-                    
+
                     await ajaxWait()
                     $(".ss-option").addClass("ss-disabled no-click")
                     selectByHtml("Damp Red Litmus Paper").removeClass("ss-disabled no-click")
@@ -1201,16 +1201,16 @@ $(document).ready(function () {
                     break;
                 case 6: // listen for when click on inventory
                     $(".slots").on("click", async () => {
-                        
+
                         $(".slots").off("click")
                         await timeout(100)
                         intro._introItems[6].element = document.querySelector(".test_tube")
                         intro._introItems[6].position = "top"
                         listenRightClick = true
                         intro.nextStep()
-                        
+
                     })
-                   
+
                     break;
                 case 7: // listen for right click on test tube
                     $(".test_tube").on("contextmenu", async () => {
@@ -1232,7 +1232,7 @@ $(document).ready(function () {
                         intro._introItems[8].position = "top"
                         intro.nextStep()
                         $(".test_tube > .popup > a").off("click"); // issue?
-                        
+
                     })
                     break;
                 case 9:
@@ -1315,6 +1315,685 @@ $(document).ready(function () {
             $(".rack").off("click")
         })
 
+    }
+
+    function d() {
+        var stage = 1
+        var listenRightClick = false
+        intro = introJs()
+        intro.onchange(async (e) => {
+            console.log("stage", stage)
+            $("body").css("pointer-events", "none")
+            switch (stage) {
+                case 2: // listen for when take test tube
+
+                    // Disable all options except for test tube
+                    await ajaxWait()
+                    $(".ss-option").addClass("ss-disabled no-click")
+                    selectByHtml("Test Tube").removeClass("ss-disabled no-click")
+
+                    $(".ajs-ok").on("click", async () => { // Step 2
+                        await timeout(100)
+                        intro.nextStep()
+                        $(".ajs-ok").off("click");
+                    })
+
+                    break;
+                case 3: // listen for when put down test tube
+                    $(".working-area").on("click", async () => { // Step 2
+                        await timeout(100)
+                        intro.nextStep()
+                        $(".working-area").off("click");
+                    });
+                    break;
+                case 4: // listen for when click on rack
+                    $(".rack").css("pointer-events", "auto")
+                    $(".rack").on("click", async () => { // Step 1                        
+                        $(".rack").css("pointer-events", "")
+                        await timeout(100)
+                        $(".ajs-body").attr("data-position", "top")
+
+                        intro.nextStep()
+                        $(".introjs-helperLayer").hide()
+                        $(".rack").off("click")
+                    })
+                    break;
+                case 5: // listen for when take test tube
+
+                    // Disable all options except for test tube
+                    await ajaxWait()
+                    $(".ss-option").addClass("ss-disabled no-click")
+                    selectByHtml("Test Tube").removeClass("ss-disabled no-click")
+
+                    $(".ajs-ok").on("click", async () => { // Step 2
+                        await timeout(100)
+                        intro.nextStep()
+                        $(".ajs-ok").off("click");
+                    })
+
+                    break;
+                case 6: // listen for when put down test tube
+                    $(".working-area").on("click", async () => { // Step 2
+                        await timeout(100)
+                        intro.nextStep()
+                        $(".working-area").off("click");
+                    });
+                    break;
+                case 7: // listen for when click on FAreagent                    
+                    $(".reagents").css("pointer-events", "auto")
+                    $(".reagents").on("click", async () => { // Step 2
+
+                        await timeout(100)
+                        $("body").css("pointer-events", "auto")
+                        $(".reagents").css("pointer-events", "")
+                        intro.nextStep()
+                        $(".reagents").off("click");
+                        $(".introjs-helperLayer").hide()
+                    });
+                    break;
+                case 8: // listen for when take reagent bottle
+                    // Disable all options except for test tube
+                    await ajaxWait()
+                    $(".ss-option").addClass("ss-disabled no-click")
+                    selectByHtml("Carbonate CO₃²⁻ (aq)").removeClass("ss-disabled no-click")
+
+                    $(".ajs-ok").on("click", async () => { // Step 2
+                        await timeout(100)
+                        intro.nextStep()
+                        $(".ajs-ok").off("click");
+                    })
+                    break;
+                case 9: // listen for when put down reagent bottle
+                    $(".working-area").on("click", async () => { // Step 2
+                        await timeout(100)
+                        intro.nextStep()
+                        $(".working-area").off("click");
+                    });
+                    break;
+
+
+
+
+                case 10: // listen for when click on bench
+
+                    $(".bench").css("pointer-events", "auto")
+                    $(".bench").on("click", async () => { // Step 2
+
+                        $(".bench").css("pointer-events", "")
+                        await timeout(100)
+
+                        intro.nextStep()
+                        $(".bench").off("click");
+                        $(".introjs-helperLayer").hide()
+                    });
+                    break;
+                case 11: // listen for when take bench bottle
+                    await ajaxWait()
+                    $(".ss-option").addClass("ss-disabled no-click")
+                    selectByHtml("Hydrochloric Acid HCl (aq)").removeClass("ss-disabled no-click")
+                    $(".ajs-ok").on("click", async () => { // Step 2
+                        await timeout(100)
+                        intro.nextStep()
+                        $(".ajs-ok").off("click");
+                    })
+                    break;
+                case 12: // listen for when put down bench bottle
+
+                    $(".working-area").on("click", async () => { // Step 2
+                        await timeout(100)
+                        // Add a step here: Because introJS doesn't know what elements are added dynamically
+                        // THANK YOU GITHUB https://github.com/usablica/intro.js/issues/328#issuecomment-107231869
+                        intro._introItems[9].element = document.querySelector('.iron_2p_aq');
+                        intro._introItems[9].position = "top"
+                        intro.nextStep()
+                        $(".working-area").off("click");
+                    });
+                    break;
+                case 13: // listen for when click on bench
+
+                    $(".bench").css("pointer-events", "auto")
+                    $(".bench").on("click", async () => { // Step 2
+
+                        $(".bench").css("pointer-events", "")
+                        await timeout(100)
+
+                        intro.nextStep()
+                        $(".bench").off("click");
+                        $(".introjs-helperLayer").hide()
+                    });
+                    break;
+                case 14: // listen for when take bench bottle
+                    await ajaxWait()
+                    $(".ss-option").addClass("ss-disabled no-click")
+                    selectByHtml("Calcium Hydroxide Ca(OH)₂ (aq)").removeClass("ss-disabled no-click")
+                    $(".ajs-ok").on("click", async () => { // Step 2
+                        await timeout(100)
+                        intro.nextStep()
+                        $(".ajs-ok").off("click");
+                    })
+                    break;
+                case 15: // listen for when put down bench bottle
+
+                    $(".working-area").on("click", async () => { // Step 2
+                        await timeout(100)
+                        // Add a step here: Because introJS doesn't know what elements are added dynamically
+                        // THANK YOU GITHUB https://github.com/usablica/intro.js/issues/328#issuecomment-107231869
+
+                        intro.nextStep()
+                        $(".working-area").off("click");
+                    });
+                    break;
+
+                case 16: // listen for when click on basket
+
+                    $(".basket").css("pointer-events", "auto")
+                    $(".basket").on("click", async () => { // Step 2
+
+                        $(".basket").css("pointer-events", "")
+                        await timeout(100)
+
+                        intro.nextStep()
+                        $(".bench").off("click");
+                        $(".introjs-helperLayer").hide()
+                    });
+                    break;
+                case 17: // listen for when take delivery tube
+                    await ajaxWait()
+                    $(".ss-option").addClass("ss-disabled no-click")
+                    selectByHtml("Delivery Tube with Rubber Bung").removeClass("ss-disabled no-click")
+                    $(".ajs-ok").on("click", async () => { // Step 2
+                        await timeout(100)
+                        intro.nextStep()
+                        $(".ajs-ok").off("click");
+                    })
+                    break;
+                case 18: // listen for when put down bench bottle
+
+                    $(".working-area").on("click", async () => { // Step 2
+                        await timeout(100)
+                        // Add a step here: Because introJS doesn't know what elements are added dynamically
+                        // THANK YOU GITHUB https://github.com/usablica/intro.js/issues/328#issuecomment-107231869
+                        intro._introItems[18].element = document.querySelector('.carbonate_2m_aq');
+                        intro._introItems[18].position = "top"
+                        intro.nextStep()
+                        $(".working-area").off("click");
+                    });
+                    break;
+
+
+                case 19: // listen for when pick up reagent bottle
+                    // Disable all interactions other than the working area
+
+                    $(".working-area").css("pointer-events", "auto")
+                    $(".carbonate_2m_aq").on("click", async () => { // Step 2
+                        await timeout(100)
+                        intro._introItems[19].element = document.querySelector('#test_tube-0');
+                        intro._introItems[19].position = "top"
+                        intro.nextStep()
+                        $(".carbonate_2m_aq").off("click");
+                    });
+                    break;
+                case 20: // listen for when click on test tube
+                    $("#test_tube-0").on("click", async () => { // Step 2
+                        await timeout(100)
+
+                        intro.nextStep()
+                        $("#test_tube-0").off("click");
+                        $(".introjs-helperLayer").hide()
+                    });
+                    break;
+                case 21: // listen for when press OK to transfer soln
+                    $(".ajs-ok").on("click", async () => {
+                        await timeout(100)
+                        intro.nextStep()
+                        $(".ajs-ok").off("click");
+                    })
+                    break;
+                case 22: // listen for when click on main body
+                    $(".working-area").on("click", async () => {
+                        await timeout(100)
+                        intro._introItems[22].element = document.querySelector('.hydrochloric_acid_0_aq');
+                        intro._introItems[22].position = "top"
+                        intro.nextStep()
+                        $(".working-area").off("click");
+                    })
+                    break;
+                case 23: // listen for when pick up reagent bottle
+                    $(".hydrochloric_acid_0_aq").on("click", async () => { // Step 2
+                        await timeout(100)
+                        intro._introItems[23].element = document.querySelector('#test_tube-0');
+                        intro._introItems[23].position = "top"
+                        intro.nextStep()
+                        $(".hydrochloric_acid_0_aq").off("click");
+                    });
+                    break;
+                case 24: // listen for when click on test tube
+                    $("#test_tube-0").on("click", async () => { // Step 2
+                        await timeout(100)
+                        intro.nextStep()
+                        $("#test_tube-0").off("click");
+                        $(".introjs-helperLayer").hide()
+                    });
+                    break;
+                case 25: // listen for when press OK to transfer soln
+                    $(".ajs-ok").on("click", async () => {
+                        await timeout(100)
+                        intro.nextStep()
+                        $(".ajs-ok").off("click");
+                    })
+                    break;
+                case 26: // listen for when click on main body
+                    $(".working-area").css("pointer-events", "auto")
+                    $(".working-area").on("click", async () => {
+                        await timeout(100)
+                        intro._introItems[26].element = document.querySelector('.calcium_hydroxide_0_aq');
+                        intro._introItems[26].position = "top"
+                        intro.nextStep()
+                        $(".working-area").off("click");
+                        
+                    })
+                    break;
+
+                case 27: // listen for when pick up reagent bottle
+                    $(".calcium_hydroxide_0_aq").on("click", async () => { // Step 2
+                        await timeout(100)
+                        intro._introItems[27].element = document.querySelector('#test_tube-1');
+                        intro._introItems[27].position = "top"
+                        intro.nextStep()
+                        $(".calcium_hydroxide_0_aq").off("click");
+                    });
+                    break;
+                case 28: // listen for when click on test tube
+                    $("#test_tube-1").on("click", async () => { // Step 2
+                        await timeout(100)
+                        intro.nextStep()
+                        $("#test_tube-1").off("click");
+                        $(".introjs-helperLayer").hide()
+                    });
+                    break;
+                case 29: // listen for when press OK to transfer soln
+                    $(".ajs-ok").on("click", async () => {
+                        await timeout(100)
+                        intro.nextStep()
+                        $(".ajs-ok").off("click");
+                    })
+                    break;
+                case 30: // listen for when click on main body
+                    $(".working-area").on("click", async () => {
+                        await timeout(100)
+                        intro._introItems[30].element = document.querySelector('#test_tube-0');
+                        intro._introItems[30].position = "top"
+                        intro.nextStep()
+                        $(".working-area").off("click");
+                        listenRightClick = true
+                    })
+                    break;
+                case 31: // listen for when pick up test tube
+                    $("#test_tube-0").on("click", async () => { // Step 2
+                        await timeout(100)
+                        intro._introItems[31].element = document.querySelector('.delivery_tube');
+                        intro._introItems[31].position = "top"
+                        intro.nextStep()
+                        $("#test_tube-0").off("click");
+                    });
+                    break;
+                case 32: // listen for when click on delivery tube
+                    $(".delivery_tube").on("click", async () => { // Step 2
+                        await timeout(100)
+                        intro._introItems[32].element = document.querySelector('#test_tube-1');
+                        intro._introItems[32].position = "top"
+                        intro.nextStep()
+                        $(".delivery_tube").off("click");
+                        
+                    });
+                    break;
+                case 33: // listen for when pick up test tube
+                    $("#test_tube-1").on("click", async () => { // Step 2
+                        await timeout(100)
+                        intro._introItems[33].element = document.querySelector('.delivery_tube');
+                        intro._introItems[33].position = "top"
+                        intro.nextStep()
+                        $("#test_tube-1").off("click");
+                    });
+                    break;
+                case 34: // listen for when click on delivery tube
+                    $(".delivery_tube").on("click", async () => { // Step 2
+                        await timeout(100)
+                        intro._introItems[34].element = document.querySelector('#test_tube-0');
+                        intro._introItems[34].position = "top"
+                        listenRightClick = true
+                        intro.nextStep()
+                        $(".delivery_tube").off("click");
+                        
+                    });
+                    break;
+
+                case 35: // Listen for when right click on test tube
+                    $("#test_tube-0").on("contextmenu", async () => {
+                        if (listenRightClick) {
+                            await timeout(100)
+                            intro._introItems[18].element = document.querySelector("#test_tube-0 > .popup > a")
+                            intro._introItems[18].position = "right"
+                            intro.nextStep()
+
+                        }
+                        listenRightClick = false
+
+                    })
+                    break;
+                case 36: // Listen for when click on inspect
+
+                    $("#test_tube-0 > .popup > a").on("click", async () => {
+                        await timeout(500)
+                        intro._introItems[36].element = document.querySelector("#shake")
+                        intro._introItems[36].position = "right"
+                        intro.nextStep()
+
+                        $(".introjs-helperLayer").hide()
+                    })
+                    break;
+                case 37: // Listen for when click on shake button
+                    $("#shake").on("click", async () => {
+                        // Hide the tooltip
+                        $(".introjs-tooltipReferenceLayer").hide(100)
+                        
+                        // Show the tooltip
+                        $(".introjs-tooltipReferenceLayer").show(100)
+                        $("#shake").off("click");
+                        await timeout(100)
+                        intro._introItems[37].element = document.querySelector("#litmus")
+                        intro._introItems[37].position = "right"
+                        intro.nextStep()
+
+                        $(".introjs-helperLayer").hide()
+                    })
+                    break;
+                case 38: 
+                    await timeout(9900)
+                    intro.nextStep()
+                    $(".introjs-helperLayer").hide()
+                
+
+
+                case 39: // Listen for when click on cancel
+                    $(".ajs-cancel").on("click", async () => {
+                        await timeout(100)
+                        $(".ajs-cancel").off("click")
+                        intro._introItems[39].element = document.querySelector("#test_tube-1")
+                        intro._introItems[39].position = "top"
+                        listenRightClick = true
+                        intro.nextStep()
+                    })
+                    break;
+                
+                case 40: // Listen for when right click on test tube
+                    $("#test_tube-1").on("contextmenu", async () => {
+                        if (listenRightClick) {
+                            await timeout(100)
+                            intro._introItems[40].element = document.querySelector("#test_tube-1 > .popup > a")
+                            intro._introItems[40].position = "right"
+                            intro.nextStep()
+
+                        }
+                        listenRightClick = false
+
+                    })
+                    break;
+                case 41: // Listen for when click on inspect
+
+                    $("#test_tube-1 > .popup > a").on("click", async () => {
+                        await timeout(500)
+                        intro._introItems[41].element = document.querySelector("#shake")
+                        intro._introItems[41].position = "right"
+                        intro.nextStep()
+
+                        $(".introjs-helperLayer").hide()
+                    })
+                    break;
+                case 42: // Listen for when click on shake button
+                    $("#shake").on("click", async () => {
+                        // Hide the tooltip                        
+                        $("#shake").off("click");
+                        await timeout(100)
+                        intro._introItems[42].element = document.querySelector("#inspect")
+                        intro._introItems[42].position = "bottom"
+                        intro.nextStep()
+
+                        $(".introjs-helperLayer").hide()
+                    })
+                    break;
+              
+
+
+
+
+
+
+
+
+
+
+            }
+            stage = stage + 1
+        })
+        intro.onexit(() => {
+            $("body").css("pointer-events", "auto")
+        })
+        intro.setOptions({
+            steps: [
+                {
+                    element: document.querySelector(".rack"),
+                    intro: "First, take a <b> Test Tube</b> by <b>clicking</b> on the <b>Test Tube Rack</b>.",
+                    position: "bottom",
+                    hideNext: false,
+
+
+                },
+                {
+                    element: document.querySelector(".ajs-body"),
+                    intro: "Select <b> Test Tube</b>.",
+                    position: "top"
+                },
+                {
+                    element: document.querySelector(".working-area"),
+                    intro: "Place <b>Test Tube</b> on the <b>Working Area</b> by <b>clicking<b> on the <b>Working Area</b>."
+                },
+                {
+                    element: document.querySelector(".rack"),
+                    intro: "Take another <b> Test Tube</b>.",
+                    position: "bottom",
+
+
+                },
+                {
+                    element: document.querySelector(".ajs-body"),
+                    intro: "Select <b> Test Tube</b>.",
+                    position: "top"
+                },
+                {
+                    element: document.querySelector(".working-area"),
+                    intro: "Place <b>Test Tube</b> on the <b>Working Area</b>."
+                },
+
+                {
+                    element: document.querySelector(".reagents"),
+                    intro: "Select a reagent."
+                },
+                {
+                    element: document.querySelector(".ajs-body"),
+                    intro: "Select <b> Carbonate </b>.",
+                    position: "top"
+                },
+                {
+                    element: document.querySelector(".working-area"),
+                    intro: "Place the <b> Carbonate bottle</b> on the <b>Working Area</b>."
+                },
+                {
+                    element: document.querySelector(".bench"),
+                    intro: "Select a reagent."
+                },
+                {
+                    element: document.querySelector(".ajs-body"),
+                    intro: "Select <b> Hydrochloric Acid</b>.",
+                    position: "top"
+                },
+                {
+                    element: document.querySelector(".working-area"),
+                    intro: "Place the <b> Hydrochloric Acid bottle</b> on the <b>Working Area</b>."
+                },
+                {
+                    element: document.querySelector(".bench"),
+                    intro: "Select a reagent."
+                },
+                {
+                    element: document.querySelector(".ajs-body"),
+                    intro: "Select <b> Calcium Hydroxide</b>.",
+                    position: "top"
+                },
+                {
+                    element: document.querySelector(".working-area"),
+                    intro: "Place the <b> Calcium Hydroxide bottle</b> on the <b>Working Area</b>."
+                },
+                {
+                    element: document.querySelector(".basket"),
+                    intro: "Select an apparatus."
+                },
+                {
+                    element: document.querySelector(".ajs-body"),
+                    intro: "Select <b> Delivery Tube with Rubber Bung</b>.",
+                    position: "top"
+                },
+                {
+                    element: document.querySelector(".working-area"),
+                    intro: "Place the <b> Delivery Tube with Rubber Bung</b> on the <b>Working Area</b>."
+                },
+
+
+                {
+                    element: document.querySelector(".carbonate_2m_aq"), // dynamic
+                    intro: "<b>Click</b> on the <b>Carbonate bottle</b> to pick it up."
+                },
+                {
+                    element: document.querySelector("#test_tube-0"), // dynamic
+                    intro: "<b>Click on the <b>Test Tube</b> while holding the bottle to <b>transfer solution<b>."
+                },
+                {
+                    element: document.querySelector(".ajs-body"),
+                    intro: "Enter the number <b>5</b> to transfer 5 cm³ of solution.",
+                    position: "top"
+                },
+                {
+                    element: document.querySelector(".working-area"),
+                    intro: "Put down the bottle."
+                },
+                {
+                    element: document.querySelector(".hydrochloric_acid_0_aq"), // dynamic
+                    intro: "Click on the <b>Hydrochloric Acid bottle</b> to pick it up."
+                },
+                {
+                    element: document.querySelector("#test_tube-0"), // dynamic
+                    intro: "<b>Click on the <b>Test Tube</b> while holding the bottle to <b>transfer solution<b>."
+                },
+                {
+                    element: document.querySelector(".ajs-body"),
+                    intro: "Enter the number <b>5</b> to transfer 5 cm³ of solution.",
+                    position: "top"
+                },
+                {
+                    element: document.querySelector(".working-area"),
+                    intro: "Put down the bottle."
+                },
+
+                {
+                    element: document.querySelector(".calcium_hydroxide_0_aq"), // dynamic
+                    intro: "<b>Click</b> on the <b>Calcium Hydroxide bottle</b> to pick it up."
+                },
+                {
+                    element: document.querySelector("#test_tube-1"), // dynamic
+                    intro: "<b>Click on the <b>Test Tube</b> while holding the bottle to <b>transfer solution<b>."
+                },
+                {
+                    element: document.querySelector(".ajs-body"),
+                    intro: "Enter the number <b>5</b> to transfer 5 cm³ of solution.",
+                    position: "top"
+                },
+                {
+                    element: document.querySelector(".working-area"),
+                    intro: "Put down the bottle."
+                },
+
+                {
+                    element: document.querySelector("#test_tube-0"), // dynamic
+                    intro: "<b> Click </b> on the <b>Test Tube</b> to pick it up."
+                },
+                {
+                    element: document.querySelector(".delivery_tube"), // dynamic
+                    intro: "<b> Click</b> on the <b>Delivery Tube</b> to attach the Delivery Tube to the Test Tube. <br />The <b>first</b> Test Tube attached will always be on the <b>right</b>."
+                },
+                {
+                    element: document.querySelector("#test_tube-1"), // dynamic
+                    intro: "<b> Click </b> on the <b>Test Tube</b> to pick it up."
+                },
+                {
+                    element: document.querySelector(".delivery_tube"), // dynamic
+                    intro: "<b> Click</b> on the <b>Delivery Tube</b> to attach the Delivery Tube to the Test Tube."
+                },
+                {
+                    element: document.querySelector("#test_tube-0"), // dynamic
+                    intro: "<b>Right Click</b> on the <b>Test Tube</b>."
+                },
+                {
+                    element: document.querySelector(".test_tube > .popup > a"), // dynamic
+                    intro: "Click on <b> Inspect</b>."
+                },
+                {
+                    element: document.querySelector("#shake"), // dynamic
+                    intro: "Click on <b>Shake</b> to start the reaction."
+                },
+                {
+                    element: document.querySelector("#litmus"), //dynamic
+                    intro: "Observe the <b>gas</b> exiting the Test Tube. This gas will appear in the other connected Test Tube."
+                },
+                {
+                    element: document.querySelector(".ajs-cancel"),
+                    intro: "Close the Inspect screen."
+                },
+                {
+                    element: document.querySelector("#test_tube-1"), // dynamic
+                    intro: "<b>Right Click</b> on the <b>Test Tube</b>."
+                },
+                {
+                    element: document.querySelector(".test_tube > .popup > a"), // dynamic
+                    intro: "Click on <b> Inspect</b>."
+                },
+                {
+                    element: document.querySelector("#shake"), // dynamic
+                    intro: "Click on <b>Shake</b> to start the reaction. "
+                },
+                {
+                    element: document.querySelector("#inspect"), // dynamic
+                    intro: "White ppt of CaCO₃ will be formed due to the reaction between <b>Ca(OH)₂</b> (Limewater) and <b>CO₂</b>. <br />End of tutorial, press ESC to exit."
+                }
+
+
+            ]
+        })
+        intro.start()
+        $("body").css("pointer-events", "none")
+        $(".rack").css("pointer-events", "auto")
+
+
+        $(".rack").on("click", async () => { // Step 1
+
+            $(".rack").css("pointer-events", "")
+
+            await timeout(100)
+            $(".ajs-body").attr("data-position", "top")
+
+            intro.nextStep()
+            $(".introjs-helperLayer").hide()
+            $(".rack").off("click")
+        })
     }
 
     function timeout(ms) {

@@ -2482,7 +2482,7 @@ $(document).ready(function () {
                     // array
 
 
-                    console.log(reactionData)
+                    console.log(reactionData, "------das")
 
                     // Sometimes, if the reagentR is NaOH (etc), it'll be in the form of an array. The third element of this array will always be the base element. Hence,
                     if (Array.isArray(reagentR)) {
@@ -2533,7 +2533,7 @@ $(document).ready(function () {
 
                     for (var j = 0; j < reactionData.length; j++) {
                         var numberOfProducts = reactionData.length
-                        var prod = reactionData[i]
+                        var prod = reactionData[j]
                         if (volColTemp[prod.formula_id]) {
                             // already exists, just change the volume
                             volColTemp[prod['formula_id']].volume = volColTemp[prod['formula_id']].volume + Number(reagentNVolume / numberOfProducts)
