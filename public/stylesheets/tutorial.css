@@ -32,8 +32,8 @@
 }
 
 .introjs-overlay { 
-    background: none !important;
-    display: none !important
+    /* background: none !important; */
+    display: none 
 }
 
 .introjs-helperLayer { 
@@ -53,6 +53,9 @@
     z-index: 90
 }
 
+.introjs-tooltip { 
+    pointer-events: auto !important;
+}
 ul[role="tablist"] { 
     pointer-events: none;
 }

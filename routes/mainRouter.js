@@ -111,9 +111,10 @@ router.get('/load', async (req, res, next) => {
                 row["location"] || "",
                 row["image_url"] || "",
                 row["apparatus_type"] || "",
-                row["attribute"] || ""
+                row["attribute"] || "",
+                row["quantity"] || ""
             ]
-            await connection.execute(`INSERT INTO apparatus (apparatus_id, item_name, interact_with, capacity, location, image_url, apparatus_type, attribute) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`, arr)
+            await connection.execute(`INSERT INTO apparatus (apparatus_id, item_name, interact_with, capacity, location, image_url, apparatus_type, attribute, quantity) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`, arr)
 
 
 
@@ -135,9 +136,10 @@ router.get('/load', async (req, res, next) => {
                 row['location'] || "",
                 row['special_name'] || "",
                 row['type'] || "",
-                row['state'] || ""
+                row['state'] || "",
+                row["pH"] || ""
             ]
-            await connection.execute(`INSERT INTO reference (formula_id, formula_text, name, class, hex, color, odor, cation, anion, location, special_name, type, state) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, arr)
+            await connection.execute(`INSERT INTO reference (formula_id, formula_text, name, class, hex, color, odor, cation, anion, location, special_name, type, state, pH) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, arr)
         })
 
         // var connection = await mysql.createConnection(config.db_config)
@@ -184,7 +186,7 @@ router.get('/fetch', async (req, res, next) => {
 
                 break;
             case "reagents":
-                var t = await connection.query(`SELECT * FROM reference WHERE location = "FAbasket"`); console.log(t[0])
+                var t = await connection.query(`SELECT * FROM reference WHERE location = "FAbasket" ORDER BY class DESC, name ASC`); console.log(t[0])
 
                 result = t[0].reduce((r, a) => {
                     r[a.formula_text] = [...r[a.formula_text] || [], a];
@@ -192,7 +194,7 @@ router.get('/fetch', async (req, res, next) => {
                 }, {})
                 break;
             case "bench":
-                var t = await connection.query(`SELECT * FROM reference WHERE location = "bench" ORDER BY name ASC`);
+                var t = await connection.query(`SELECT * FROM reference WHERE location = "bench" ORDER BY pH+0 ASC`); console.log(t[0])
 
                 result = t[0].reduce((r, a) => {
                     r[a.formula_text] = [...r[a.formula_text] || [], a];

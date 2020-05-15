@@ -8,6 +8,9 @@ $(document).ready(function () {
     objectsUsed = {
 
     }
+
+
+
     var currentlyMovingElem = ''
     var mostRecentApparatus;
     var mostRecentChemical;
@@ -27,16 +30,7 @@ $(document).ready(function () {
 
     }
 
-    var toAddExcess = ["NaOH_(aq)",
-        "NH₃_(aq)",
-        "HCl_(aq)",
-        "HNO₃_(aq)",
-        "H₂SO₄_(aq)",
-        "AgNO₃_(aq)",
-        "BaNO₃_(aq)",
-        "Ca(OH)₂_(aq)",
-        "KMnO₄_(aq)",
-        "KI_(aq)"]
+
 
     inventoryContents = {
 
@@ -54,6 +48,8 @@ $(document).ready(function () {
     var gogglesWorn = false
 
     var listenToMouseMove = true
+
+    tapOn = false
     light = function () {
         console.log('try light')
         if (bunsenOn && currentlyMovingElem.split("-")[0] == "lighter" && !bunsenLit) {
@@ -174,17 +170,17 @@ $(document).ready(function () {
             var heldItemDiv = $(`#${ele}`)
             $(".movables").append(heldItemDiv)
 
-            var left = 
+            var left =
 
-            $(`#${inventoryContents[slot]}`).css({
+                $(`#${inventoryContents[slot]}`).css({
 
-                "position": "absolute",
-                "width": "",
-                "height": "",
-                
-                
-            })
-            
+                    "position": "absolute",
+                    "width": "",
+                    "height": "",
+
+
+                })
+
 
             if (objectsInUse[ele].apparatus_id == "safety_goggles") {
                 gogglesWorn = false
@@ -193,7 +189,7 @@ $(document).ready(function () {
             delete inventoryContents[slot]
             delete inventoryContentsOpp[ele]
 
-            
+
 
             makeMovable(ele)
 
@@ -235,6 +231,8 @@ $(document).ready(function () {
 
 
     }
+
+
 
 
 
@@ -281,186 +279,273 @@ $(document).ready(function () {
         }
     })
     $(".light").mouseleave(() => inFlame = false)
+    toggleWater = function () { $(".water").toggle(); tapOn = tapOn ? false : true }
+
+    var inWater = false
+    $(".water").mouseenter(async () => {
+        console.log('enter')
+        if (tapOn && currentlyMovingElem && objectsInUse[currentlyMovingElem].constructor.name == "Apparatus") {
+            var classes = document.getElementById(currentlyMovingElem).className.split(/\s+/);
+            if (!classes.includes("clean")) {
+                inWater = true
+                await timeout(5000)
+                if (inWater) {
+                    alert("clean")
+                    $(`#${currentlyMovingElem}`).addClass("clean")
+                    objectsInUse[currentlyMovingElem].contains = []
+                    objectsInUse[currentlyMovingElem].spaceUsed = 0
+                    $(`#${currentlyMovingElem} > .popup`).remove()
+                    popupHtml()
+
+                }
+
+            }
 
 
 
 
+
+        }
+
+
+
+    })
+    $(".water").mouseleave(() => inWater = false)
 
 
 
 
     // Compound - cation-anion relationship
     clickedBasket = async function () {
+        if (currentlyMovingElem) {
+            var classes = document.getElementById(currentlyMovingElem).className.split(/\s+/);
+            if (classes.includes("clean") && !objectsInUse[currentlyMovingElem].contains.length && objectsInUse[currentlyMovingElem].location == "basket") {
+                $(`#${currentlyMovingElem}`).remove()
+                delete objectsInUse[currentlyMovingElem]
+                delete objectsUsed[currentlyMovingElem.split("-")[0]]
+                isMoving = false
+                currentlyMovingElem = ""
+            }
+        } else {
 
 
 
-        // Prompt user: which to select?
-        alertify.prompt('Select apparatus', "-",
-            function (evt, value) {
-                
-                if (value == "-") {
-                    // alertify.error()
-                    return false
+
+            // Prompt user: which to se lect?
+            alertify.prompt('Select apparatus', "-",
+                function (evt, value) {
+
+                    if (value == "-") {
+                        // alertify.error()
+                        return false
+                    }
+                    listenToMouseMove = true
+                    // User clicks OK --> Increment the number of times this apparatus has been used by 1
+                    var timesUsed = objectsUsed[value] || 0
+                    objectsUsed[value] = timesUsed + 1
+                    // Set the currently moving object to the apparatus_ID-apparatus_number
+                    currentlyMovingElem = `${value}-${timesUsed}`
+
+                    // Create a div for the apparatus
+                    $('.movables').append(`<div class='interactive ${value} apparatus moving' id='${currentlyMovingElem}' onclick="makeMovable('${currentlyMovingElem}')"> </div>`)
+
+                    // temporary success notification
+                    alertify.success('Ok:' + value)
+
+                    // Remove the SlimSelect
+                    basketSelect.destroy()
+                    $('#basket-prompt').remove();
+
+                    // dk
+                    heldItem = value
+
+                    // Set global variable to tell that an item is moving
+                    isMoving = true
+
+                    mostRecentApparatus = data[value][0]
+
+
+                    var objNo = `${mostRecentApparatus.apparatus_id}-${Number(objectsUsed[mostRecentApparatus.apparatus_id]) - 1}`
+                    var item = new Apparatus(mostRecentApparatus, currentlyMovingElem)
+                    objectsInUse[objNo] = item
+
+
+
+                    // Make div follow cursor
+                    popupHtml()
+
+                }, function () {
+                    listenToMouseMove = true
+                    // alertify.error('cancel')
+                    // Remove the slimSelect
+                    basketSelect.destroy()
+                    $('#basket-prompt').remove()
+
+                }).setHeader("Chemical Basket").set({ closableByDimmer: false })
+
+
+            listenToMouseMove = false
+            // select the prompt and hide the default input box
+            $('.ajs-input').hide()
+            $(".ajs-ok").addClass("cust-disabled")
+
+            // AJAX to server to retrieve apparatus in the basket
+            var data = JSON.parse(await Promise.resolve(($.get('/fetch', { clicked: "basket" }))))
+
+
+            // insert custom select element
+            // var str = data.map(row => `<option value='${row.apparatus_id}'> ${row.item_name} </option>`)
+            var str = [`<option data-placeholder="true"></option>`]
+
+
+            for (key of Object.keys(data)) {
+                var timesUsed = objectsUsed[key] || 0
+                var quantity = isNaN(data[key][0].quantity) ? "∞" : Number(data[key][0].quantity) - Number(timesUsed)
+
+
+                console.log(key)
+                if (quantity == 0) {
+                    str.push(
+                        `<option value='${data[key][0].apparatus_id}' disabled> ${data[key][0].item_name} (${quantity}) </option>`
+                    )
+                } else {
+                    str.push(
+                        `<option value='${data[key][0].apparatus_id}'> ${data[key][0].item_name} (${quantity}) </option>`
+                    )
                 }
-                listenToMouseMove = true
-                // User clicks OK --> Increment the number of times this apparatus has been used by 1
-                var timesUsed = objectsUsed[value] || 0
-                objectsUsed[value] = timesUsed + 1
-                // Set the currently moving object to the apparatus_ID-apparatus_number
-                currentlyMovingElem = `${value}-${timesUsed}`
-
-                // Create a div for the apparatus
-                $('.movables').append(`<div class='interactive ${value} apparatus moving' id='${currentlyMovingElem}' onclick="makeMovable('${currentlyMovingElem}')"> </div>`)
-
-                // temporary success notification
-                alertify.success('Ok:' + value)
-
-                // Remove the SlimSelect
-                basketSelect.destroy()
-                $('#basket-prompt').remove();
-
-                // dk
-                heldItem = value
-
-                // Set global variable to tell that an item is moving
-                isMoving = true
-
-                mostRecentApparatus = data[value][0]
-
-
-                var objNo = `${mostRecentApparatus.apparatus_id}-${Number(objectsUsed[mostRecentApparatus.apparatus_id]) - 1}`
-                var item = new Apparatus(mostRecentApparatus, currentlyMovingElem)
-                objectsInUse[objNo] = item
-
-
-
-                // Make div follow cursor
-                popupHtml()
-
-            }, function () {
-                listenToMouseMove = true
-                // alertify.error('cancel')
-                // Remove the slimSelect
-                basketSelect.destroy()
-                $('#basket-prompt').remove()
-
-            }).setHeader("Chemical Basket").set({ closableByDimmer: false })
-
-
-        listenToMouseMove = false
-        // select the prompt and hide the default input box
-        $('.ajs-input').hide()
-        $(".ajs-ok").addClass("cust-disabled")
-
-        // AJAX to server to retrieve apparatus in the basket
-        var data = JSON.parse(await Promise.resolve(($.get('/fetch', { clicked: "basket" }))))
-
-
-        // insert custom select element
-        // var str = data.map(row => `<option value='${row.apparatus_id}'> ${row.item_name} </option>`)
-        var str = [`<option data-placeholder="true"></option>`]
-        for (key of Object.keys(data)) {
-            console.log(key)
-            str.push(
-                `<option value='${data[key][0].apparatus_id}'> ${data[key][0].item_name} </option>`
-            )
-        }
-
-        // Insert it
-        $('.ajs-input').after(`<select id="basket-prompt"> ${str.join(" ")} </select> `)
-        // Create custom select element
-        var basketSelect = new SlimSelect({
-
-            select: "#basket-prompt",
-            placeholder: "Select an apparatus...",
-            onChange: (args) => {
-                $(".ajs-ok").removeClass("cust-disabled")
-                console.log('onchange')
-                console.log(args)
-                $('.ajs-input').val(args.value)
 
             }
-        })
 
+            // Insert it
+            $('.ajs-input').after(`<select id="basket-prompt"> ${str.join(" ")} </select> `)
+            // Create custom select element
+            var basketSelect = new SlimSelect({
+
+                select: "#basket-prompt",
+                placeholder: "Select an apparatus...",
+                onChange: (args) => {
+                    $(".ajs-ok").removeClass("cust-disabled")
+                    console.log('onchange')
+                    console.log(args)
+                    $('.ajs-input').val(args.value)
+
+                    $.event.trigger({
+                        type: "slimChange"
+                    })
+
+
+
+                }
+            })
+        }
 
     }
 
+
     clickedRack = async function (id) {
-
-        alertify.prompt('Select apparatus', '-',
-            function (evt, value) {
-                if (value == "-") {
-                    // alertify.error()
-                    return false
+        if (currentlyMovingElem) {
+            var classes = document.getElementById(currentlyMovingElem).className.split(/\s+/);
+            if (objectsInUse[currentlyMovingElem].location == "test-tube-rack") {
+                if (!classes.includes("clean")) { 
+                    alertify.prompt("WARNING: <b>Wash apparatus</b> before returning!", (evt, value) => $('.ajs-cancel').show(), () => $('.ajs-cancel').show()).setHeader("Warnings (1)")
+                    $('.ajs-input').hide()
+                    $('.ajs-cancel').hide()
                 }
-                listenToMouseMove = true
-                var timesUsed = objectsUsed[value] || 0
-                objectsUsed[value] = timesUsed + 1
-                currentlyMovingElem = `${value}-${timesUsed}`
+                
+                $(`#${currentlyMovingElem}`).remove()
+                delete objectsInUse[currentlyMovingElem]
+                delete objectsUsed[currentlyMovingElem.split("-")[0]]
+                isMoving = false
+                currentlyMovingElem = ""
+            }
+        } else {
 
-                $('.movables').append(`<div class='interactive ${value} apparatus moving' id='${currentlyMovingElem}' onclick="makeMovable('${currentlyMovingElem}')"> </div>`)
+            alertify.prompt('Select apparatus', '-',
+                function (evt, value) {
+                    if (value == "-") {
+                        // alertify.error()
+                        return false
+                    }
+                    listenToMouseMove = true
+                    var timesUsed = objectsUsed[value] || 0
+                    objectsUsed[value] = timesUsed + 1
+                    currentlyMovingElem = `${value}-${timesUsed}`
+
+                    $('.movables').append(`<div class='interactive ${value} apparatus moving' id='${currentlyMovingElem}' onclick="makeMovable('${currentlyMovingElem}')"> </div>`)
 
 
-                alertify.success('Ok:' + value)
-                rackSelect.destroy()
-                $('#rack-prompt').remove();
-                heldItem = value
-                isMoving = true
+                    alertify.success('Ok:' + value)
+                    rackSelect.destroy()
+                    $('#rack-prompt').remove();
+                    heldItem = value
+                    isMoving = true
 
-                mostRecentApparatus = data[value][0]
+                    mostRecentApparatus = data[value][0]
 
 
-                // var testTubeNo = `testTube-${Number(objectsUsed[mostRecentApparatus.apparatus_id]) - 1}`
-                objectsInUse[currentlyMovingElem] = new Apparatus(mostRecentApparatus, currentlyMovingElem)
-                // If it's test tube or boiling tube, add water to it
-                if (value == "test_tube") {
-                    objectsInUse[currentlyMovingElem].contains.push({
-                        formula_id_f: "H₂O (l)",
-                        formula_text: 'water',
-                        volume: 10
+                    // var testTubeNo = `testTube-${Number(objectsUsed[mostRecentApparatus.apparatus_id]) - 1}`
+                    objectsInUse[currentlyMovingElem] = new Apparatus(mostRecentApparatus, currentlyMovingElem)
+                    // If it's test tube or boiling tube, add water to it
+                    if (value == "test_tube") {
+                        objectsInUse[currentlyMovingElem].contains.push({
+                            formula_id_f: "H₂O (l)",
+                            formula_text: 'water',
+                            volume: 10
+                        })
+                    }
+
+                    popupHtml()
+
+
+
+                }, function () {
+                    listenToMouseMove = true
+                    // alertify.error('cancel')
+                    rackSelect.destroy()
+                    $('#rack-prompt').remove()
+
+                }).setHeader("Test Tube Rack").set({ closableByDimmer: false })
+            listenToMouseMove = false
+            // select the prompt and hide the input
+            $('.ajs-input').hide()
+            $(".ajs-ok").addClass("cust-disabled")
+            var data = JSON.parse(await Promise.resolve(($.get('/fetch', { clicked: "rack" }))))
+            // insert custom select element
+            // var str = data.map(row => `<option value='${row.apparatus_id}'> ${row.item_name} </option>`)
+            var str = [`<option data-placeholder="true"></option>`]
+
+            for (key of Object.keys(data)) {
+                var timesUsed = objectsUsed[key] || 0
+                var quantity = isNaN(data[key][0].quantity) ? "∞" : Number(data[key][0].quantity) - Number(timesUsed)
+
+
+                if (quantity == 0) {
+                    str.push(
+                        `<option value='${data[key][0].apparatus_id}' disabled> ${data[key][0].item_name} (${quantity}) </option>`
+                    )
+                } else {
+                    str.push(
+                        `<option value='${data[key][0].apparatus_id}'> ${data[key][0].item_name} (${quantity}) </option>`
+                    )
+                }
+            }
+
+
+            $('.ajs-input').after(`<select id="rack-prompt"> ${str.join(" ")} </select> `)
+            var rackSelect = new SlimSelect({
+                select: "#rack-prompt",
+                placeholder: "Select an apparatus...",
+                onChange: (args) => {
+                    $(".ajs-ok").removeClass("cust-disabled")
+                    console.log('onchange')
+                    console.log(args)
+                    $('.ajs-input').val(args.value)
+                    $.event.trigger({
+                        type: "slimChange"
                     })
                 }
-
-                popupHtml()
-
-
-
-            }, function () {
-                listenToMouseMove = true
-                // alertify.error('cancel')
-                rackSelect.destroy()
-                $('#rack-prompt').remove()
-
-            }).setHeader("Test Tube Rack").set({ closableByDimmer: false })
-        listenToMouseMove = false
-        // select the prompt and hide the input
-        $('.ajs-input').hide()
-        $(".ajs-ok").addClass("cust-disabled")
-        var data = JSON.parse(await Promise.resolve(($.get('/fetch', { clicked: "rack" }))))
-        // insert custom select element
-        // var str = data.map(row => `<option value='${row.apparatus_id}'> ${row.item_name} </option>`)
-        var str = [`<option data-placeholder="true"></option>`]
-        for (key of Object.keys(data)) {
-
-            str.push(
-                `<option value='${data[key][0].apparatus_id}'> ${data[key][0].item_name} </option>`
-            )
+            })
         }
-
-
-        $('.ajs-input').after(`<select id="rack-prompt"> ${str.join(" ")} </select> `)
-        var rackSelect = new SlimSelect({
-            select: "#rack-prompt",
-            placeholder: "Select an apparatus...",
-            onChange: (args) => {
-                $(".ajs-ok").removeClass("cust-disabled")
-                console.log('onchange')
-                console.log(args)
-                $('.ajs-input').val(args.value)
-
-            }
-        })
-
 
     }
 
@@ -506,7 +591,7 @@ $(document).ready(function () {
                 $('#bench-prompt').remove()
 
             }).setHeader("Bench Reagents").set({ closableByDimmer: false })
-            listenToMouseMove = false
+        listenToMouseMove = false
         // select the prompt and hide the input
         $('.ajs-input').hide()
         $(".ajs-ok").addClass("cust-disabled")
@@ -517,10 +602,17 @@ $(document).ready(function () {
         // var str = data.map(row => `<option value='${row.apparatus_id}'> ${row.item_name} </option>`)
         var str = [`<option data-placeholder="true"></option>`]
         for (key of Object.keys(data)) {
+            var timesUsed = objectsUsed[key] || 0
+            if (timesUsed == 1) {
+                str.push(
+                    `<option value='${data[key][0].formula_text}' disabled> ${data[key][0].name} ${formatChemForm(data[key][0].formula_id)}</option>`
+                )
+            } else {
+                str.push(
+                    `<option value='${data[key][0].formula_text}'> ${data[key][0].name} ${formatChemForm(data[key][0].formula_id)}</option>`
+                )
+            }
 
-            str.push(
-                `<option value='${data[key][0].formula_text}'> ${data[key][0].name} ${formatChemForm(data[key][0].formula_id)}</option>`
-            )
         }
 
 
@@ -533,7 +625,9 @@ $(document).ready(function () {
                 $(".ajs-ok").removeClass("cust-disabled")
                 console.log(args)
                 $('.ajs-input').val(args.value)
-
+                $.event.trigger({
+                    type: "slimChange"
+                })
             }
         })
 
@@ -597,10 +691,17 @@ $(document).ready(function () {
         // var str = data.map(row => `<option value='${row.apparatus_id}'> ${row.item_name} </option>`)
         var str = [`<option data-placeholder="true"></option>`]
         for (key of Object.keys(data)) {
+            var timesUsed = objectsUsed[key] || 0
+            if (timesUsed == 1) {
+                str.push(
+                    `<option value='${data[key][0].formula_text}' disabled> ${data[key][0].name} ${formatChemForm(data[key][0].formula_id)}</option>`
+                )
+            } else {
+                str.push(
+                    `<option value='${data[key][0].formula_text}'> ${data[key][0].name} ${formatChemForm(data[key][0].formula_id)}</option>`
+                )
+            }
 
-            str.push(
-                `<option value='${data[key][0].formula_text}'> ${data[key][0].name} ${formatChemForm(data[key][0].formula_id)} </option>`
-            )
         }
 
 
@@ -613,7 +714,9 @@ $(document).ready(function () {
                 $(".ajs-ok").removeClass("cust-disabled")
                 console.log(args)
                 $('.ajs-input').val(args.value)
-
+                $.event.trigger({
+                    type: "slimChange"
+                })
             }
         })
     }
@@ -729,7 +832,7 @@ $(document).ready(function () {
             var newTubeContents = $.extend([], objectsInUse[end].contains)
 
             var thingsToAddToNewTube = {}
-            var newPopupHtmlForOldTube = [`<p> ${objectsInUse[start].item_name} </p> <a onclick="inspect('${start}')"> Inspect </a>`]
+            var newPopupHtmlForOldTube = [`<p> ${objectsInUse[start].item_name} </p> <a class="inspect" onclick="inspect('${start}')"> Inspect </a>`]
             var pptVolume = 0
             var volToTransfer = 0
             var oldTubeContents = []
@@ -748,7 +851,7 @@ $(document).ready(function () {
                 }
             })
 
-            var funnelHtmlArr = [`<p> ${filterFunnel.item_name} </p> <a onclick='inspectFilter("${filterFunnelId}")'> Inspect </a> <a onclick='detach("${filterFunnelId}")'> Detach </a>`]
+            var funnelHtmlArr = [`<p> ${filterFunnel.item_name} </p> <a class="inspect" onclick='inspectFilter("${filterFunnelId}")'> Inspect </a> <a onclick='detach("${filterFunnelId}")'> Detach </a>`]
             for (var i = 0; i < tubeContents.length; i++) {
                 var reagent = tubeContents[i]
                 if (reagent.formula_id_f != "H₂O (l)") {
@@ -809,7 +912,7 @@ $(document).ready(function () {
 
 
 
-            var newPopupHtmlForNewTube = [`<p> ${objectsInUse[end].item_name} </p> <a onclick="inspect('${end}')"> Inspect </a>`]
+            var newPopupHtmlForNewTube = [`<p> ${objectsInUse[end].item_name} </p> <a class="inspect" onclick="inspect('${end}')"> Inspect </a>`]
             for (var i = 0; i < newTubeContents.length; i++) {
                 var newReagent = newTubeContents[i]
                 if (Object.keys(thingsToAddToNewTube).includes(newReagent.formula_id_f)) {
@@ -864,7 +967,7 @@ $(document).ready(function () {
             objectsInUse[filterFunnelId].spaceUsed = objectsInUse[filterFunnelId].spaceUsed + pptVolume
 
             // Update the new test tube html
-            var newHtml = [`<p> ${objectsInUse[end].item_name} </p> <a onclick='inspect("${end}")'> Inspect </a>`]
+            var newHtml = [`<p> ${objectsInUse[end].item_name} </p> <a class="inspect" onclick='inspect("${end}")'> Inspect </a>`]
             objectsInUse[end].contains.forEach(r => {
                 if (r.formula_id_f == "H₂O (l)") {
                     newHtml.push(`<p> ${r.formula_id_f} </p>`)
@@ -896,7 +999,7 @@ $(document).ready(function () {
 
 
             // Update the filter funnel html
-            var filterHtml = [`<p> ${filterFunnel.item_name} </p> <a onclick='inspectFilter("${filterFunnelId}")'> Inspect </a> <a onclick='detach("${filterFunnelId}")'> Detach </a>`]
+            var filterHtml = [`<p> ${filterFunnel.item_name} </p> <a class="inspect" onclick='inspectFilter("${filterFunnelId}")'> Inspect </a> <a class="detach" onclick='detach("${filterFunnelId}")'> Detach </a>`]
 
             objectsInUse[filterFunnelId].contains.forEach(r => {
                 if (r.formula_id_f == "H₂O (l)") {
@@ -1101,12 +1204,12 @@ $(document).ready(function () {
                             // ITEM ATTRIBUTES                             
 
                             if (itemClicked.attribute.split(",").includes("inspectable")) {
-                                updatedHTMLArr.push(`<a onclick='inspect("${itemClicked.div_id}")'> Inspect </a>`)
+                                updatedHTMLArr.push(`<a class="inspect" onclick='inspect("${itemClicked.div_id}")'> Inspect </a>`)
 
                                 // only if theres thing in the test tube
                             }
                             if (itemClicked.attribute.split(",").includes("duplicate")) {
-                                updatedHTMLArr.push(`<a onclick='duplicate("${itemClicked.div_id}")'> Duplicate </a>`)
+                                updatedHTMLArr.push(`<a class="duplicate" onclick='duplicate("${itemClicked.div_id}")'> Duplicate </a>`)
 
                                 // only if theres thing in the test tube
                             }
@@ -1132,7 +1235,7 @@ $(document).ready(function () {
                             // $(`#${itemClicked.div_id}`).contextMenu(d)
                         }
                         console.log(itemClicked, "ITEM CLICKED AFTER ADDING")
-                    }, () => { 
+                    }, () => {
                         listenToMouseMove = true
                     }).setHeader("Solution Transfer")
 
@@ -1271,7 +1374,7 @@ $(document).ready(function () {
 
                     // Generate HTML popup
                     // Add html popup
-                    var filterHtml = [`<p> ${objectsInUse[currentlyMovingElem].item_name} <p> <a onclick='inspectFilter("${currentlyMovingElem}")'> Inspect </a> <a onclick='detach("${currentlyMovingElem}")'> Detach </a>`]
+                    var filterHtml = [`<p> ${objectsInUse[currentlyMovingElem].item_name} <p> <a class="inspect" onclick='inspectFilter("${currentlyMovingElem}")'> Inspect </a> <a class="detach" onclick='detach("${currentlyMovingElem}")'> Detach </a>`]
                     objectsInUse[currentlyMovingElem].contains.forEach(e => {
                         filterHtml.push(`<p> ${e.volume} cm³ ${e.formula_id_f}`)
                     })
@@ -1354,7 +1457,7 @@ $(document).ready(function () {
                     putDownItemInWorkingArea()
                     linkedTo.push(tube_id)
                     objectsInUse[tube_id].linked_to = id
-                    $(`#${id} > .popup`).html(`<p> ${objectsInUse[id].item_name} </p> <a onclick='detach("${id}")'> Detach </a>`)
+                    $(`#${id} > .popup`).html(`<p> ${objectsInUse[id].item_name} </p> <a class="detach" onclick='detach("${id}")'> Detach </a>`)
                 } else if (linkedTo.length == 1 && linkedTo) {
                     // Linked to test tube with the rubber bung
 
@@ -1372,7 +1475,7 @@ $(document).ready(function () {
                     putDownItemInWorkingArea()
                     linkedTo.push(tube_id)
                     objectsInUse[tube_id].linked_to = id
-                    $(`#${id} > .popup`).html(`<p> ${objectsInUse[id].item_name} </p> <a onclick='detach("${id}")'> Detach </a>`)
+                    $(`#${id} > .popup`).html(`<p> ${objectsInUse[id].item_name} </p> <a class="detach" onclick='detach("${id}")'> Detach </a>`)
 
 
                 } else {
@@ -1649,6 +1752,7 @@ $(document).ready(function () {
                 formula_text: "air",
                 volume: 20
             })
+            
         } else {
             // remove air if exists
             var a = $.extend([], tube.contains)
@@ -2606,7 +2710,7 @@ $(document).ready(function () {
             // Update the HTML text            
             var updatedHtmlArr = []
             // and the context menu
-            var popupHtmlArr = [`<p> ${tube.item_name} </p>`, `<a onclick="inspect('${tube.div_id}')"> Inspect </a> <a onclick='duplicate("${tube.div_id}")'> Duplicate </a>`] // ID2
+            var popupHtmlArr = [`<p> ${tube.item_name} </p>`, `<a class="inspect" onclick="inspect('${tube.div_id}')"> Inspect </a> <a class="duplicate" onclick='duplicate("${tube.div_id}")'> Duplicate </a>`] // ID2
             // and the tube Apparatus class
             var containsTemp = []
 
@@ -2717,7 +2821,7 @@ $(document).ready(function () {
             }
             if (transferGas) {
                 // Update the new Tube html 
-                var htmlArrNewTube = [`<p> ${newTube.item_name} </p> <a onclick='inspect("${newTube.div_id}")'> Inspect </a> <a onclick='duplicate("${newTube.div_id}")'> Duplicate </a>`]
+                var htmlArrNewTube = [`<p> ${newTube.item_name} </p> <a class="inspect" onclick='inspect("${newTube.div_id}")'> Inspect </a> <a class="duplicate" onclick='duplicate("${newTube.div_id}")'> Duplicate </a>`]
                 newTube.contains.forEach(e => {
                     if (e.formula_id_f == "H₂O (l)") {
                         htmlArrNewTube.push(`<p> ${e.formula_id_f} </p>`)
@@ -3562,16 +3666,16 @@ $(document).ready(function () {
             var attributes = objectsInUse[elementIdToReference].attribute.split(",")
             popupHTML.push(`<p> ${objectsInUse[elementIdToReference].item_name} </p>`)
             if (attributes.includes("inspectable")) {
-                popupHTML.push(`<a onclick="inspect('${elementIdToReference}')"> Inspect </a>`)
+                popupHTML.push(`<a class="inspect" onclick="inspect('${elementIdToReference}')"> Inspect </a>`)
             }
             if (attributes.includes("foldable")) {
-                popupHTML.push(`<a onclick='fold("${elementIdToReference}")'> Fold filter paper </a>`)
+                popupHTML.push(`<a class="foldable" onclick='fold("${elementIdToReference}")'> Fold filter paper </a>`)
             }
             if (attributes.includes("duplicate")) {
-                popupHTML.push(`<a onclick="duplicate('${elementIdToReference}')"> Duplicate </a>`)
+                popupHTML.push(`<a class="duplicate" onclick="duplicate('${elementIdToReference}')"> Duplicate </a>`)
             }
             if (attributes.includes("extinguish")) {
-                popupHTML.push(`<a onclick="extinguish('${elementIdToReference}')"> Extinguish </a>`)
+                popupHTML.push(`<a class="extinguish" onclick="extinguish('${elementIdToReference}')"> Extinguish </a>`)
             }
             objectsInUse[currentlyMovingElem].contains.forEach(ele => {
                 if (ele.formula_id_f == "H₂O (l)") {

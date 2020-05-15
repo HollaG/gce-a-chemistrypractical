@@ -167,6 +167,32 @@
     background-color: #dcd8c7;
     pointer-events: auto
 }
+
+.water { 
+    width: 11vw;
+    height: 11vw;
+    background-image: url("/images/mini/water.png");
+    background-size: 100% auto;
+    position: absolute;
+    right: 12.8vw;
+    top: 5vw;
+    display: none;
+    z-index: 5;
+    pointer-events: auto;
+    
+}
+.tap { 
+    width: 2.1vw;
+    height: 2vw;
+    position: absolute;
+   
+    top: 7vw;
+    right: 21.3vw;
+    z-index: 6;
+    cursor: pointer;
+    
+}
+
 /* Overlay the context menu */
 .popup { 
     /* display: none; */
