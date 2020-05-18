@@ -1683,12 +1683,15 @@ $(document).ready(function () {
 
 
 
+
+
         // Draw the big screen
         console.log("INSPECTINGGGGGGGGGGGGGGGGGGGGGGGGG")
         preventMove = true
         var tube = objectsInUse[id]
         alertify.prompt(`Observing ${tube.item_name} #${Number(id.split('-')[1]) + 1}`, "",
             function (evt, value) {
+                if (viewingExamPaper || pinnedExamPaper) return false
                 $('#inspect').remove()
                 $('#info').remove()
                 $("#rxt-status").remove()
@@ -1702,8 +1705,10 @@ $(document).ready(function () {
                 $(".ajs-ok").show()
                 $(".ajs-cancel").html("Cancel")
                 $(".ajs-dialog").css("margin-top", "")
+                $(".ajs-ok")
             },
             function () {
+                if (viewingExamPaper || pinnedExamPaper) return false
                 $('#inspect').remove()
                 $('#info').remove()
                 $("#rxt-status").remove()
@@ -1718,12 +1723,15 @@ $(document).ready(function () {
                 $(".ajs-dialog").css("margin-top", "")
             }).setHeader(`${tube.item_name} Inspection`)
 
+        
+
         $('.ajs-content').append('<div id="litmus" onclick="litmus()"></div>')
         $('#litmus').css({
             "height": "4vw",
             "width": "100%",
             "pointer-events": "auto"
         })
+
 
         // Hide input box and expand the box
         $('.ajs-input').hide()
@@ -2771,6 +2779,7 @@ $(document).ready(function () {
         preventMove = true
         alertify.prompt("Inspecting filter", "",
             function (evt, value) {
+                if (viewingExamPaper || pinnedExamPaper) return false
                 $("#filter-inspect").remove()
                 $("#filter-info").remove()
                 $("#reactAir").remove()
@@ -2779,6 +2788,7 @@ $(document).ready(function () {
                 $(".ajs-ok").show()
                 $(".ajs-cancel").html("Cancel")
             }, function () {
+                if (viewingExamPaper || pinnedExamPaper) return false
                 $("#filter-inspect").remove()
                 $("#filter-info").remove()
                 $("#reactAir").remove()

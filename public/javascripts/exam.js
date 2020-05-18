@@ -1,4 +1,4 @@
-$(document).ready(async () => { 
+$(document).ready(async () => {
 
 
 
@@ -18,13 +18,13 @@ $(document).ready(async () => {
             $(".header").append(` <i class="fas fa-thumbtack" onclick="pin()"></i>`)
             renderExam(examID)
         })();
-        
+
         examSelect.destroy()
         $("#exam-prompt").remove()
         $(".ajs-cancel").show()
         $(".ajs-close").show()
 
-    }, () => { 
+    }, () => {
         return false
     })
 
@@ -34,12 +34,12 @@ $(document).ready(async () => {
     var str = [`<option data-placeholder="true"></option>`]
 
     var data = JSON.parse(await Promise.resolve(($.get('/exam/fetch'))))
-    data.forEach(exam => { 
+    data.forEach(exam => {
         str.push(`<option value='${exam.exam_id}'> ${exam.exam_name} </option>`)
-        exams[exam.exam_id] = { 
+        exams[exam.exam_id] = {
             exam_name: exam.exam_name,
             reactants: exam.reactants,
-            
+
         }
     })
     $('.ajs-input').after(`<select id="exam-prompt"> ${str.join(" ")} </select> `)
@@ -48,10 +48,10 @@ $(document).ready(async () => {
         select: "#exam-prompt",
         placeholder: "Select an exam...",
         onChange: (args) => {
-            $(".ajs-ok").removeClass("cust-disabled")            
+            $(".ajs-ok").removeClass("cust-disabled")
             $('.ajs-input').val(args.value)
 
-            
+
 
 
 
@@ -59,7 +59,7 @@ $(document).ready(async () => {
     })
 
 
-    clickedFA = async () => { 
+    clickedFA = async () => {
         console.log('clicked')
 
         // console.log(JSON.stringify(data))
@@ -77,7 +77,7 @@ $(document).ready(async () => {
                 $('.movables').append(`<div class='interactive ${value} reagent-bottle moving' id='${currentlyMovingElem}' onclick="makeMovable('${currentlyMovingElem}')"> </div>`)
 
 
-                
+
                 reagentSelect.destroy()
                 $('#reagent-prompt').remove();
                 heldItem = value
@@ -86,10 +86,10 @@ $(document).ready(async () => {
                 var vW = $('html').width();
                 data.item_name = value
 
-               
+
                 // var data = JSON.parse(await Promise.resolve(($.get('/fetch', { clicked: mostRecentChemical.formula_id }))))
                 objectsInUse[currentlyMovingElem] = new Apparatus(data, currentlyMovingElem)
-                formattedFA[value].forEach(async reactant => { 
+                formattedFA[value].forEach(async reactant => {
                     var reactantData = JSON.parse(await Promise.resolve(($.get('/exam/fetch/specific', { formula_id: reactant }))))
                     objectsInUse[currentlyMovingElem].contains.push({
                         volume: 100,
@@ -114,8 +114,8 @@ $(document).ready(async () => {
         $(".ajs-ok").addClass("cust-disabled")
         var reactants = FAs.split("||")
         var str = [`<option data-placeholder="true"></option>`]
-        for (var i = 1; i < reactants.length+1; i++) { 
-            var reactant = reactants[i-1]
+        for (var i = 1; i < reactants.length + 1; i++) {
+            var reactant = reactants[i - 1]
             formattedFA[`FA${i}`] = reactant.split(",")
             str.push(`<option value='FA${i}'> FA${i} </option>`)
         }
@@ -123,7 +123,7 @@ $(document).ready(async () => {
 
         // insert custom select element
         // var str = data.map(row => `<option value='${row.apparatus_id}'> ${row.item_name} </option>`)        
-        
+
 
         $('.ajs-input').after(`<select id="reagent-prompt"> ${str.join(" ")} </select> `)
         var reagentSelect = new SlimSelect({
@@ -142,13 +142,13 @@ $(document).ready(async () => {
         var data = JSON.parse(await Promise.resolve(($.get('/fetch/specific', { apparatus: "FAexam" }))))
 
 
-        
+
     }
 
 
-    async function renderExam(id) { 
+    async function renderExam(id) {
         console.log("ran")
-        var data = JSON.parse(await Promise.resolve(($.get('/exam/fetch/steps', {id: id}))))
+        var data = JSON.parse(await Promise.resolve(($.get('/exam/fetch/steps', { id: id }))))
         var html = [`
             <form id="answer" method="post" action="/exam/${id}">
                 <table class="exam-paper">
@@ -161,7 +161,7 @@ $(document).ready(async () => {
                     </thead>
                     <tbody>
         `]
-        data.forEach(row => { 
+        data.forEach(row => {
             html.push(`
                 <tr id='step-${row.step}'>
                     <td> ${row.step} </td>
@@ -179,15 +179,15 @@ $(document).ready(async () => {
             
         `)
         $(".contents").append(html.join(""))
-        
-    
-        $("form").on("submit", async function(e) { 
+
+
+        $("form").on("submit", async function (e) {
             e.preventDefault()
             $("#submit-button").prop("disabled", true)
             var form = $(this)
-            
+
             var url = form.attr("action")
-            
+
             var data = form.serialize()
 
             var result = JSON.parse(await Promise.resolve(($.post(url, data))))
@@ -195,45 +195,48 @@ $(document).ready(async () => {
             // update the html stuff
             var numberOfSteps = result.steps
             console.log(result)
-            for (var step = 1; step < numberOfSteps+1; step++) { 
+            for (var step = 1; step < numberOfSteps + 1; step++) {
                 var textToPutIn = [
-                    `<span class="underline"><b>Your Answer (${result.scorePerBox[step-1]}% correct, ${result.matchedPerBox[step-1]}/${result.keywordsPerBox[step-1]} marks)</b></span><br />`,
-                    result.submitted[step-1].replace(/\n/g, "<br />"),
+                    `<span class="underline"><b>Your Answer (${result.scorePerBox[step - 1]}% correct, ${result.matchedPerBox[step - 1]}/${result.keywordsPerBox[step - 1]} marks)</b></span><br />`,
+                    result.submitted[step - 1].replace(/\n/g, "<br />"),
                     `<br /> <br />`,
                     `<span class="answer">`,
                     `<span class="underline">Model Answer</span><br />`,
-                    result.model[step-1].replace(/\n/g, "<br />"),
+                    result.model[step - 1].replace(/\n/g, "<br />"),
                     `</span>`
                 ]
-                
+
                 $(`#${step}`).hide().val("")
                 $(`#step-${step} > .input-box`).html(textToPutIn.join(" "))
-                
 
-            }       
+
+            }
             $(".exam-container > .contents").prepend(`<p id='score'>Your score: <b>${result.score}%</b>, <b>${result.marksScored}/${result.totalMarks}</p>`)
 
 
-            
-            
+
+
         })
     }
 
-    
+
+    $(".exam-container").mouseenter(() => viewingExamPaper = true)
+    $(".exam-container").mouseleave(() => viewingExamPaper = false)
 
 
 
-
-    pin = function() { 
+    pin = function () {
         $(".exam-container").toggleClass("pinned")
         $(".fa-thumbtack").toggleClass("pressed")
+        pinnedExamPaper = pinnedExamPaper ? false : true
 
     }
     function formatChemForm(str) {
         return str.split("_").join(" ")
     }
-}) 
     
+})
 
 
-    
+
+
