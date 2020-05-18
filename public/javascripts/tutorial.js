@@ -240,7 +240,7 @@ $(document).ready(function () {
             exitOnEsc: true,
             steps: [
                 {
-                    intro: "This tutorial will show you the basics of how to use this website. <br /> <br />This tutorial, and others, can be played at any time by clicking the ? icon at the <b>bottom right</b>. <br /> <br />Quit the tutorial at any time by pressing <b>ESC</b> on your keyboard."
+                    intro: "This tutorial will show you the basics of how to use this website. <br /> <br />This tutorial, and others, can be played at any time by clicking the <b>? icon</b> at the <b>bottom right</b>. <br /> <br />Quit the tutorial at any time by pressing <b>ESC</b> on your keyboard."
 
                 },
                 {

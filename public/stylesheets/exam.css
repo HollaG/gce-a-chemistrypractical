@@ -1,0 +1,104 @@
+.exam-container { 
+    position: absolute;
+    width: 40vw;
+    height: 45vw;
+    min-width: 20%;
+    min-height: 10%;
+    background-color: white;
+    bottom: -42vw;
+    right: 0vw;
+    transition: bottom ease 0.5s;
+    border-radius: 1vw 1vw 0 0;
+    pointer-events: auto !important;
+    padding-bottom: 1vw;
+    z-index: 110
+}
+
+.exam-container:hover { 
+    bottom: 0vw
+}
+
+.header > p { 
+    text-align: center;
+    font-size: 1.5vw;
+}
+
+.header {
+    height: 3vw;
+
+}
+.contents { 
+    height: 41vw;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.contents > form { 
+    overflow-y: auto;
+}
+
+td { 
+    padding-bottom: 3vw;
+    padding-left: 0.5vw;
+    padding-right: 0.5vw;
+    padding-top: 0.2vw
+}
+
+
+
+.exam-paper { 
+    width: 90%;
+    margin: auto;
+    
+    
+    
+}
+
+.exam-paper, th, td { 
+    border: 1px solid black;
+    border-collapse: collapse;
+}
+
+th.step { 
+    width: 10%
+}
+th.test, th.obs { 
+    width: 45%
+}
+
+.input { 
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    resize: none;
+    width: 100%;
+    -webkit-box-sizing: border-box; /* <=iOS4, <= Android  2.3 */
+    -moz-box-sizing: border-box; /* FF1+ */
+    box-sizing: border-box; /* Chrome, IE8, Opera, Safari 5.1*/
+    font-family: Arial, Helvetica, sans-serif;
+    padding-bottom: 3vw;
+    padding-left: 0.5vw;
+    padding-right: 0.5vw;
+    padding-top: 0.2vw
+}
+.input-box { 
+    padding-bottom: 0.1vw;
+    
+}
+
+table, th, td { 
+    position: relative;
+    vertical-align: top;
+    text-align: left;
+}
+
+th { 
+    text-align: center;
+}
+
+.dont-cheat {
+    display: none
+}

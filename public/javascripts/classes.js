@@ -105,13 +105,15 @@ class Reactant extends Chemical {
 
     }
 
-    async checkIfReactable(otherReagents) { // take in a bunch of reagents and checks if this reagent reacts. Will return either a) empty array --> no reaction, b) array of other reagents that it reacts with
+    async checkIfReactable(otherReagents, condition) { // take in a bunch of reagents and checks if this reagent reacts. Will return either a) empty array --> no reaction, b) array of other reagents that it reacts with
         var otherReagents = otherReagents
+        condition = condition ? "heat" : ""
         // if (!Array.isArray(otherReagents)) { 
         //     otherReagents = otherReagents.split()
         // }
         var reactsWith = []
         if (this.cation || this.anion) {
+            console.log("is cmpd")
             // means that this is a compound. We gotta check if it can react too
             var cationData = JSON.parse(await Promise.resolve(($.get('/inspect', { arr: [this.cation] }))))
             var possibleCationReactions = cationData.map(row => row.reacts_with_indiv_1)
@@ -120,23 +122,83 @@ class Reactant extends Chemical {
             console.log(cationData, possibleCationReactions, anionData, possibleAnionReactions, "------------------")
             // if the cation reacts with one of the reagents, we need to add it to reactsWith in the form
             // [{this.formula_id: reagent}]
-            otherReagents.forEach(reagent => {
-                if (Array.isArray(reagent)) {
-                    // compound, first element is cation. second is anion. third is compound'
-                    var isReactable = false
-                    reagent.forEach(ion => {
-                        if (possibleCationReactions.includes(ion) || possibleAnionReactions.includes(ion)) {
-                            isReactable = true
+            var thisIonReactsWith = []
+            cationData.forEach(cationReaction => { 
+                if (cationReaction.reacts_with_indiv_1) { 
+                    
+                    otherReagents.forEach(otherReagent => { 
+                        if (Array.isArray(otherReagent)) { 
+                            if ((otherReagent.includes(cationReaction.reacts_with_indiv_1)) && cationReaction.condition_1 == condition) {
+                                thisIonReactsWith.push(otherReagent)
+                            }
+                        } else {
+                            if ((otherReagent == cationReaction.reacts_with_indiv_1) && cationReaction.condition_1 == condition) { 
+                                thisIonReactsWith.push(otherReagent)
+                            }
                         }
                     })
-                    if (isReactable) {
-                        var temp = {}
-                        temp[this.formula_id] = reagent
-                        reactsWith.push(temp)
-                    }
+                    
                 }
-
             })
+            
+            anionData.forEach(anionReaction => { 
+                if (anionReaction.reacts_with_indiv_1) { 
+                    
+                    otherReagents.forEach(otherReagent => { 
+                        if (Array.isArray(otherReagent)) { 
+                            if (otherReagent.includes(anionReaction.reacts_with_indiv_1) && (anionReaction.condition_1 == condition)) {
+                                thisIonReactsWith.push(otherReagent)
+                            }
+                        } else {
+                            if ((otherReagent == anionReaction.reacts_with_indiv_1) && (anionReaction.condition_1 == condition)) { 
+                                thisIonReactsWith.push(otherReagent)
+                            }
+                        }
+                    })
+                    
+                }
+            })
+            if (thisIonReactsWith.length) { 
+                var temp = {}
+                temp[this.formula_id] = thisIonReactsWith
+                var push = true
+                reactsWith.forEach(t => {
+                    if (t == thisIonReactsWith) { 
+                        push = false
+                    }
+                })
+                if (push)
+                    reactsWith.push(temp)
+            }
+            console.log(reactsWith, "tghsi is nesWWWWWWWWWWWWWWWWWWWW")
+
+            // otherReagents.forEach(reagent => {
+            //     if (Array.isArray(reagent)) {
+            //         // compound, first element is cation. second is anion. third is compound'
+            //         var isReactable = false
+            //         reagent.forEach(ion => {
+            //             if ((possibleCationReactions.includes(ion) || possibleAnionReactions.includes(ion)) &&  this.condition_1 == condition) {
+            //                 isReactable = true
+            //             }
+            //         })
+            //         if (isReactable) {
+            //             var temp = {}
+            //             temp[this.formula_id] = reagent
+            //             reactsWith.push(temp)
+            //         }
+            //     } else { 
+            //         var isReactable = false
+            //         if ((possibleCationReactions.includes(reagent) || possibleAnionReactions.includes(reagent)) &&  this.condition_1 == condition) {
+            //             isReactable = true
+            //         }
+            //         if (isReactable) {
+            //             var temp = {}
+            //             temp[this.formula_id] = reagent
+            //             reactsWith.push(temp)
+            //         }
+            //     }
+
+            // })
 
 
         } else {
@@ -146,19 +208,19 @@ class Reactant extends Chemical {
                     // compound, first element is cation. second is anion. third is compound'
                     var isReactable = false
                     reagent.forEach(ion => {
-                        if (ion == this.reacts_with_indiv_1) {
+                        if (ion == this.reacts_with_indiv_1 && this.condition_1 == condition) {
                             isReactable = true
                         }
                     })
                     if (isReactable) {
                         var temp = {}
-                        temp[this.formula_id] = reagent
+                        temp[this.formula_id] = [reagent]
                         reactsWith.push(temp)
                     }
 
-                } else if (reagent == this.reacts_with_indiv_1) {
+                } else if (reagent == this.reacts_with_indiv_1 && this.condition_1 == condition) {
                     var temp = {}
-                    temp[this.formula_id] = reagent
+                    temp[this.formula_id] = [reagent]
                     reactsWith.push(temp)
                 }
 

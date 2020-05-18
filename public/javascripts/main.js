@@ -2,29 +2,17 @@
 
 $(document).ready(function () {
 
-    var isMoving = false // used to check if you click on another div when youre holding a div
-    var preventMove = false // used to check when youre clicking on a link in the popup
+
     var heldItem = ""
-    objectsUsed = {
 
-    }
-
-
-
-    var currentlyMovingElem = ''
     var mostRecentApparatus;
     var mostRecentChemical;
 
-    var tubes = {}
-    var bench = {}
-    var reagents = {}
 
     var hasLitmus = ""
     var placedLitmus;
 
-    objectsInUse = {
 
-    }
 
     var popupInfo = {
 
@@ -42,12 +30,12 @@ $(document).ready(function () {
 
     preventInventory = false
 
-    var bunsenOn = false
-    var bunsenLit = false
+    var bunsenOn = false // tap on
+    var bunsenLit = false // flame on
     var heatShieldInPlace = false
     var gogglesWorn = false
 
-    var listenToMouseMove = true
+
 
     tapOn = false
     light = function () {
@@ -232,7 +220,9 @@ $(document).ready(function () {
 
     }
 
+    rename = function (id) { 
 
+    }
 
 
 
@@ -350,7 +340,7 @@ $(document).ready(function () {
                     $('.movables').append(`<div class='interactive ${value} apparatus moving' id='${currentlyMovingElem}' onclick="makeMovable('${currentlyMovingElem}')"> </div>`)
 
                     // temporary success notification
-                    alertify.success('Ok:' + value)
+                    // alertify.success('Ok:' + value)
 
                     // Remove the SlimSelect
                     basketSelect.destroy()
@@ -446,12 +436,12 @@ $(document).ready(function () {
         if (currentlyMovingElem) {
             var classes = document.getElementById(currentlyMovingElem).className.split(/\s+/);
             if (objectsInUse[currentlyMovingElem].location == "test-tube-rack") {
-                if (!classes.includes("clean")) { 
+                if (!classes.includes("clean")) {
                     alertify.prompt("WARNING: <b>Wash apparatus</b> before returning!", (evt, value) => $('.ajs-cancel').show(), () => $('.ajs-cancel').show()).setHeader("Warnings (1)")
                     $('.ajs-input').hide()
                     $('.ajs-cancel').hide()
                 }
-                
+
                 $(`#${currentlyMovingElem}`).remove()
                 delete objectsInUse[currentlyMovingElem]
                 delete objectsUsed[currentlyMovingElem.split("-")[0]]
@@ -474,7 +464,7 @@ $(document).ready(function () {
                     $('.movables').append(`<div class='interactive ${value} apparatus moving' id='${currentlyMovingElem}' onclick="makeMovable('${currentlyMovingElem}')"> </div>`)
 
 
-                    alertify.success('Ok:' + value)
+                    // alertify.success('Ok:' + value)
                     rackSelect.destroy()
                     $('#rack-prompt').remove();
                     heldItem = value
@@ -566,7 +556,7 @@ $(document).ready(function () {
                 $('.movables').append(`<div class='interactive ${value} bench-bottle moving' id='${currentlyMovingElem}' onclick="makeMovable('${currentlyMovingElem}')"> </div>`)
 
 
-                alertify.success('Ok:' + value)
+                // alertify.success('Ok:' + value)
                 benchSelect.destroy()
                 $('#bench-prompt').remove();
                 heldItem = value
@@ -651,7 +641,7 @@ $(document).ready(function () {
                 $('.movables').append(`<div class='interactive ${value} reagent-bottle moving' id='${currentlyMovingElem}' onclick="makeMovable('${currentlyMovingElem}')"> </div>`)
 
 
-                alertify.success('Ok:' + value)
+                // alertify.success('Ok:' + value)
                 reagentSelect.destroy()
                 $('#reagent-prompt').remove();
                 heldItem = value
@@ -747,7 +737,7 @@ $(document).ready(function () {
 
             if (objectsInUse[currentlyMovingElem].linked_to) {
                 // it's linked to something
-                $(`#${objectsInUse[currentlyMovingElem].linked_to}`).toggleClass('moving').toggleClass('on-working-area').css({
+                $(`#${objectsInUse[currentlyMovingElem].linked_to}`).removeClass('moving').addClass('on-working-area').css({
                     "pointer-events": "auto"
                 })
                 $('.slot').css({
@@ -1200,37 +1190,40 @@ $(document).ready(function () {
 
 
                             console.log(itemClicked)
-                            var updatedHTMLArr = [`<div class="popup"> <p> ${itemClicked.item_name} </p>`]
-                            // ITEM ATTRIBUTES                             
 
-                            if (itemClicked.attribute.split(",").includes("inspectable")) {
-                                updatedHTMLArr.push(`<a class="inspect" onclick='inspect("${itemClicked.div_id}")'> Inspect </a>`)
+                            regeneratePopupHtml(id)
 
-                                // only if theres thing in the test tube
-                            }
-                            if (itemClicked.attribute.split(",").includes("duplicate")) {
-                                updatedHTMLArr.push(`<a class="duplicate" onclick='duplicate("${itemClicked.div_id}")'> Duplicate </a>`)
+                            // var updatedHTMLArr = [`<div class="popup"> <p> ${itemClicked.item_name} </p>`]
+                            // // ITEM ATTRIBUTES                             
 
-                                // only if theres thing in the test tube
-                            }
+                            // if (itemClicked.attribute.split(",").includes("inspectable")) {
+                            //     updatedHTMLArr.push(`<a class="inspect" onclick='inspect("${itemClicked.div_id}")'> Inspect </a>`)
 
-                            itemClicked.contains.forEach(item => {
-                                if (item.formula_id_f == "H₂O (l)") {
-                                    updatedHTMLArr.push(`<p> ${item.formula_id_f} </p>`) // ID1
-                                } else {
-                                    updatedHTMLArr.push(`<p> ${item.volume} cm³ ${item.formula_id_f} </p>`)
-                                }
+                            //     // only if theres thing in the test tube
+                            // }
+                            // if (itemClicked.attribute.split(",").includes("duplicate")) {
+                            //     updatedHTMLArr.push(`<a class="duplicate" onclick='duplicate("${itemClicked.div_id}")'> Duplicate </a>`)
 
-                            })
-                            updatedHTMLArr.push("</div>")
-                            console.log("RUNNING")
-                            console.log(updatedHTMLArr.join(""))
+                            //     // only if theres thing in the test tube
+                            // }
 
-                            $(`#${id}`).empty().append(updatedHTMLArr.join("")).children('.popup').hide()
+                            // itemClicked.contains.forEach(item => {
+                            //     if (item.formula_id_f == "H₂O (l)") {
+                            //         updatedHTMLArr.push(`<p> ${item.formula_id_f} </p>`) // ID1
+                            //     } else {
+                            //         updatedHTMLArr.push(`<p> ${item.volume} cm³ ${item.formula_id_f} </p>`)
+                            //     }
+
+                            // })
+                            // updatedHTMLArr.push("</div>")
+                            // console.log("RUNNING")
+                            // console.log(updatedHTMLArr.join(""))
+
+                            // $(`#${id}`).empty().append(updatedHTMLArr.join("")).children('.popup').hide()
 
 
 
-                            alertify.success(`Added ${value} cm³ of ${heldItem.name} to the ${itemClicked.item_name}. <br />${itemClicked.remainingSpace} cm³ remaining.`)
+                            // alertify.success(`Added ${value} cm³ of ${heldItem.name} to the ${itemClicked.item_name}. <br />${itemClicked.remainingSpace} cm³ remaining.`)
 
                             // $(`#${itemClicked.div_id}`).contextMenu(d)
                         }
@@ -1265,6 +1258,7 @@ $(document).ready(function () {
                 var new_id = `${app.apparatus_id}-${funnelNumber}`
 
                 $('.movables').append(`<div class='interactive ${app.apparatus_id} apparatus on-working-area' id='${new_id}' onclick="makeMovable('${new_id}')"> </div>`)
+                
 
                 // Set css
                 $(`#${new_id}`).css({
@@ -1288,9 +1282,9 @@ $(document).ready(function () {
                     // get rid of all elements below
                     if ($(`#${e.target.id}`).children().length == 0) {
                         // no children aka first time
-                        var elementIdToReference = e.target.id
+                        var target = e.target.id
 
-                        // var popupHTML = `<div class="popup"> <p> ${objectsInUse[elementIdToReference].item_name} </p></div>`
+                        // var popupHTML = `<div class="popup"> <p> ${objectsInUse[target].item_name} </p></div>`
                         var popupHTMLArr = [`<div class="popup">`, `<p> ${app.item_name} </p>`]
 
                         popupHTMLArr.push(`</div>`)
@@ -1299,7 +1293,7 @@ $(document).ready(function () {
                     }
 
                     console.log("prevented handler for", e.target)
-                    var elementIdToReference = e.target.id
+                    var target = e.target.id
 
 
 
@@ -1324,7 +1318,7 @@ $(document).ready(function () {
 
                 // Add to objectsInUse
                 objectsInUse[new_id] = app
-
+                regeneratePopupHtml(new_id)
 
 
                 // Remove the old filter paper from objectsInUse
@@ -1334,6 +1328,7 @@ $(document).ready(function () {
                 delete objectsInUse[id]
                 isMoving = false
                 $('body').css("pointer-events", "auto")
+                currentlyMovingElem = ""
             } else if (heldItem.apparatus_id == "filter_funnel" && itemClicked.interact_with.split(",").includes("filter_funnel")) {
                 // check if it already has a filter funnel on it
                 var tube_id = id
@@ -1370,19 +1365,20 @@ $(document).ready(function () {
                         "top": top
                     })
 
+                    regeneratePopupHtml(currentlyMovingElem)
                     // Teleport the item to the correct place
 
                     // Generate HTML popup
                     // Add html popup
-                    var filterHtml = [`<p> ${objectsInUse[currentlyMovingElem].item_name} <p> <a class="inspect" onclick='inspectFilter("${currentlyMovingElem}")'> Inspect </a> <a class="detach" onclick='detach("${currentlyMovingElem}")'> Detach </a>`]
-                    objectsInUse[currentlyMovingElem].contains.forEach(e => {
-                        filterHtml.push(`<p> ${e.volume} cm³ ${e.formula_id_f}`)
-                    })
+                    // var filterHtml = [`<p> ${objectsInUse[currentlyMovingElem].item_name} <p> <a class="inspect" onclick='inspectFilter("${currentlyMovingElem}")'> Inspect </a> <a class="detach" onclick='detach("${currentlyMovingElem}")'> Detach </a>`]
+                    // objectsInUse[currentlyMovingElem].contains.forEach(e => {
+                    //     filterHtml.push(`<p> ${e.volume} cm³ ${e.formula_id_f}`)
+                    // })
 
-                    if (!$(`#${currentlyMovingElem} > .popup`).length) {
-                        $(`#${currentlyMovingElem}`).append(`<div class="popup"></div>`)
-                    }
-                    $(`#${currentlyMovingElem} > .popup`).html(filterHtml.join(" ")).hide()
+                    // if (!$(`#${currentlyMovingElem} > .popup`).length) {
+                    //     $(`#${currentlyMovingElem}`).append(`<div class="popup"></div>`)
+                    // }
+                    // $(`#${currentlyMovingElem} > .popup`).html(filterHtml.join(" ")).hide()
 
 
                     // Set it down at a certain position
@@ -1457,7 +1453,9 @@ $(document).ready(function () {
                     putDownItemInWorkingArea()
                     linkedTo.push(tube_id)
                     objectsInUse[tube_id].linked_to = id
-                    $(`#${id} > .popup`).html(`<p> ${objectsInUse[id].item_name} </p> <a class="detach" onclick='detach("${id}")'> Detach </a>`)
+                    // $(`#${id} > .popup`).html(`<p> ${objectsInUse[id].item_name} </p> <a class="detach" onclick='detach("${id}")'> Detach </a>`)
+                    
+                    console.log(objectsInUse[id], "vhjkudfsbhjedsbfgjkasdbfjkasdnfgjiksdebfgjbasijfbdshiju") 
                 } else if (linkedTo.length == 1 && linkedTo) {
                     // Linked to test tube with the rubber bung
 
@@ -1475,16 +1473,120 @@ $(document).ready(function () {
                     putDownItemInWorkingArea()
                     linkedTo.push(tube_id)
                     objectsInUse[tube_id].linked_to = id
-                    $(`#${id} > .popup`).html(`<p> ${objectsInUse[id].item_name} </p> <a class="detach" onclick='detach("${id}")'> Detach </a>`)
-
+                    // $(`#${id} > .popup`).html(`<p> ${objectsInUse[id].item_name} </p> <a class="detach" onclick='detach("${id}")'> Detach </a>`)
+                    
 
                 } else {
                     // linked to 2 test tubes
                 }
                 objectsInUse[id].linked_to = linkedTo.join(",")
+                regeneratePopupHtml(id)
+
+
+            } else if (heldItem.apparatus_id == "FAexam" && itemClicked.interact_with.split(",").includes("FAexam")) {
+                $('.ajs-input').show()
+
+                alertify.prompt(`How much of ${heldItem.item_name} would you like to add? Maximum ${itemClicked.remainingSpace} cm³`, "",
+                    function (evt, value) {
+                        if (isNaN(value) || Number(value) > itemClicked.remainingSpace || Number(value) == 0) {
+                            // alertify.error('Number out of range!')
+                            return false
+                        } else {
+                            var volumePerReagentToAdd = Number(value) / Number(objectsInUse[currentlyMovingElem].contains.length)
+                            var reagentsToTransfer = objectsInUse[currentlyMovingElem].contains
+
+                            listenToMouseMove = true
+                            itemClicked.spaceUsed = Number(itemClicked.spaceUsed) + Number(value)
+
+                            var itemsAlreadyContained = itemClicked.contains
+                            var mappedById = {}
+                            itemsAlreadyContained.forEach(e => mappedById[e.formula_id_f] = e.volume)
+
+                            var obj = []
+
+
+                            var containedById = {}
+                            itemsAlreadyContained.forEach(r => {
+                                containedById[r.formula_id_f] = {
+                                    volume: r.volume,
+                                    formula_text: r.formula_text
+                                }
+                            })
+                            reagentsToTransfer.forEach(reagentToTransfer => {
+                                if (Object.keys(containedById).includes(reagentToTransfer.formula_id_f)) {
+                                    // duplicate
+                                    obj.push({
+                                        formula_text: reagentToTransfer.formula_text,
+                                        formula_id_f: reagentToTransfer.formula_id_f,
+                                        volume: Number(mappedById[reagentToTransfer.formula_id_f].volume) + Number(volumePerReagentToAdd)
+                                    })
+                                    // cut out from array
+                                    delete itemsAlreadyContained[reagentToTransfer.formula_id_f]
+                                } else {
+                                    // not duplicate
+                                    obj.push({
+                                        formula_text: reagentToTransfer.formula_text,
+                                        formula_id_f: reagentToTransfer.formula_id_f,
+                                        volume: Number(volumePerReagentToAdd)
+                                    })
+                                }
+                            })
+                            itemsAlreadyContained.forEach(remainingItem => {
+                                obj.push({
+                                    formula_text: remainingItem.formula_text,
+                                    formula_id_f: remainingItem.formula_id_f,
+                                    volume: remainingItem.volume
+                                })
+                            })
 
 
 
+
+
+
+
+
+
+
+                            console.log(obj)
+
+                            itemClicked.contains = obj
+
+
+
+                            console.log(itemClicked)
+                            var updatedHTMLArr = [`<div class="popup"> <p> ${itemClicked.item_name} </p>`]
+                            // ITEM ATTRIBUTES                             
+
+                            if (itemClicked.attribute.split(",").includes("inspectable")) {
+                                updatedHTMLArr.push(`<a class="inspect" onclick='inspect("${itemClicked.div_id}")'> Inspect </a>`)
+
+                                // only if theres thing in the test tube
+                            }
+                            if (itemClicked.attribute.split(",").includes("duplicate")) {
+                                updatedHTMLArr.push(`<a class="duplicate" onclick='duplicate("${itemClicked.div_id}")'> Duplicate </a>`)
+
+                                // only if theres thing in the test tube
+                            }
+                            updatedHTMLArr.push(`<p> Contains ${itemClicked.spaceUsed} cm³ solution`)
+                            updatedHTMLArr.push("</div>")
+                            console.log("RUNNING")
+                            console.log(updatedHTMLArr.join(""))
+
+                            $(`#${id}`).empty().append(updatedHTMLArr.join("")).children('.popup').hide()
+
+
+
+
+
+                            // $(`#${itemClicked.div_id}`).contextMenu(d)
+                        }
+                        console.log(itemClicked, "ITEM CLICKED AFTER ADDING")
+                    }, () => {
+                        listenToMouseMove = true
+                    }).setHeader("Solution Transfer")
+
+                listenToMouseMove = false
             }
 
 
@@ -1492,38 +1594,51 @@ $(document).ready(function () {
 
 
             return
-        }
-        isMoving = true
+        } else {
+            console.log("i am running past return")
+            isMoving = true
 
-        $('body').css("pointer-events", "none")
-
-
-        $(document).on('mousemove', function (e) {
-            if (listenToMouseMove) {
+            $('body').css("pointer-events", "none")
 
 
-                $(`#${id}`).css({
-                    left: ((e.pageX - $(`#${currentlyMovingElem}`).width() / 2) / document.body.clientWidth) * 100 + "vw",
-                    top: ((e.pageY - $(`#${currentlyMovingElem}`).height() / 2) / document.body.clientWidth) * 100 + "vw",
-                    "pointer-events": "none", // allow click through this element
-                })
-                if (objectsInUse[id]) {
+            $(document).on('mousemove', function (e) {
+                if (listenToMouseMove && currentlyMovingElem) {
 
-                    if (objectsInUse[id].linked_to) {
-                        var linkedTo = objectsInUse[id].linked_to.split(",")
-                        // it's linked to something
-                        if (linkedTo.length == 1) {
-                            // only 1 thing
-                            if (linkedTo[0].split("-")[0] == "filter_funnel") {
-                                $(`#${linkedTo[0]}`).css({
-                                    left: ((((e.pageX - $(`#${currentlyMovingElem}`).width() / 2) / document.body.clientWidth) * 100) + 0.5817) + "vw",
-                                    top: ((((e.pageY - $(`#${currentlyMovingElem}`).height() / 2) / document.body.clientWidth) * 100) - 1) + "vw",
-                                    "pointer-events": "none", // allow click through this element
 
-                                })
-                                $(`#${linkedTo[0]}`).toggleClass('moving').toggleClass('on-working-area')
-                            } else if (linkedTo[0].split("-")[0] == "test_tube" && objectsInUse[id].apparatus_id == "delivery_tube") {
-                                // Move the test tube
+                    $(`#${id}`).css({
+                        left: ((e.pageX - $(`#${currentlyMovingElem}`).width() / 2) / document.body.clientWidth) * 100 + "vw",
+                        top: ((e.pageY - $(`#${currentlyMovingElem}`).height() / 2) / document.body.clientWidth) * 100 + "vw",
+                        "pointer-events": "none", // allow click through this element
+                    })
+
+                    if (objectsInUse[id]) {
+
+                        if (objectsInUse[id].linked_to) {
+                            var linkedTo = objectsInUse[id].linked_to.split(",")
+                            // it's linked to something
+                            if (linkedTo.length == 1) {
+                                // only 1 thing
+                                if (linkedTo[0].split("-")[0] == "filter_funnel") {
+                                    $(`#${linkedTo[0]}`).css({
+                                        left: ((((e.pageX - $(`#${currentlyMovingElem}`).width() / 2) / document.body.clientWidth) * 100) + 0.5817) + "vw",
+                                        top: ((((e.pageY - $(`#${currentlyMovingElem}`).height() / 2) / document.body.clientWidth) * 100) - 1) + "vw",
+                                        "pointer-events": "none", // allow click through this element
+
+                                    })
+                                    $(`#${linkedTo[0]}`).toggleClass('moving').toggleClass('on-working-area')
+                                } else if (linkedTo[0].split("-")[0] == "test_tube" && objectsInUse[id].apparatus_id == "delivery_tube") {
+                                    // Move the test tube
+                                    $(`#${linkedTo[0]}`).css({
+                                        left: ((((e.pageX - $(`#${currentlyMovingElem}`).width() / 2) / document.body.clientWidth) * 100) + 6.3) + "vw",
+                                        top: ((((e.pageY - $(`#${currentlyMovingElem}`).height() / 2) / document.body.clientWidth) * 100) + 2.7) + "vw",
+                                        "pointer-events": "none", // allow click through this element
+
+                                    })
+                                    $(`#${linkedTo[0]}`).toggleClass('moving').toggleClass('on-working-area')
+                                }
+
+                            } else if (linkedTo.length == 2) {
+                                // 2 things connected to it
                                 $(`#${linkedTo[0]}`).css({
                                     left: ((((e.pageX - $(`#${currentlyMovingElem}`).width() / 2) / document.body.clientWidth) * 100) + 6.3) + "vw",
                                     top: ((((e.pageY - $(`#${currentlyMovingElem}`).height() / 2) / document.body.clientWidth) * 100) + 2.7) + "vw",
@@ -1531,47 +1646,38 @@ $(document).ready(function () {
 
                                 })
                                 $(`#${linkedTo[0]}`).toggleClass('moving').toggleClass('on-working-area')
+
+                                $(`#${linkedTo[1]}`).css({
+                                    left: ((((e.pageX - $(`#${currentlyMovingElem}`).width() / 2) / document.body.clientWidth) * 100) - 1.3) + "vw",
+                                    top: ((((e.pageY - $(`#${currentlyMovingElem}`).height() / 2) / document.body.clientWidth) * 100) + 2.7) + "vw",
+                                    "pointer-events": "none", // allow click through this element
+
+                                })
+                                $(`#${linkedTo[1]}`).toggleClass('moving').toggleClass('on-working-area')
+
                             }
 
-                        } else if (linkedTo.length == 2) {
-                            // 2 things connected to it
-                            $(`#${linkedTo[0]}`).css({
-                                left: ((((e.pageX - $(`#${currentlyMovingElem}`).width() / 2) / document.body.clientWidth) * 100) + 6.3) + "vw",
-                                top: ((((e.pageY - $(`#${currentlyMovingElem}`).height() / 2) / document.body.clientWidth) * 100) + 2.7) + "vw",
-                                "pointer-events": "none", // allow click through this element
+                            if (objectsInUse[id].linked_to.split("-")[0] == "filter_funnel") {
 
-                            })
-                            $(`#${linkedTo[0]}`).toggleClass('moving').toggleClass('on-working-area')
 
-                            $(`#${linkedTo[1]}`).css({
-                                left: ((((e.pageX - $(`#${currentlyMovingElem}`).width() / 2) / document.body.clientWidth) * 100) - 1.3) + "vw",
-                                top: ((((e.pageY - $(`#${currentlyMovingElem}`).height() / 2) / document.body.clientWidth) * 100) + 2.7) + "vw",
-                                "pointer-events": "none", // allow click through this element
+                            } else if (objectsInUse[id].linked_to.split(",")) {
 
-                            })
-                            $(`#${linkedTo[1]}`).toggleClass('moving').toggleClass('on-working-area')
+                            }
+
 
                         }
-
-                        if (objectsInUse[id].linked_to.split("-")[0] == "filter_funnel") {
-
-
-                        } else if (objectsInUse[id].linked_to.split(",")) {
-
-                        }
-
-
                     }
                 }
-            }
 
 
-        })
-        $('body').css({ 'pointer-events': 'none !important' }) // prevent clicking anywhere else 
-        $('.working-area').css({ 'pointer-events': 'auto' }) // other than the working-area
-        // $('.movables > .interactive').css({ 'pointer-events': 'none' }) // and prevent clicking on the other movables as well
-        currentlyMovingElem = id
-        $(`#${currentlyMovingElem}`).toggleClass('moving').toggleClass('on-working-area')
+            })
+            $('body').css({ 'pointer-events': 'none !important' }) // prevent clicking anywhere else 
+            $('.working-area').css({ 'pointer-events': 'auto' }) // other than the working-area
+            // $('.movables > .interactive').css({ 'pointer-events': 'none' }) // and prevent clicking on the other movables as well
+            currentlyMovingElem = id
+            $(`#${currentlyMovingElem}`).toggleClass('moving').toggleClass('on-working-area')
+        }
+
 
     }
 
@@ -1596,7 +1702,10 @@ $(document).ready(function () {
             objectsInUse[`${newApparatus}-${number}`] = app
         }
         $(`#${id}`).remove()
-        $('.movables').append(`<div class='interactive ${newApparatus} apparatus moving' id='${newApparatus}-${number}' onclick="makeMovable('${newApparatus}-${number}')"> </div>`)
+        $('.movables').append(`<div class='interactive ${newApparatus} apparatus on-working-area' id='${newApparatus}-${number}' onclick="makeMovable('${newApparatus}-${number}')"> </div>`)
+        popupHtml(`${newApparatus}-${number}`)
+        
+        
         $(`#${newApparatus}-${number}`).css({
             "left": left,
             "top": top,
@@ -1606,57 +1715,63 @@ $(document).ready(function () {
         })
 
         // Create context menu
-        $(`#${newApparatus}-${number}`).contextmenu(function (e) {
-            // triggers on child divs too, so prevent that
-            // console.log(this, "thisthisthishtishtishits")
-            // if (this != e.target) {
-            //     console.log("FALSE FALSE FALSE FALSE")
-            //     isMoving = false
-            //     return
-            // }; // https://stackoverflow.com/questions/34113635/click-event-on-child-div-trigger-action-despite-click-handler-was-set-on-parent
-            // Prevent default right-click
-            e.preventDefault()
-            // get rid of all elements below
-            if ($(`#${e.target.id}`).children().length == 0) {
-                // no children aka first time
-                var elementIdToReference = e.target.id
+        // $(`#${newApparatus}-${number}`).contextmenu(function (e) {
+        //     // triggers on child divs too, so prevent that
+        //     // console.log(this, "thisthisthishtishtishits")
+        //     // if (this != e.target) {
+        //     //     console.log("FALSE FALSE FALSE FALSE")
+        //     //     isMoving = false
+        //     //     return
+        //     // }; // https://stackoverflow.com/questions/34113635/click-event-on-child-div-trigger-action-despite-click-handler-was-set-on-parent
+        //     // Prevent default right-click
+        //     e.preventDefault()
+        //     // get rid of all elements below
+        //     if ($(`#${e.target.id}`).children().length == 0) {
+        //         // no children aka first time
+        //         var target = e.target.id
 
-                // var popupHTML = `<div class="popup"> <p> ${objectsInUse[elementIdToReference].item_name} </p></div>`
-                var popupHTMLArr = [`<div class="popup">`, `<p> ${objectsInUse[elementIdToReference].item_name} </p>`]
-                popupHTMLArr.push(`</div>`)
+        //         // var popupHTML = `<div class="popup"> <p> ${objectsInUse[target].item_name} </p></div>`
+        //         var popupHTMLArr = [`<div class="popup">`, `<p> ${objectsInUse[target].item_name} </p>`]
+        //         popupHTMLArr.push(`</div>`)
 
-                $(e.target).append(popupHTMLArr.join(" "))
-            }
+        //         $(e.target).append(popupHTMLArr.join(" "))
+        //     }
 
-            console.log("prevented handler for", e.target)
-            var elementIdToReference = e.target.id
-
-
+        //     console.log("prevented handler for", e.target)
+        //     var target = e.target.id
 
 
-            // Listener for click, so as to remove the popup
-            $('body').click(function (evt) {
-                // https://stackoverflow.com/questions/12661797/jquery-click-anywhere-in-the-page-except-on-1-div
-                if (evt.target.classList.contains('popup'))
-                    return;
-                //For descendants of menu_content being clicked, remove this check if you do not want to put constraint on descendants.
-                if ($(evt.target).closest('.popup').length)
-                    return;
 
-                //Do processing of click event here for every element except with id menu_content
-                $(e.target).children('.popup').hide()
 
-            })
-            $(e.target).children('.popup').show()
-        })
+        //     // Listener for click, so as to remove the popup
+        //     $('body').click(function (evt) {
+        //         // https://stackoverflow.com/questions/12661797/jquery-click-anywhere-in-the-page-except-on-1-div
+        //         if (evt.target.classList.contains('popup'))
+        //             return;
+        //         //For descendants of menu_content being clicked, remove this check if you do not want to put constraint on descendants.
+        //         if ($(evt.target).closest('.popup').length)
+        //             return;
+
+        //         //Do processing of click event here for every element except with id menu_content
+        //         $(e.target).children('.popup').hide()
+
+        //     })
+        //     $(e.target).children('.popup').show()
+        // })
 
         preventMove = false
+        currentlyMovingElem = ""
 
 
 
     }
 
     inspect = async function (id) {
+
+
+        $(".ajs-dialog").css("margin-top", "1vw")
+
+
         // Set placed litmus to false
         placedLitmus = false
 
@@ -1664,6 +1779,10 @@ $(document).ready(function () {
         $(`.inventory`).css({
             "z-index": "2000"
         })
+        $(".exam-container").css({
+            "z-index": "2000"
+        })
+
 
 
 
@@ -1685,6 +1804,7 @@ $(document).ready(function () {
                 $("#litmus").remove()
                 $(".ajs-ok").show()
                 $(".ajs-cancel").html("Cancel")
+                $(".ajs-dialog").css("margin-top", "")
             },
             function () {
                 $('#inspect').remove()
@@ -1698,7 +1818,7 @@ $(document).ready(function () {
                 })
                 $(".ajs-ok").show()
                 $(".ajs-cancel").html("Cancel")
-
+                $(".ajs-dialog").css("margin-top", "")
             }).setHeader(`${tube.item_name} Inspection`)
 
         $('.ajs-content').append('<div id="litmus" onclick="litmus()"></div>')
@@ -1752,7 +1872,7 @@ $(document).ready(function () {
                 formula_text: "air",
                 volume: 20
             })
-            
+
         } else {
             // remove air if exists
             var a = $.extend([], tube.contains)
@@ -1844,18 +1964,18 @@ $(document).ready(function () {
 
                     var row = data[i]
                     var t = new Reactant(row)
-                    var reacting = await t.checkIfReactable(reagentsToQuery) // check if any reacting reagent can react with others
-                    console.log('reacting with', t.formula_id, reacting)
-                    if (reacting.length) { // if the thing is reacting 
-                        console.log("REACTINGGGGGGGGGGGGGGGGGG")
-                        if (allReactingReagents[t.formula_id]) {
-                            var temp = allReactingReagents[t.formula_id]
-                            temp.push(reacting[0][t.formula_id])
-                            allReactingReagents[t.formula_id] = temp
-                        } else {
-                            allReactingReagents[t.formula_id] = [reacting[0][t.formula_id]]
-                        }
-                    }
+                    // var reacting = await t.checkIfReactable(reagentsToQuery, bunsenLit) // check if any reacting reagent can react with others
+                    // console.log('reacting with', t.formula_id, reacting)
+                    // if (reacting.length) { // if the thing is reacting 
+                    //     console.log("REACTINGGGGGGGGGGGGGGGGGG")
+                    //     if (allReactingReagents[t.formula_id]) {
+                    //         var temp = allReactingReagents[t.formula_id]
+                    //         temp.push(reacting[0][t.formula_id])
+                    //         allReactingReagents[t.formula_id] = temp
+                    //     } else {
+                    //         allReactingReagents[t.formula_id] = [reacting[0][t.formula_id]]
+                    //     }
+                    // }
 
                     volCol[t['formula_id']] = {
                         color: t['color'],
@@ -2124,12 +2244,12 @@ $(document).ready(function () {
 
 
 
-        /* -------------- PART 4: START TIMER TO DELAY UNTIL THE NEXT FUNCTION EXECUTION --------------*/
+        
 
 
 
 
-
+        if (examInProgress) $("#info").addClass("dont-cheat")
 
 
 
@@ -2255,22 +2375,31 @@ $(document).ready(function () {
                 volumeObj[b] = Number(reagentInTube.volume)
                 pastReagents[b] = [reagentInTube.old_reagentL, reagentInTube.old_reagentR]
             });
+            calculateProducts(id)
             async function temp() {
                 for (var i = 0; i < data.length; i++) {
 
                     var row = data[i]
                     var t = new Reactant(row)
-                    var reacting = await t.checkIfReactable(reagentsToQuery) // check if any reacting reagent can react with others
+                    console.log(t, "THIS IS THE NEW REACTANT(ROW)")
+                    var reacting = await t.checkIfReactable(reagentsToQuery, bunsenLit) // check if any reacting reagent can react with others
+
                     console.log('reacting with', t.formula_id, reacting)
                     if (reacting.length) { // if the thing is reacting 
+                        reacting.forEach(reaction => {
+                            if (allReactingReagents[t.formula_id]) {
+                                var temp = allReactingReagents[t.formula_id]
+                                reaction[t.formula_id].forEach(r => temp.push(r))
+                               
+                                allReactingReagents[t.formula_id] = temp
+                            } else {
+                                allReactingReagents[t.formula_id] = reaction[t.formula_id]
+                                console.log(reaction[t.formula_id], 'setting this ID1')
+                            }
+                        })
+
                         console.log("REACTINGGGGGGGGGGGGGGGGGG")
-                        if (allReactingReagents[t.formula_id]) {
-                            var temp = allReactingReagents[t.formula_id]
-                            temp.push(reacting[0][t.formula_id])
-                            allReactingReagents[t.formula_id] = temp
-                        } else {
-                            allReactingReagents[t.formula_id] = [reacting[0][t.formula_id]]
-                        }
+
                     }
 
                     volCol[t['formula_id']] = {
@@ -2299,7 +2428,7 @@ $(document).ready(function () {
 
             var HTMLarr = []
             for (reagent of Object.keys(volCol)) {
-                if (reagent == "H₂O_(l)") {
+                if (reagent == "H₂O_(l)" || reagent == "air") {
                     HTMLarr.push(`<p> ${formatChemForm(reagent)}, ${volCol[reagent].color} ${volCol[reagent].state}, ${volCol[reagent].odor} </p>`) // ID1         
                 } else {
                     HTMLarr.push(`<p> ${volCol[reagent].volume} cm³ ${formatChemForm(reagent)}, ${volCol[reagent].color} ${volCol[reagent].state}, ${volCol[reagent].odor} </p>`)
@@ -2522,10 +2651,11 @@ $(document).ready(function () {
             var tempReagentRObj = {
 
             }
-
+            console.log(JSON.stringify(allReactingReagents), 'id1')
             for (reagentL of Object.keys(allReactingReagents)) {
 
                 allReactingReagents[reagentL].forEach(reactant => {
+                   
                     if (Array.isArray(reactant)) {
                         // something like [Na+, OH-, NaOH]
                         // Just set reactant to be the third item in this array
@@ -2582,11 +2712,16 @@ $(document).ready(function () {
                     if (volCol[reagentL].cation || volCol[reagentL].anion) {
                         reagentLTemp = [volCol[reagentL].cation, volCol[reagentL].anion, reagentL]
                     }
-                    var reactionData = JSON.parse(await Promise.resolve(($.get('/inspect/getProduct', { left: encodeURI(reagentLTemp), right: encodeURI([reagentR]) }))))
+                    var reactionData = JSON.parse(await Promise.resolve(($.get('/inspect/getProduct', { left: encodeURI(reagentLTemp), right: encodeURI(reagentR) }))))
                     // array
 
 
                     console.log(reactionData, "------das")
+
+                    var product = reactionData[0].produces_1
+                    var ratio = JSON.parse(await Promise.resolve(($.get('/inspect/getRatio', { left: encodeURI(reagentLTemp), right: encodeURI(reagentR), product: encodeURI(product) }))))
+                    ratio = Number(ratio)
+
 
                     // Sometimes, if the reagentR is NaOH (etc), it'll be in the form of an array. The third element of this array will always be the base element. Hence,
                     if (Array.isArray(reagentR)) {
@@ -2599,13 +2734,11 @@ $(document).ready(function () {
                     // var reagentRVolume = Number(volCol[reagentR].volume)/Number(tempReagentRObj[reagentR]) // Divide the volume allocated for tihs reaction by the number of times this reactant is used
 
                     // // Get the ratio
-                    // var ratio = JSON.parse(await Promise.resolve(($.get('/inspect/getRatio', { left: encodeURI(reagentLTemp), right: encodeURI([reagentR]) }))))
-
 
                     // Calculate how much reagentL was used in THIS reaction.
                     var reagentLUsed = 0
                     // Find which reagent, L or R, is in excess.
-                    if (reagentLVolumePerReaction / 5 < reagentRVolume) { // Variable ID3
+                    if (reagentLVolumePerReaction / ratio < reagentRVolume) { // Variable ID3
                         // ReagentR is in excess
                         // ReagentL will have 0 volume for this reaction
                         reagentLVolumeAfterReaction = reagentLVolumeAfterReaction - reagentLVolumePerReaction
@@ -2613,10 +2746,10 @@ $(document).ready(function () {
                         reagentRVolumeAfterReaction = reagentRVolumeAfterReaction - Number(reagentLVolumePerReaction / 5)
 
 
-                    } else if (reagentLVolumePerReaction / 5 >= reagentRVolume) { // Variable ID3
+                    } else if (reagentLVolumePerReaction / ratio >= reagentRVolume) { // Variable ID3
                         // ReagentL is in excess or they have the same ratio
-                        reagentLVolumeAfterReaction = reagentLVolumeAfterReaction - reagentRVolume * 5
-                        reagentLUsed = reagentRVolume * 5
+                        reagentLVolumeAfterReaction = reagentLVolumeAfterReaction - reagentRVolume * ratio
+                        reagentLUsed = reagentRVolume * ratio
                         reagentRVolumeAfterReaction = reagentRVolumeAfterReaction - reagentRVolume //Total volume minus the total volume used for this reaction, which is all of it
                     }
 
@@ -2710,7 +2843,7 @@ $(document).ready(function () {
             // Update the HTML text            
             var updatedHtmlArr = []
             // and the context menu
-            var popupHtmlArr = [`<p> ${tube.item_name} </p>`, `<a class="inspect" onclick="inspect('${tube.div_id}')"> Inspect </a> <a class="duplicate" onclick='duplicate("${tube.div_id}")'> Duplicate </a>`] // ID2
+            // var popupHtmlArr = [`<p> ${tube.item_name} </p>`, `<a class="inspect" onclick="inspect('${tube.div_id}')"> Inspect </a> <a class="duplicate" onclick='duplicate("${tube.div_id}")'> Duplicate </a>`] // ID2
             // and the tube Apparatus class
             var containsTemp = []
 
@@ -2747,14 +2880,14 @@ $(document).ready(function () {
                 /* Control HTML */
                 if (reagent == "H₂O_(l)") {
                     updatedHtmlArr.push(`<p> ${formatChemForm(reagent)} </p>`) // ID1
-                    popupHtmlArr.push(`<p> ${formatChemForm(reagent)} </p>`)
+                    // popupHtmlArr.push(`<p> ${formatChemForm(reagent)} </p>`)
                 } else if (reagent == "air") {
                     updatedHtmlArr.push(`<p> Air </p>`) // ID1
-                    popupHtmlArr.push(`<p> Air </p>`)
+                    // popupHtmlArr.push(`<p> Air </p>`)
                 } else {
-                    updatedHtmlArr.push(`<p> ${volume} cm³ ${formatChemForm(reagent)}, ${color} ${state}, ${odor}`)
+                    updatedHtmlArr.push(`<p> ${volume} cm³ ${formatChemForm(reagent)}, ${color} ${state}, ${odor} </p>`)
                     if (state != "gas") {
-                        popupHtmlArr.push(`<p> ${volume} cm³ </p> <p> ${formatChemForm(reagent)}`)
+                        // popupHtmlArr.push(`<p> ${volume} cm³ ${formatChemForm(reagent)} </p>`)
                     }
 
 
@@ -3181,7 +3314,8 @@ $(document).ready(function () {
             $('#info').html(updatedHtmlArr.join(" "))
 
             // Update the context-menu info            
-            $(`#${id} > .popup`).html(popupHtmlArr.join(" "))
+            regeneratePopupHtml(id)
+            // $(`#${id} > .popup`).html(popupHtmlArr.join(" "))
 
             // REMOVE the GASES from volColTemp and containsTemp and replace with water, since the gas has escaped
             var waterVolumeToAdd = 0
@@ -3613,31 +3747,33 @@ $(document).ready(function () {
     }
 
 
-    function popupHtml() {
+    popupHtml = function (e) {
         // Before calling this function, set 
         // isMoving to true;
         // preventMove (choose);
         // currentMovingElem;
         // objectsInUse[currentlyMovingElem] MUST exist
 
+        var target = currentlyMovingElem ? currentlyMovingElem : e
+
         var backgroundImageUrl = ''
-        if (objectsInUse[currentlyMovingElem].image_url) {
-            backgroundImageUrl = objectsInUse[currentlyMovingElem].image_url
-        } else if (objectsInUse[currentlyMovingElem].location == "FAbasket") {
+        if (objectsInUse[target].image_url) {
+            backgroundImageUrl = objectsInUse[target].image_url
+        } else if (objectsInUse[target].location == "FAbasket" || objectsInUse[target].location == "custom") {
             backgroundImageUrl = 'url(/images/mini/fa-bottle.png)'
-        } else if (objectsInUse[currentlyMovingElem].location == "bench") {
+        } else if (objectsInUse[target].location == "bench") {
             backgroundImageUrl = 'url(/images/mini/reagent-bottle.png)'
         }
-        $(`#${currentlyMovingElem}`).css({
+        $(`#${target}`).css({
             'background-image': backgroundImageUrl
         })
 
         $(document).on('mousemove', function (e) {
             if (isMoving) {
-                if (listenToMouseMove) {
+                if (listenToMouseMove && target) {
                     $(`#${currentlyMovingElem}`).css({
-                        left: ((e.pageX - $(`#${currentlyMovingElem}`).width() / 2) / document.body.clientWidth) * 100 + "vw",
-                        top: ((e.pageY - $(`#${currentlyMovingElem}`).height() / 2) / document.body.clientWidth) * 100 + "vw",
+                        left: ((e.pageX - $(`#${target}`).width() / 2) / document.body.clientWidth) * 100 + "vw",
+                        top: ((e.pageY - $(`#${target}`).height() / 2) / document.body.clientWidth) * 100 + "vw",
 
                         "pointer-events": "none",
 
@@ -3656,37 +3792,41 @@ $(document).ready(function () {
 
         // add popup html
 
-        var elementIdToReference = currentlyMovingElem
+        
 
         var popupHTML = [`<div class="popup">`]
 
 
-        var className = objectsInUse[elementIdToReference].constructor.name
+        var className = objectsInUse[target].constructor.name
         if (className == "Apparatus") {
-            var attributes = objectsInUse[elementIdToReference].attribute.split(",")
-            popupHTML.push(`<p> ${objectsInUse[elementIdToReference].item_name} </p>`)
+            var attributes = objectsInUse[target].attribute.split(",")
+            popupHTML.push(`<p> ${objectsInUse[target].item_name} </p>`)
             if (attributes.includes("inspectable")) {
-                popupHTML.push(`<a class="inspect" onclick="inspect('${elementIdToReference}')"> Inspect </a>`)
+                popupHTML.push(`<a class="inspect" onclick="inspect('${target}')"> Inspect </a>`)
             }
             if (attributes.includes("foldable")) {
-                popupHTML.push(`<a class="foldable" onclick='fold("${elementIdToReference}")'> Fold filter paper </a>`)
+                popupHTML.push(`<a class="foldable" onclick='fold("${target}")'> Fold filter paper </a>`)
             }
             if (attributes.includes("duplicate")) {
-                popupHTML.push(`<a class="duplicate" onclick="duplicate('${elementIdToReference}')"> Duplicate </a>`)
+                popupHTML.push(`<a class="duplicate" onclick="duplicate('${target}')"> Duplicate </a>`)
             }
             if (attributes.includes("extinguish")) {
-                popupHTML.push(`<a class="extinguish" onclick="extinguish('${elementIdToReference}')"> Extinguish </a>`)
+                popupHTML.push(`<a class="extinguish" onclick="extinguish('${target}')"> Extinguish </a>`)
             }
-            objectsInUse[currentlyMovingElem].contains.forEach(ele => {
-                if (ele.formula_id_f == "H₂O (l)") {
-                    popupHTML.push(`<p> ${ele.formula_id_f} </p>`)
-                } else {
-                    popupHTML.push(`<p> ${ele.volume} cm³ ${ele.formula_id_f} </p>`)
-                }
+            if (!examInProgress) {
+                objectsInUse[target].contains.forEach(ele => {
+                    if (ele.formula_id_f == "H₂O (l)" || ele.formula_id_f == "air") {
+                        // popupHTML.push(`<p> ${ele.formula_id_f} </p>`)
+                        // don't add anything
+                    } else {
+                        popupHTML.push(`<p> ${ele.volume} cm³ ${ele.formula_id_f} </p>`)
+                    }
 
-            })
+                })
+            }
+
         } else if (className == "FAReagent" || className == "BenchReagent") {
-            popupHTML.push(`<p> ${objectsInUse[elementIdToReference].name} </p>`)
+            popupHTML.push(`<p> ${objectsInUse[target].name} </p>`)
         }
 
 
@@ -3694,15 +3834,15 @@ $(document).ready(function () {
         popupHTML.push(`</div>`)
 
 
-        $(`#${currentlyMovingElem}`).append(popupHTML.join(" "))
-        $(`#${currentlyMovingElem} > .popup`).hide()
+        $(`#${target}`).append(popupHTML.join(" "))
+        $(`#${target} > .popup`).hide()
 
 
 
 
 
 
-        $(`#${currentlyMovingElem}`).contextmenu(function (e) {
+        $(`#${target}`).contextmenu(function (e) {
             $(`#${e.target.id}`).css({
                 "z-index": "100"
             })
@@ -3736,6 +3876,60 @@ $(document).ready(function () {
             // add popup
             $(e.target).children('.popup').show()
         })
+    }
+
+    regeneratePopupHtml = function (e) { 
+        var item = objectsInUse[e]
+        $(`#${e} > .popup`).remove()
+        var popupHTML = [`<div class="popup">`]
+
+
+        var className = item.constructor.name
+        if (className == "Apparatus") {
+            var attributes = item.attribute.split(",")
+            popupHTML.push(`<p> ${item.item_name} </p>`)
+            if (attributes.includes("inspectable")) {
+                popupHTML.push(`<a class="inspect" onclick="inspect('${e}')"> Inspect </a>`)
+            }
+            if (attributes.includes("foldable")) {
+                popupHTML.push(`<a class="foldable" onclick='fold("${e}")'> Fold filter paper </a>`)
+            }
+            if (attributes.includes("duplicate")) {
+                popupHTML.push(`<a class="duplicate" onclick="duplicate('${e}')"> Duplicate </a>`)
+            }
+            if (attributes.includes("extinguish")) {
+                popupHTML.push(`<a class="extinguish" onclick="extinguish('${e}')"> Extinguish </a>`)
+            }
+            if (attributes.includes("detachable")) { 
+                if (item.linked_to)
+                    popupHTML.push(`<a class="detachable" onclick="detach('${e}')"> Detach </a>`)
+            }
+            if (!examInProgress) {
+                item.contains.forEach(ele => {
+                    if (ele.formula_id_f == "H₂O (l)" || ele.formula_id_f == "air") {
+                        // popupHTML.push(`<p> ${ele.formula_id_f} </p>`)
+                        // don't add anything
+                    } else {
+                        popupHTML.push(`<p> ${ele.volume} cm³ ${ele.formula_id_f} </p>`)
+                    }
+
+                })
+            } else { 
+                if (item.contains.length) { 
+                    popupHTML.push(`<p> Contains ${item.spaceUsed} cm³ solution`)
+                }
+            }
+
+        } else if (className == "FAReagent" || className == "BenchReagent") {
+            popupHTML.push(`<p> ${item.name} </p>`)
+        }
+        popupHTML.push(`</div>`)
+        console.log(popupHTML)
+        $(`#${e}`).append(popupHTML.join(" "))
+        $(`#${e} > .popup`).hide()
+        
+
+
     }
 
 
@@ -3790,5 +3984,9 @@ $(document).ready(function () {
             top: "22vw"
         })
     })();
+
+    $("body").contextmenu(() => {
+        if (isMoving) return false
+    })
 
 })

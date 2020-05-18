@@ -205,6 +205,16 @@
     width: fit-content;
     height: fit-content; /* https://www.geeksforgeeks.org/how-to-make-div-not-larger-than-its-contents-using-css/ */
     cursor: auto;
+    white-space: nowrap;
+    pointer-events: none;
+    border: 0.1vw solid black;
+    border-radius: 0.3vw;
+}
+
+.popup > a { 
+    cursor: pointer;
+    pointer-events: auto;
+    display: block
 }
 
 
@@ -493,9 +503,6 @@
 
 
 
-.popup > a { 
-    cursor: pointer
-}
 .moving { 
     /* width: 100px;
     height: 100px; */
