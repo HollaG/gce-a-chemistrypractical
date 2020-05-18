@@ -51,6 +51,7 @@ calculateProducts = async function (id, condition) {
                 state: getIonsIfHave.state,
                 cation: getIonsIfHave.cation,
                 anion: getIonsIfHave.anion,
+                hex: getIonsIfHave.hex,
                 old_reagentL: item.old_reagentL,
                 old_reagentR: item.old_reagentR
             }
@@ -67,22 +68,11 @@ calculateProducts = async function (id, condition) {
                 arrayOfReagentsWithIons.push(item.formula_id_f.split(" ").join("_"))
             }
 
-            // has smaller ions
+            
 
 
 
         }
-
-
-
-
-
-
-
-
-
-
-
 
 
     }
@@ -269,11 +259,13 @@ calculateProducts = async function (id, condition) {
     
 
     // start the volume calc and stuff
-    var products = []
+
+    var volCol = $.extend(true, {}, mappedById)
+    
     mappedByIdTemp = $.extend(true, {}, mappedById)
     mappedByIdJustChangedVolumes = $.extend({}, mappedById)
-    var adsf = 1
-    var nested = false
+    
+    if (!Object.keys(reactionObject).length) return false
 
     reactionObjectTemp = $.extend(true, {}, reactionObject)
     async function __ () {
@@ -387,8 +379,16 @@ calculateProducts = async function (id, condition) {
                                 cation: product.cation,
                                 anion: product.anion,
                                 old_reagentL: reagentL,
-                                old_reagentR: reagentR
+                                old_reagentR: reagentR,
+                                hex: product.hex
                             }
+                            if (ionRelated[reagentL]) { 
+                                mappedByIdTemp[product.formula_id].old_reagentL = ionRelated[reagentL]
+                            }
+                            if (ionRelated[reagentR]) { 
+                                mappedByIdTemp[product.formula_id].old_reagentL = ionRelated[reagentR]
+                            }
+
                         }
 
 
@@ -458,6 +458,12 @@ calculateProducts = async function (id, condition) {
     }
     zero.forEach(z => delete mappedByIdTemp[z])
     console.log("final product to return", mappedByIdTemp)
+
+    return {
+        volColTemp: mappedByIdTemp,
+        volCol: volCol
+    }
+
 }   
 
 function removeDuplicates(arr) {
