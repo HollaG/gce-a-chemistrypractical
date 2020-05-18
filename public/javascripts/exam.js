@@ -15,6 +15,7 @@ $(document).ready(async () => {
             FAs = exams[value].reactants
             // window.open(`/exam/${value}`)
             $(".header > .name").html(`Exam Paper: ${exams[value].exam_name}`)
+            $(".header").append(` <i class="fas fa-thumbtack" onclick="pin()"></i>`)
             renderExam(examID)
         })();
         
@@ -149,7 +150,7 @@ $(document).ready(async () => {
         console.log("ran")
         var data = JSON.parse(await Promise.resolve(($.get('/exam/fetch/steps', {id: id}))))
         var html = [`
-            <form action="/" method="post">
+            <form id="answer" method="post" action="/exam/${id}">
                 <table class="exam-paper">
                     <thead>
                         <tr>
@@ -165,16 +166,68 @@ $(document).ready(async () => {
                 <tr id='step-${row.step}'>
                     <td> ${row.step} </td>
                     <td> ${row.test} </td>
-                    <td class="input-box"> <textarea id=${row.step} class="input"> </textarea> </td>
+                    <td class="input-box"> <textarea id=${row.step} class="input" name="${row.step}"></textarea> </td>
                 </tr>
             `)
         })
         html.push(`
                     </tbody>
                 </table>
+                <button type="submit" id="submit-button">Submit</button>
+
             </form>
+            
         `)
         $(".contents").append(html.join(""))
+        
+    
+        $("form").on("submit", async function(e) { 
+            e.preventDefault()
+            $("#submit-button").prop("disabled", true)
+            var form = $(this)
+            
+            var url = form.attr("action")
+            
+            var data = form.serialize()
+
+            var result = JSON.parse(await Promise.resolve(($.post(url, data))))
+
+            // update the html stuff
+            var numberOfSteps = result.steps
+            console.log(result)
+            for (var step = 1; step < numberOfSteps+1; step++) { 
+                var textToPutIn = [
+                    `<span class="underline"><b>Your Answer (${result.scorePerBox[step-1]}% correct, ${result.matchedPerBox[step-1]}/${result.keywordsPerBox[step-1]} marks)</b></span><br />`,
+                    result.submitted[step-1].replace(/\n/g, "<br />"),
+                    `<br /> <br />`,
+                    `<span class="answer">`,
+                    `<span class="underline">Model Answer</span><br />`,
+                    result.model[step-1].replace(/\n/g, "<br />"),
+                    `</span>`
+                ]
+                
+                $(`#${step}`).hide().val("")
+                $(`#step-${step} > .input-box`).html(textToPutIn.join(" "))
+                
+
+            }       
+            $(".exam-container > .contents").prepend(`<p id='score'>Your score: <b>${result.score}%</b>, <b>${result.marksScored}/${result.totalMarks}</p>`)
+
+
+            
+            
+        })
+    }
+
+    
+
+
+
+
+    pin = function() { 
+        $(".exam-container").toggleClass("pinned")
+        $(".fa-thumbtack").toggleClass("pressed")
+
     }
     function formatChemForm(str) {
         return str.split("_").join(" ")

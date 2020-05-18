@@ -27,12 +27,14 @@ calculateProducts = async function (id, condition) {
 
         if (item.old_reagentL) {
             if (Array.isArray(item.old_reagentL)) {
-                item.old_reagentL.forEach(r => old_reagents.push(r))
+                old_reagents.push(item.old_reagentL[2])
+                // item.old_reagentL.forEach(r => old_reagents.push(r))
             } else { old_reagents.push(item.old_reagentL) }
         }
         if (item.old_reagentR) {
             if (Array.isArray(item.old_reagentR)) {
-                item.old_reagentR.forEach(r => old_reagents.push(r))
+                old_reagents.push(item.old_reagentR[2])
+                // item.old_reagentR.forEach(r => old_reagents.push(r))
             } else { old_reagents.push(item.old_reagentR) }
         }
 
@@ -124,9 +126,15 @@ calculateProducts = async function (id, condition) {
 
 
         reactantData.forEach(reactionWithOtherThing => {
-            var required_old_reagent = reactionWithOtherThing.requires ? reactionWithOtherThing.requires : "none"
+            var required_old_reagents = reactionWithOtherThing.requires ? reactionWithOtherThing.requires.split(",") : ["none"]
+            
+            var requiredIsPresent = required_old_reagents.some(r=> old_reagents.includes(r))
+            
             var required_condition = reactionWithOtherThing.condition_1 ? reactionWithOtherThing.condition_1 : ""
-            if (required_condition == condition && old_reagents.includes(required_old_reagent)) {
+            
+            
+            
+            if (required_condition == condition && requiredIsPresent) {
                 // conditions 1, 3, 4are satisfied for a possible reaction
                 // but we don't know if condition 2 is here
                 arrayOfReagentsWithIons.forEach(otherThing => {
@@ -386,7 +394,7 @@ calculateProducts = async function (id, condition) {
                                 mappedByIdTemp[product.formula_id].old_reagentL = ionRelated[reagentL]
                             }
                             if (ionRelated[reagentR]) { 
-                                mappedByIdTemp[product.formula_id].old_reagentL = ionRelated[reagentR]
+                                mappedByIdTemp[product.formula_id].old_reagentR = ionRelated[reagentR]
                             }
 
                         }

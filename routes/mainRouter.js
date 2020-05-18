@@ -146,10 +146,11 @@ router.get('/load', async (req, res, next) => {
             var arr = [
                 row['step'],
                 row['test'],
-                row['observation'],
-                row['exam_id']
+                row['observation'] || "",
+                row['exam_id'],
+                row['keywords'] || ""
             ]
-            await connection.execute(`INSERT INTO examsteps (step, test, observation, exam_id) VALUES (?, ?, ?, ?)`, arr)
+            await connection.execute(`INSERT INTO examsteps (step, test, observation, exam_id, keywords) VALUES (?, ?, ?, ?, ?)`, arr)
         })
 
         await connection.execute(`DELETE FROM examreactants`)
@@ -157,7 +158,7 @@ router.get('/load', async (req, res, next) => {
             var arr = [
                 row['exam_id'],
                 row['exam_name'],
-                row['reactants']
+                row['reactants'],
             ]
             await connection.execute(`INSERT INTO examreactants (exam_id, exam_name, reactants) VALUES (?, ?, ?)`, arr)
         })
@@ -253,7 +254,7 @@ router.get('/fetch/specific', async (req, res, next) => {
     } catch (e) {
 
     } finally {
-
+        connection.end()
     }
 
 })
@@ -285,7 +286,7 @@ router.get('/reagentData', async (req, res, next) => {
     } catch (e) {
 
     } finally {
-
+        connection.end()
     }
 })
 
@@ -323,7 +324,7 @@ router.get('/inspect', async (req, res, next) => {
     } catch (e) {
 
     } finally {
-
+        connection.end()
     }
 
 })
@@ -462,7 +463,7 @@ router.get('/inspect/getPossibleCompounds', async (req, res, next) => {
     } catch (e) {
 
     } finally {
-
+        connection.end()
     }
 
 
@@ -488,7 +489,7 @@ router.get('/inspect/getIons', async (req, res, next) => {
     } catch (e) {
 
     } finally {
-
+        connection.end()
     }
 
 
@@ -529,7 +530,7 @@ router.get('/inspect/getPpt', async (req, res, next) => {
     } catch (e) {
 
     } finally {
-
+        connection.end()
     }
 
 
@@ -557,7 +558,7 @@ router.get('/inspect/getAirReaction', async (req, res, next) => {
 
 
     } finally {
-
+        connection.end()
     }
 
 
@@ -595,8 +596,8 @@ router.get("/inspect/getRatio", async (req, res, next) => {
     } catch (e) {
 
     } finally {
-
-    }
+        connection.end()
+    }   
 
 
 })
@@ -622,7 +623,7 @@ router.get("/exam/fetch", async (req, res, next) => {
     } catch (e) {
 
     } finally {
-
+        connection.end()
     }
 })
 
@@ -638,7 +639,7 @@ router.get("/exam/fetch/steps", async (req, res, next) => {
     } catch (e) {
 
     } finally {
-
+        connection.end()
     }
 })
 
@@ -653,12 +654,147 @@ router.get("/exam/fetch/specific", async (req, res, next) => {
     } catch (e) {
 
     } finally {
-
+        connection.end()
     }
 })
 router.get("/exam/:id", (req, res, next) => {
     res.send(req.params.id)
 
+})
+
+router.post("/exam/:id", async (req, res, next) => { 
+    console.log(req.body, 'test')
+
+    // get the correct data
+    try { 
+        var connection = await mysql.createConnection(config.db_config)
+        var exam = await connection.query(`SELECT * FROM examsteps WHERE exam_id = ?`, [req.params.id])
+        exam = exam[0]
+
+        // console.log(exam)
+
+        // is input string a subset? 
+        // if yes, then answer is correct
+        // if no, then
+        // // is 
+
+        var answerArray = []
+        var yourAnswerArray = []
+        for (key of Object.keys(req.body)) { 
+            yourAnswerArray.push(req.body[key])
+        }
+
+
+        var scores = []
+        var keywordsPerBox = []
+        var matchedPerBox = []
+        
+        for (var i = 0; i < exam.length; i++) { 
+            
+            
+            var row = exam[i]
+            answerArray.push(row.observation)
+            var keywordGroups = row.keywords.split("||")
+            keywordsPerBox.push(keywordGroups.length)
+
+            var givenAnswersArray = req.body[row.step].toLowerCase().split("\r\n").join(" ")
+            // givenAnswersArray = givenAnswersArray.filter(Boolean)
+            keywordGroups = keywordGroups.filter(Boolean)
+            // console.log(givenAnswersArray, "answers")
+            // console.log(keywordGroups, "keywords")
+            var keywordsMatched = 0
+            var dontMatchAgainstThisGroupAnymore = []
+            for (var j = 0; j < keywordGroups.length; j++) { 
+                if (dontMatchAgainstThisGroupAnymore.includes(j)) return
+                var eitherOr = keywordGroups[j].split(",")
+                // at least one of the keywords MUST be in the final array
+                for (var k = 0; k < eitherOr.length; k++) { 
+                    var word = eitherOr[k]
+                    // word is white ppt,
+                    // or white precipitate
+                    if (givenAnswersArray.includes(word.toLowerCase())) { 
+                        // there's a match in the word array
+                        givenAnswersArray.replace(word, "")
+                        keywordsMatched = keywordsMatched + 1
+                        // console.log("Match!", word)
+                        // console.log("Matched with keywordGroup", eitherOr)
+                        dontMatchAgainstThisGroupAnymore.push(j)
+                        break
+                    } else { 
+                        // doesn't include the word
+                    }
+
+
+                }
+
+
+
+
+            }
+            matchedPerBox.push(keywordsMatched)
+            // console.log(keywordsMatched, " matches")
+            var percentCorrect = (keywordsMatched / keywordGroups.length) * 100
+            percentCorrect = percentCorrect ? percentCorrect : 0
+            // console.log(dontMatchAgainstThisGroupAnymore, 'dont match')
+
+            // console.log("Your score for this box:", `${percentCorrect}%`)
+            scores.push(percentCorrect)
+
+
+
+            
+            
+
+           
+
+
+
+            
+            
+
+
+
+
+        }
+
+        // console.log(scores)
+        var total = 0
+        scores.forEach(score => {
+            total = total + score
+        })
+        var finalPercent = Number((total/scores.length).toFixed(2))
+        // console.log("your final score: ", finalPercent, "%")
+        // console.log(answerArray, "theirs")
+        // console.log(yourAnswerArray, "yours")
+
+        var totalMarks = 0;
+        var marksScored = 0
+        keywordsPerBox.forEach(k => totalMarks = totalMarks + k)
+        matchedPerBox.forEach(k => marksScored = marksScored + k)
+        var result = { 
+            model: answerArray,
+            submitted: yourAnswerArray,
+            score: finalPercent,
+            scorePerBox: scores,
+            steps: answerArray.length,
+            keywordsPerBox: keywordsPerBox,
+            matchedPerBox: matchedPerBox,
+            totalMarks: totalMarks,
+            marksScored: marksScored
+            
+        }
+        console.log(result)
+        res.send(JSON.stringify(result))
+    } catch (e) { 
+        
+    } finally {
+
+    }
+
+
+
+
+    
 })
 
 var t = { "Ni²⁺_(aq)": [["Na⁺_(aq)", "OH⁻_(aq)", "NaOH_(aq)"]], "Al³⁺_(aq)": [["Na⁺_(aq)", "OH⁻_(aq)", "NaOH_(aq)"], ["Na⁺_(aq)", "CO₃²⁻_(aq)", "Na₂CO₃_(aq)"]], "Na⁺_(aq),CO₃²⁻_(aq),Na₂CO₃_(aq)": ["H₂O_(l)"] }

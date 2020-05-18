@@ -17,15 +17,25 @@ class Apparatus {
         var a = 0
         this.contains.forEach(e => { 
             if (e.formula_id_f.split(" ")[1] == "(aq)" || e.formula_text == "air") { 
-                a = a + e.volume
+                a = Number(a) + Number(e.volume)
             }
         })
         return a
 
     }
 
+    get pptVolume() { 
+        var a = 0
+        this.contains.forEach(e => { 
+            if (e.formula_id_f.split(" ")[1] == "(s)") { 
+                a = Number(a) + Number(e.volume)
+            }
+        })
+        return a
+    }
+
     get remainingSpace() {
-        return this.capacity - this.spaceUsed
+        return Number(this.capacity) - Number(this.spaceUsed)
     }
 
 }
