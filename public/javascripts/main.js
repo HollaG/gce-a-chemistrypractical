@@ -1691,7 +1691,10 @@ $(document).ready(function () {
         var tube = objectsInUse[id]
         alertify.prompt(`Observing ${tube.item_name} #${Number(id.split('-')[1]) + 1}`, "",
             function (evt, value) {
-                if (viewingExamPaper || pinnedExamPaper) return false
+                if (preventClose) { 
+                    preventClose = false;
+                    return false
+                }
                 $('#inspect').remove()
                 $('#info').remove()
                 $("#rxt-status").remove()
@@ -1708,7 +1711,10 @@ $(document).ready(function () {
                 $(".ajs-ok")
             },
             function () {
-                if (viewingExamPaper || pinnedExamPaper) return false
+                if (preventClose) { 
+                    preventClose = false;
+                    return false
+                }
                 $('#inspect').remove()
                 $('#info').remove()
                 $("#rxt-status").remove()
@@ -2779,7 +2785,10 @@ $(document).ready(function () {
         preventMove = true
         alertify.prompt("Inspecting filter", "",
             function (evt, value) {
-                if (viewingExamPaper || pinnedExamPaper) return false
+                if (preventClose) { 
+                    preventClose = false;
+                    return false
+                }
                 $("#filter-inspect").remove()
                 $("#filter-info").remove()
                 $("#reactAir").remove()
@@ -2788,7 +2797,10 @@ $(document).ready(function () {
                 $(".ajs-ok").show()
                 $(".ajs-cancel").html("Cancel")
             }, function () {
-                if (viewingExamPaper || pinnedExamPaper) return false
+                if (preventClose) { 
+                    preventClose = false;
+                    return false
+                }
                 $("#filter-inspect").remove()
                 $("#filter-info").remove()
                 $("#reactAir").remove()

@@ -66,13 +66,14 @@ router.get('/load', async (req, res, next) => {
         var referenceID = 1305630101
         var examStepsID = 1930560132
         var examReactantsID = 669419563
+        var examFAID = 1477165110
 
         var ionSheet = await (doc.sheetsById[ionID]).getRows()
         var apparatusSheet = await (doc.sheetsById[apparatusID]).getRows()
         var referenceSheet = await (doc.sheetsById[referenceID]).getRows()
         var examStepsSheet = await (doc.sheetsById[examStepsID]).getRows()
         var examReactantsSheet = await (doc.sheetsById[examReactantsID]).getRows()
-
+        var examFASheet = await (doc.sheetsById[examFAID]).getRows()
 
 
         var connection = await mysql.createConnection(config.db_config)
@@ -123,7 +124,7 @@ router.get('/load', async (req, res, next) => {
         await connection.execute(`DELETE FROM reference`)
         referenceSheet.forEach(async row => {
             var arr = [
-                row['formula_id'],
+                row['formula_id'] || "",
                 row['formula_text'] || "",
                 row['name'] || "",
                 row['class'] || "",
@@ -158,9 +159,25 @@ router.get('/load', async (req, res, next) => {
             var arr = [
                 row['exam_id'],
                 row['exam_name'],
-                row['reactants'],
+                
+                row['exam_details'],
+                
             ]
-            await connection.execute(`INSERT INTO examreactants (exam_id, exam_name, reactants) VALUES (?, ?, ?)`, arr)
+            await connection.execute(`INSERT INTO examreactants (exam_id, exam_name, exam_details) VALUES (?, ?, ?)`, arr)
+        })
+
+        await connection.execute(`DELETE from examfadetails`)
+        examFASheet.forEach(async row => {
+            var arr = [
+                row['exam_id'],
+                row['reactants'],
+                row["FA"],
+                row['cations'] || "",
+                row['anions'] || "",
+                row['cations_present'] || "",
+                row["anions_present"] || ""
+            ]
+            await connection.execute(`INSERT INTO examfadetails (exam_id, reactants, FA, cations, anions, cations_present, anions_present) VALUES (?, ?, ?, ?, ?, ?, ?)`, arr)
         })
 
         // var connection = await mysql.createConnection(config.db_config)
@@ -643,6 +660,22 @@ router.get("/exam/fetch/steps", async (req, res, next) => {
     }
 })
 
+router.get("/exam/fetch/FA", async (req, res, next) => {
+    try {
+        var connection = await mysql.createConnection(config.db_config)
+        var id = decodeURI(req.query.id)
+        console.log("id", id)
+        var result = await connection.query(`SELECT * FROM examfadetails WHERE exam_id = ? ORDER BY FA+0 ASC`, id)
+        
+        console.log(result[0])
+        res.send(JSON.stringify(result[0]))
+    } catch (e) {
+
+    } finally {
+        connection.end()
+    }
+})
+
 router.get("/exam/fetch/specific", async (req, res, next) => {
     try {
         var connection = await mysql.createConnection(config.db_config)
@@ -657,6 +690,24 @@ router.get("/exam/fetch/specific", async (req, res, next) => {
         connection.end()
     }
 })
+
+router.get("/exam/fetch/possibleIons", async (req, res, next) => {
+    try { 
+        var connection = await mysql.createConnection(config.db_config)
+        var result = await connection.query(`SELECT formula_id, class FROM reference WHERE location = 'FAbasket' AND class = 'cation' OR class = 'anion'`)
+        var ionData = result[0].reduce((r, a) => { // thanks to https://medium.com/@edisondevadoss/javascript-group-an-array-of-objects-by-key-afc85c35d07e
+            r[a.class] = [...r[a.class] || [], a];
+            return r
+        }, {});
+        res.send(JSON.stringify(ionData))
+
+
+    } catch (e) { 
+        
+    } finally { 
+
+    }
+})
 router.get("/exam/:id", (req, res, next) => {
     res.send(req.params.id)
 
@@ -669,8 +720,12 @@ router.post("/exam/:id", async (req, res, next) => {
     try { 
         var connection = await mysql.createConnection(config.db_config)
         var exam = await connection.query(`SELECT * FROM examsteps WHERE exam_id = ?`, [req.params.id])
+        var finalIons = await connection.query(`SELECT * FROM examfadetails WHERE exam_id = ?`, [req.params.id])
         exam = exam[0]
-
+        finalIons = finalIons[0].reduce((r, a) => { // thanks to https://medium.com/@edisondevadoss/javascript-group-an-array-of-objects-by-key-afc85c35d07e
+            r[a.FA] = [...r[a.FA] || [], a];
+            return r
+        }, {});
         // console.log(exam)
 
         // is input string a subset? 
@@ -680,10 +735,24 @@ router.post("/exam/:id", async (req, res, next) => {
 
         var answerArray = []
         var yourAnswerArray = []
+
+        var finalAnswer = {}
+        
         for (key of Object.keys(req.body)) { 
-            yourAnswerArray.push(req.body[key])
+            if (isNaN(key)) { 
+                if (key.split("-")[1] == "cation") 
+                    finalAnswer[key.split("-")[0]] = {cation: req.body[key].split(",")}
+                else 
+                    finalAnswer[key.split("-")[0]].anion = req.body[key].split(",")
+
+            } else {
+                yourAnswerArray.push(req.body[key])
+            }
+            
         }
 
+        console.log(finalAnswer)
+        console.log(finalIons)
 
         var scores = []
         var keywordsPerBox = []
@@ -758,11 +827,8 @@ router.post("/exam/:id", async (req, res, next) => {
         }
 
         // console.log(scores)
-        var total = 0
-        scores.forEach(score => {
-            total = total + score
-        })
-        var finalPercent = Number((total/scores.length).toFixed(2))
+        
+        
         // console.log("your final score: ", finalPercent, "%")
         // console.log(answerArray, "theirs")
         // console.log(yourAnswerArray, "yours")
@@ -771,6 +837,58 @@ router.post("/exam/:id", async (req, res, next) => {
         var marksScored = 0
         keywordsPerBox.forEach(k => totalMarks = totalMarks + k)
         matchedPerBox.forEach(k => marksScored = marksScored + k)
+
+
+        var FAresult = {}
+        for (FA of Object.keys(finalAnswer)) { 
+            var givenCationAnswer = finalAnswer[FA].cation
+            var actualCationAnswer = finalIons[FA][0].cations.split(",")
+            var cationsToScore = actualCationAnswer.length
+            var cationScore = 0
+            if (arraysEqual(givenCationAnswer, actualCationAnswer)) {
+                // 100% correct
+                cationScore = cationsToScore
+            } else if (givenCationAnswer.length > actualCationAnswer.length){ 
+                // they selected more than the answer allowed for (?)
+                
+            } else { 
+                // x% correct
+                // Check how many match
+                actualCationAnswer.forEach(e => {if (givenCationAnswer.includes(e)) cationScore = cationScore + 1})
+
+            }
+
+            var givenAnionAnswer = finalAnswer[FA].anion
+            var actualAnionAnswer = finalIons[FA][0].anions.split(",")
+            var anionsToScore = actualAnionAnswer.length
+            var anionScore = 0
+            if (arraysEqual(givenAnionAnswer, actualAnionAnswer)) {
+                // 100% correct
+                anionScore = anionsToScore
+            } else if (givenCationAnswer.length > actualCationAnswer.length){ 
+                // they selected more than the answer allowed for (?)
+                
+            } else { 
+                // x% correct
+                // Check how many match
+                actualAnionAnswer.forEach(e => {if (givenAnionAnswer.includes(e)) anionScore = anionScore + 1})
+            }
+            FAresult[FA] = {
+                cations: actualCationAnswer,
+                anions: actualAnionAnswer,
+                yourCationsAnswer: givenCationAnswer,
+                yourAnionsAnswer: givenAnionAnswer,
+                cationScore: cationScore,
+                anionScore: anionScore,
+                cation_total: cationsToScore,
+                anion_total: anionsToScore
+            }
+            totalMarks = totalMarks + cationsToScore + anionsToScore
+            marksScored = marksScored + cationScore + anionScore
+            
+
+        }
+        var finalPercent = Number((marksScored/totalMarks) * 100).toPrecision(2)
         var result = { 
             model: answerArray,
             submitted: yourAnswerArray,
@@ -780,13 +898,14 @@ router.post("/exam/:id", async (req, res, next) => {
             keywordsPerBox: keywordsPerBox,
             matchedPerBox: matchedPerBox,
             totalMarks: totalMarks,
-            marksScored: marksScored
+            marksScored: marksScored,
+            FAresult: FAresult
             
         }
-        console.log(result)
+        console.log(result, "final")
         res.send(JSON.stringify(result))
     } catch (e) { 
-        
+        console.log(e)
     } finally {
 
     }
@@ -797,8 +916,30 @@ router.post("/exam/:id", async (req, res, next) => {
     
 })
 
+
+
 var t = { "Ni²⁺_(aq)": [["Na⁺_(aq)", "OH⁻_(aq)", "NaOH_(aq)"]], "Al³⁺_(aq)": [["Na⁺_(aq)", "OH⁻_(aq)", "NaOH_(aq)"], ["Na⁺_(aq)", "CO₃²⁻_(aq)", "Na₂CO₃_(aq)"]], "Na⁺_(aq),CO₃²⁻_(aq),Na₂CO₃_(aq)": ["H₂O_(l)"] }
 console.log(Object.keys(t))
 module.exports = router
+
+
+function arraysEqual(_arr1, _arr2) {
+
+    if (!Array.isArray(_arr1) || ! Array.isArray(_arr2) || _arr1.length !== _arr2.length)
+      return false;
+
+    var arr1 = _arr1.concat().sort();
+    var arr2 = _arr2.concat().sort();
+
+    for (var i = 0; i < arr1.length; i++) {
+
+        if (arr1[i] !== arr2[i])
+            return false;
+
+    }
+
+    return true;
+}
+
 
 

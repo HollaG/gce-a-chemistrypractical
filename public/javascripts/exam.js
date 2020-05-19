@@ -5,18 +5,35 @@ $(document).ready(async () => {
 
     var examID;
     FAs = '';
-    var formattedFA = {}
+    formattedFA = {}
     var exams = {}
 
+    var startTime;
+    var endTime;
     alertify.prompt(`Select QA Paper`, "-", (evt, value) => {
         if (value == "-") return false
         examID = value;
         (async () => {
+
             FAs = exams[value].reactants
             // window.open(`/exam/${value}`)
+            var reactants = JSON.parse(await Promise.resolve(($.get('/exam/fetch/FA', { id: examID }))))
+            // if you're looking at this code, are you trying to cheat?
+            for (var i = 1; i < reactants.length + 1; i++) {
+                var reactant = reactants[i - 1]
+                formattedFA[reactant.FA] = {
+                    reactants: reactant.reactants.split(","),
+                    cations_present: reactant.cations_present,
+                    anions_present: reactant.anions_present
+                }
+
+            }
             $(".header > .name").html(`Exam Paper: ${exams[value].exam_name}`)
             $(".header").append(` <i class="fas fa-thumbtack" onclick="pin()"></i>`)
             renderExam(examID)
+
+            startTime = new Date().getTime()
+
         })();
 
         examSelect.destroy()
@@ -38,7 +55,10 @@ $(document).ready(async () => {
         str.push(`<option value='${exam.exam_id}'> ${exam.exam_name} </option>`)
         exams[exam.exam_id] = {
             exam_name: exam.exam_name,
-            reactants: exam.reactants,
+            // reactants: exam.reactants,
+            exam_details: exam.exam_details,
+            // cations_present: exam.cations_present,
+            // anions_present: exam.anions_present
 
         }
     })
@@ -89,7 +109,7 @@ $(document).ready(async () => {
 
                 // var data = JSON.parse(await Promise.resolve(($.get('/fetch', { clicked: mostRecentChemical.formula_id }))))
                 objectsInUse[currentlyMovingElem] = new Apparatus(data, currentlyMovingElem)
-                formattedFA[value].forEach(async reactant => {
+                formattedFA[value].reactants.forEach(async reactant => {
                     var reactantData = JSON.parse(await Promise.resolve(($.get('/exam/fetch/specific', { formula_id: reactant }))))
                     objectsInUse[currentlyMovingElem].contains.push({
                         volume: 100,
@@ -112,13 +132,15 @@ $(document).ready(async () => {
         // select the prompt and hide the input
         $('.ajs-input').hide()
         $(".ajs-ok").addClass("cust-disabled")
-        var reactants = FAs.split("||")
+
+
+        // var reactants = FAs.split("||")
         var str = [`<option data-placeholder="true"></option>`]
-        for (var i = 1; i < reactants.length + 1; i++) {
-            var reactant = reactants[i - 1]
-            formattedFA[`FA${i}`] = reactant.split(",")
-            str.push(`<option value='FA${i}'> FA${i} </option>`)
+        for (FA of Object.keys(formattedFA)) {
+            str.push(`<option value='${FA}'> ${FA}</option`)
         }
+
+
 
 
         // insert custom select element
@@ -149,7 +171,14 @@ $(document).ready(async () => {
     async function renderExam(id) {
         console.log("ran")
         var data = JSON.parse(await Promise.resolve(($.get('/exam/fetch/steps', { id: id }))))
+
+        // get list of all cation and anion data
+        var ionData = JSON.parse(await Promise.resolve(($.get('/exam/fetch/possibleIons'))))
+
+
+
         var html = [`
+            <p id="details"> ${exams[id].exam_details} </p>
             <form id="answer" method="post" action="/exam/${id}">
                 <table class="exam-paper">
                     <thead>
@@ -173,17 +202,104 @@ $(document).ready(async () => {
         html.push(`
                     </tbody>
                 </table>
-                <button type="submit" id="submit-button">Submit</button>
+                <div class="exam-paper">   
+                            
+                        
+                        
 
-            </form>
+                
             
         `)
+
+        for (FA of Object.keys(formattedFA)) {
+            // cation
+            html.push(`
+                <div class="answer-row answer-${FA}-cation"> 
+                    <div class="left"> <p> The cations present in ${FA} are ${formattedFA[FA].cations_present ? formattedFA[FA].cations_present + " and :" : ":"} </p> </div> 
+                    <div class="right"> <select id='${FA}-cation' multiple> <option data-placeholder="true"></option>
+                       
+                    
+                
+            `)
+
+            ionData.cation.forEach(ion => {
+
+                html.push(`<option value='${ion.formula_id}'> ${ion.formula_id.split("_")[0]} </option>`)
+
+            })
+            html.push(`</select>  <input id='${FA}-cation-input' name='${FA}-cation' style="display:none"></input></div></div>`)
+
+
+
+
+
+
+            // anions
+            html.push(`
+                <div class="answer-row answer-${FA}-anion"> 
+                    <div class="left"> <p> The anions present in ${FA} are ${formattedFA[FA].anions_present ? formattedFA[FA].anions_present + " and" : ":"} </p> </div> 
+                    <div class="right"> <select id='${FA}-anion' multiple> <option data-placeholder="true"></option>
+                        
+                
+            `)
+
+            ionData.anion.forEach(ion => {
+
+                html.push(`<option value='${ion.formula_id}'> ${ion.formula_id.split("_")[0]} </option>`)
+
+            })
+            html.push(`</select> <input id='${FA}-anion-input' name='${FA}-anion' style="display:none"></input> </div></div>`)
+
+
+        }
+
+
+        // if (exam[id].cations_present.split(",").length) { 
+
+        // }
+
+
+        // ionData.cation.forEach(cation => { 
+        //     html.push()
+
+        // })
+
+
+
+
+        html.push(`
+                    </div>
+                <button type="submit" id="submit-button">Submit</button>
+                
+            </form>`)
         $(".contents").append(html.join(""))
 
+        for (FA of Object.keys(formattedFA)) {
+            new SlimSelect({
+                select: `#${FA}-cation`,
+                closeOnSelect: false,
+                onChange: (info) => {
+                    var ions = info.map(x => x.value)
+                    $(`#${FA}-cation-input`).val(ions.join(","))
+                }
+            })
+            new SlimSelect({
+                select: `#${FA}-anion`,
+                closeOnSelect: false,
+                onChange: (info) => {
+                    var ions = info.map(x => x.value)
+                    $(`#${FA}-anion-input`).val(ions.join(","))
+                }
+            })
+        }
 
         $("form").on("submit", async function (e) {
             e.preventDefault()
-            $("#submit-button").prop("disabled", true)
+            endTime = new Date().getTime()
+
+            var minutesTaken = (((endTime - startTime)) / 1000 / 60).toFixed(0)
+
+            $("#submit-button").remove()
             var form = $(this)
 
             var url = form.attr("action")
@@ -211,9 +327,43 @@ $(document).ready(async () => {
 
 
             }
-            $(".exam-container > .contents").prepend(`<p id='score'>Your score: <b>${result.score}%</b>, <b>${result.marksScored}/${result.totalMarks}</p>`)
+            $(".exam-container > .contents").prepend(`<p id='score'>Your score: <b>${result.score}%</b>, <b>${result.marksScored}/${result.totalMarks}</b> (Took ${minutesTaken} minutes)</p>`)
+
+            // update the FA stuff
+            for (FA of Object.keys(result.FAresult)) {
+                $(`.answer-${FA}-cation > .right`).empty()
+
+                var cationPercentage = Number((result.FAresult[FA].cationScore / result.FAresult[FA].cation_total).toPrecision(2)) * 100
 
 
+                var html = [
+                    `<p>`,
+                    `<span class="underline"><b>Your Answer (${cationPercentage}% correct, ${result.FAresult[FA].cationScore}/${result.FAresult[FA].cation_total} marks)</b></span><br />`,
+                    result.FAresult[FA].yourCationsAnswer.join(", "),
+                    `<br /> <br />`,
+                    `<span class="answer">`,
+                    `<span class="underline">Model Answer</span><br />`,
+                    result.FAresult[FA].cations.join(", "),
+                    `</span>`,
+                    `</p>`
+                ]
+                $(`.answer-${FA}-cation > .right`).append(html.join(""))
+
+                $(`.answer-${FA}-anion > .right`).empty()
+                var anionPercentage = Number((result.FAresult[FA].anionScore / result.FAresult[FA].anion_total).toPrecision(2)) * 100
+                var html = [
+                    `<p>`,
+                    `<span class="underline"><b>Your Answer (${anionPercentage}% correct, ${result.FAresult[FA].anionScore}/${result.FAresult[FA].anion_total} marks)</b></span><br />`,
+                    result.FAresult[FA].yourAnionsAnswer.join(", "),
+                    `<br /> <br />`,
+                    `<span class="answer">`,
+                    `<span class="underline">Model Answer</span><br />`,
+                    result.FAresult[FA].anions.join(", "),
+                    `</span>`,
+                    `</p>`
+                ]
+                $(`.answer-${FA}-anion > .right`).append(html.join(""))
+            }
 
 
         })
@@ -223,7 +373,9 @@ $(document).ready(async () => {
     $(".exam-container").mouseenter(() => viewingExamPaper = true)
     $(".exam-container").mouseleave(() => viewingExamPaper = false)
 
-
+    function timeout(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
 
     pin = function () {
         $(".exam-container").toggleClass("pinned")
@@ -234,7 +386,26 @@ $(document).ready(async () => {
     function formatChemForm(str) {
         return str.split("_").join(" ")
     }
-    
+
+    $(".exam-container").on("keydown", async function (e) {
+        // Number 13 is the "Enter" key on the keyboard
+        var code = (e.keyCode ? e.keyCode : e.which);
+        if (code == 13) { //Enter keycode
+            preventClose = true
+            await timeout(100)
+            preventClose = false
+        }
+       
+    });
+    // $(".exam-container").on("keyup", function (e) {
+    //     // Number 13 is the "Enter" key on the keyboard
+    //     var code = (e.keyCode ? e.keyCode : e.which);
+    //     if (code == 13) { //Enter keycode
+    //         preventClose = false
+    //     }
+       
+    // });
+
 })
 
 

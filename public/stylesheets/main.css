@@ -609,7 +609,8 @@
 }
 .inventory { 
     position: absolute;
-    width: 40vw;
+    /* width: 40vw; */
+    width: 36vw;
     height: 15vw;
     min-width: 20%;
     min-height: 10%;
@@ -639,7 +640,8 @@
     bottom: 13vw;
     z-index: -1;
     opacity: 0;
-    left: 40vw
+    /* left: 40vw */
+    left: 36vw;
 }
 .slots { 
     height: 90%;
