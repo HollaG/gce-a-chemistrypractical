@@ -185,7 +185,7 @@ router.get('/load', async (req, res, next) => {
 
         res.send('loaded')
     } catch (e) {
-
+        console.log(e)
     } finally {
         connection.end()
 
@@ -249,7 +249,7 @@ router.get('/fetch', async (req, res, next) => {
     } catch (e) {
 
     } finally {
-        connection.end()
+        // connection.end()
     }
 
 
@@ -269,7 +269,7 @@ router.get('/fetch/specific', async (req, res, next) => {
             res.send({ error: true })
         }
     } catch (e) {
-
+        console.log(e)
     } finally {
         connection.end()
     }
